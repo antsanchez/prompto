@@ -45,4 +45,11 @@ export class ConversationComponent {
     this.lcService.newChat();
     this.router.navigate(['/conversation', '']);
   }
+
+  // presentMessage converts the LLM output to HTML
+  presentMessage(message: string) {
+    return message
+      .replace(/(?:\r\n|\r|\n)/g, '<br>')
+      .replace(/(https?:\/\/[^\s]+)(?![\w/])/g, '<a href="$1" target="_blank">$1</a>');
+  }
 }

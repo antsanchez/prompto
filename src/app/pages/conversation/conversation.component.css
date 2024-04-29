@@ -1,0 +1,4 @@
+:host .chat-message a {
+    color: #007bff;
+    text-decoration: underline !important;
+}

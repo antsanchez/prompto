@@ -1,15 +1,36 @@
 <!-- Chat messages -->
-<div>
+<div class="lg:ml-72 fixed top-20 left-6 right-6 bottom-60 overflow-y-scroll">
   <div class="space-y-6" *ngFor="let msg of lcService.history.messages">
     <div class="flex items-start space-x-3 pt-2 pb-2">
-      <img src="https://randomuser.me/api/portraits" alt="Profile picture" class="w-10 h-10 rounded-full">
       <div>
-        <div class="flex items-center space-x-2">
-          <h3 *ngIf="msg.isUser" class="text-lg font-bold">You</h3>
-          <h3 *ngIf="!msg.isUser" class="text-lg font-semibold">Bot</h3>
+        <div class="flex items-center space-x-2" *ngIf="msg.isUser">
+          <span
+            class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+              stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+            </svg>
+          </span>
+          <h3 class="text-lg font-bold">You</h3>
           <span class="text-sm text-gray-500">{{ msg.date | date:"short" }}</span>
         </div>
-        <p class="text-gray-900">{{ msg.text }}</p>
+        <div class="flex items-center space-x-2" *ngIf="!msg.isUser">
+          <span
+            class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+              stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 6.75v10.5a2.25 2.25 0 0 0 2.25 2.25Zm.75-12h9v9h-9v-9Z" />
+            </svg>
+
+          </span>
+          <h3 class="text-lg font-semibold">Bot</h3>
+          <span class="text-sm text-gray-500">{{ msg.date | date:"short" }}</span>
+        </div>
+        <div class="text-gray-900 mt-1 mb-1 chat-message" [ngClass]="{'italic': msg.isUser}"
+          [innerHTML]="presentMessage(msg.text)">
+        </div>
       </div>
     </div>
   </div>

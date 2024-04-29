@@ -96,8 +96,9 @@
                     <ul role="list" class="-mx-2 space-y-1">
                         <li>
                             <!-- Current: "bg-gray-50 text-indigo-600", Default: "text-gray-700 hover:text-indigo-600 hover:bg-gray-50" -->
-                            <a href="#"
-                                class="bg-gray-50 text-indigo-600 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
+                            <a routerLink="/" routerLinkActive="bg-gray-50 text-indigo-600"
+                                [routerLinkActiveOptions]="{exact: true}"
+                                class="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                                 <svg class="h-6 w-6 shrink-0 text-indigo-600" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -107,7 +108,7 @@
                             </a>
                         </li>
                         <li>
-                            <a routerLink="/conversation/"
+                            <a routerLink="/conversation/" routerLinkActive="bg-gray-50 text-indigo-600"
                                 class="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
@@ -118,7 +119,7 @@
                             </a>
                         </li>
                         <li>
-                            <a routerLink="/notebook"
+                            <a routerLink="/notebook" routerLinkActive="bg-gray-50 text-indigo-600"
                                 class="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
@@ -133,7 +134,8 @@
                 <li *ngIf="chats && chats.length > 0">
                     <div class="text-xs font-semibold leading-6 text-gray-400">Chat History</div>
                     <ul role="list" class="-mx-2 mt-2 space-y-1">
-                        <li *ngFor="let chat of chats" class="flex items-center">
+                        <li *ngFor="let chat of chats" class="flex items-center"
+                            [ngClass]="{'bg-gray-50 text-indigo-600': isChatSelected(chat.key)}">
                             <!-- delete button -->
                             <button (click)="deleteChat(chat)"
                                 class="text-gray-400 hover:text-red-600 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">

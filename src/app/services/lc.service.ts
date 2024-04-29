@@ -39,6 +39,7 @@ export class LcService {
 
   newChat() {
     this.history = {} as Chat;
+    this.currentKey = "";
   }
 
   // createChatName creates a chat name based on the first user prompt
@@ -94,10 +95,11 @@ export class LcService {
     // Add bot message to chat history
     let messageNumber = this.history.messages.length;
     let stream = await chain.stream({ user_prompt: prompt, chat_history: chatStory })
-    for await (const chunk of stream) {
+    for await (let chunk of stream) {
       if (this.history.messages.length > messageNumber) {
         this.history.messages[messageNumber].text += chunk;
       } else {
+        // replace "\n\n" with "<br>"
         this.history.messages.push({
           text: chunk,
           isUser: false,
@@ -117,8 +119,9 @@ export class LcService {
 
     if (this.currentKey === "") {
       this.currentKey = "chat_" + Date.now().toString();
-      localStorage.setItem(this.currentKey, JSON.stringify(this.history));
     }
+
+    localStorage.setItem(this.currentKey, JSON.stringify(this.history));
 
     // if the chat is not already in the list of chats, add it
     if (!this.chats.find((chat) => chat.key === this.currentKey)) {
@@ -179,5 +182,9 @@ export class LcService {
       return "No chat history";
     }
     return chatHistory;
+  }
+
+  invoke(prompt: string): Promise<string> {
+    return this.ollama.invoke(prompt);
   }
 }
