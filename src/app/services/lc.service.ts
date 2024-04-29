@@ -184,7 +184,13 @@ export class LcService {
     return chatHistory;
   }
 
+  // invoke sends a prompt to the chatbot and returns the response
   invoke(prompt: string): Promise<string> {
     return this.ollama.invoke(prompt);
+  }
+
+  // stream sends a prompt to the chatbot and returns a stream of responses
+  stream(prompt: string) {
+    return this.ollama.stream(prompt);
   }
 }
