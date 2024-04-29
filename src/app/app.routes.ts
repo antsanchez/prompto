@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { ConversationComponent } from './pages/conversation/conversation.component';
 import { NotebookComponent } from './pages/notebook/notebook.component';
 import { HomeComponent } from './pages/home/home.component';
+import { TemplateComponent } from './pages/template/template.component';
 
 export const routes: Routes = [
     {
@@ -27,5 +28,11 @@ export const routes: Routes = [
         component: NotebookComponent,
         title: 'Notebook',
         data: { title: "Notebook" }
+    },
+    {
+        path: 'templates',
+        component: TemplateComponent,
+        title: 'Templates',
+        data: { title: "Templates" }
     }
 ];

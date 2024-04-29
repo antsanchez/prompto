@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { LcService } from '../../services/lc.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HelpersService } from '../../services/helpers.service';
 
 @Component({
   selector: 'app-notebook',
@@ -18,21 +19,27 @@ export class NotebookComponent {
 
   constructor(
     public lcService: LcService,
+    public helpers: HelpersService,
   ) { }
+
+  @ViewChild('scrollMe') private myScrollContainer!: ElementRef;
+
+  ngAfterViewChecked() {
+    this.scrollToBottom();
+  }
+
+  scrollToBottom(): void {
+    this.myScrollContainer.nativeElement.scrollIntoView();
+  }
 
   async invoke() {
     this.loading = true;
+    this.output = "";
     let stream = await this.lcService.stream(this.prompt);
     for await (let chunk of stream) {
-      this.output += this.presentMessage(chunk);
+      this.output += chunk;
     }
     this.loading = false;
   }
 
-  // presentMessage converts the LLM output to HTML
-  presentMessage(message: string) {
-    return message
-      .replace(/(?:\r\n|\r|\n)/g, '<br>')
-      .replace(/(https?:\/\/[^\s]+)(?![\w/])/g, '<a href="$1" target="_blank">$1</a>');
-  }
 }

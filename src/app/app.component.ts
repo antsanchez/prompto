@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
-import { NavigationEnd, NavigationStart, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Router, ActivatedRoute } from '@angular/router';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
-import { Title } from '@angular/platform-browser';
-import { LcService } from './services/lc.service';
+import { ChatService } from './services/chat.service';
+import { TemplatesService } from './services/templates.service';
 
 
 @Component({
@@ -26,7 +26,8 @@ export class AppComponent {
   constructor(
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    public lcService: LcService
+    public chatService: ChatService,
+    public templateService: TemplatesService
   ) { }
 
   toggleSidebar() {
@@ -35,7 +36,6 @@ export class AppComponent {
 
   // Detect every time a route change occurs
   ngOnInit() {
-
     let self = this;
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
@@ -47,6 +47,8 @@ export class AppComponent {
       }
     });
 
-    this.lcService.loadChatNames()
+    this.chatService.loadChatNames()
+    this.templateService.loadTemplates()
   }
+
 }

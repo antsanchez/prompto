@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
-import { LcService } from '../../services/lc.service';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ChatService } from '../../services/chat.service';
+import { marked } from 'marked';
+import { HelpersService } from '../../services/helpers.service';
 
 @Component({
   selector: 'app-conversation',
@@ -18,17 +20,28 @@ export class ConversationComponent {
   public chatKey: string = "";
 
   constructor(
-    public lcService: LcService,
+    public chatService: ChatService,
     private router: Router,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
+    public helpers: HelpersService,
   ) {
-    this.lcService.newChat();
+    this.chatService.new();
     this.loadChatFromURL();
+  }
+
+  @ViewChild('scrollMe') private myScrollContainer!: ElementRef;
+
+  ngAfterViewChecked() {
+    this.scrollToBottom();
+  }
+
+  scrollToBottom(): void {
+    this.myScrollContainer.nativeElement.scrollIntoView();
   }
 
   async chat() {
     this.loading = true;
-    this.lcService.chat(this.prompt).then(() => {
+    this.chatService.chat(this.prompt).then(() => {
       this.prompt = "";
       this.loading = false;
     })
@@ -37,19 +50,12 @@ export class ConversationComponent {
   loadChatFromURL() {
     this.chatKey = this.activatedRoute.snapshot.paramMap.get('chat') || '';
     if (this.chatKey) {
-      this.lcService.loadChat(this.chatKey);
+      this.chatService.loadChat(this.chatKey);
     }
   }
 
   newChat() {
-    this.lcService.newChat();
+    this.chatService.new();
     this.router.navigate(['/conversation', '']);
-  }
-
-  // presentMessage converts the LLM output to HTML
-  presentMessage(message: string) {
-    return message
-      .replace(/(?:\r\n|\r|\n)/g, '<br>')
-      .replace(/(https?:\/\/[^\s]+)(?![\w/])/g, '<a href="$1" target="_blank">$1</a>');
   }
 }
