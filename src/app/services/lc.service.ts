@@ -3,14 +3,22 @@ import { Ollama } from "@langchain/community/llms/ollama";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { HttpClient } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
-import { OpenAI } from "@langchain/openai";
+import { ChatOpenAI } from "@langchain/openai";
+import { Runnable } from '@langchain/core/runnables';
+import { ChatAnthropic } from "@langchain/anthropic";
+import { lastValueFrom } from 'rxjs';
 
 export type Settings = {
   provider: string;
+  options: { [provider: string]: Options }
+};
+
+export type Options = {
+  provider: string;
   model: string;
   apiKey: string;
-  ollamaURL: string;
-  ollamaModels: string[];
+  apiUrl: string;
+  availableModels: string[];
 };
 
 @Injectable({
@@ -18,37 +26,122 @@ export type Settings = {
 })
 export class LcService {
 
-  public settings: Settings = {
+  // Settings are saved into the local storage
+  private settings: Settings = {
     provider: 'Ollama',
-    model: "",
-    apiKey: '',
-    ollamaURL: 'http://localhost:11434',
-    ollamaModels: []
-  } as Settings;
+    options: {
+      'Ollama': {
+        provider: 'Ollama',
+        model: 'gpt2',
+        apiKey: '',
+        apiUrl: 'http://localhost:11434',
+        availableModels: []
+      },
+      'OpenAI': {
+        provider: 'OpenAI',
+        model: 'gpt-3.5-turbo',
+        apiKey: '',
+        apiUrl: '',
+        availableModels: []
+      },
+      'Anthropic': {
+        provider: 'Anthropic',
+        model: '',
+        apiKey: '',
+        apiUrl: '',
+        availableModels: []
+      },
+    }
+  };
 
   public providers = [
     'Ollama',
+    'OpenAI',
+    'Anthropic'
   ];
 
-  public llm: Ollama = new Ollama({
-    baseUrl: this.settings.ollamaURL,
-    model: this.settings.model,
-  });
+  public llm: Runnable = {} as Runnable;
 
   constructor(private http: HttpClient) { }
 
   createLLM(): void {
-    if (this.settings.provider === 'Ollama') {
-      this.llm = new Ollama({
-        baseUrl: this.settings.ollamaURL,
-        model: this.settings.model,
-      });
-      return;
+    switch (this.settings.provider) {
+      case 'OpenAI':
+        if (!this.settings.options['OpenAI'].apiKey) {
+          console.info('Aborting OpenAI because there is no API key');
+          return;
+        }
+        try {
+          this.llm = new ChatOpenAI({
+            apiKey: this.settings.options[this.settings.provider].apiKey,
+            model: this.settings.options[this.settings.provider].model,
+          });
+        } catch (error) {
+          console.error('There was an error!', error);
+        }
+        return;
+      case 'Ollama':
+        try {
+          this.llm = new Ollama({
+            baseUrl: this.settings.options[this.settings.provider].apiUrl,
+            model: this.settings.options[this.settings.provider].model,
+          });
+        } catch (error) {
+          console.error('There was an error!', error);
+        }
+        return;
+      case 'Anthropic':
+        if (!this.settings.options[this.settings.provider].apiKey) {
+          console.info('Aborting Anthropic because there is no API key');
+          return;
+        }
+        this.llm = new ChatAnthropic({
+          apiKey: this.settings.options[this.settings.provider].apiKey,
+        });
     }
   }
 
+  // getProvider returns the provider
+  getProvider(): string {
+    return this.settings.provider;
+  }
+
+  // setProvider sets the provider and creates the LLM
+  setProvider(provider: string) {
+    this.settings.provider = provider;
+    this.createLLM();
+  }
+
+  // getOptions returns the options for the provider
+  getOptions() {
+    return this.settings.options[this.settings.provider];
+  }
+
+  // getOptionsFromProvider returns the options for the provider
+  getOptionsFromProvider(provider: string) {
+    return this.settings.options[provider];
+  }
+
+  // getAvailableModels returns the available models for the provider
+  getAvailableModels(provider: string) {
+    return this.settings.options[provider].availableModels;
+  }
+
+  // This function is used to set the API key temporarily, in order to be able to get the models
+  setApiKeyTemporarily(provider: string, apiKey: string) {
+    this.settings.options[provider].apiKey = apiKey;
+  }
+
+  // setOptions sets the options for the provider
+  setOptions(options: Options) {
+    this.settings.provider = options.provider;
+    this.settings.options[options.provider] = options;
+    this.saveSettings();
+    this.createLLM();
+  }
+
   // saveSettings saves the settings to the local storage
-  saveSettings() {
+  private saveSettings() {
     localStorage.setItem('settings', JSON.stringify(this.settings));
   }
 
@@ -72,37 +165,58 @@ export class LcService {
     return this.llm.stream(prompt);
   }
 
-  // Get ollama models from the server
-  async getOllamaModels() {
-    let self = this;
-    const url = 'http://localhost:11434/api/tags';
-    this.http.get(url)
-      .pipe(catchError((err) => {
-        console.error('Error getting models', err);
-        return [];
-      }))
-      .subscribe({
-        next(data: any) {
-          self.settings.ollamaModels = [] as string[];
-          for (let model of data?.models as any[]) {
-            self.settings.ollamaModels.push(model?.name);
-          }
-        },
-        error(error) {
-          console.error('There was an error!', error);
-        }
-      });
+  async getModels(provider: string): Promise<void> {
+    switch (provider) {
+      case 'Ollama':
+        await this.getOllamaModels();
+        break;
+      case 'OpenAI':
+        await this.getOpenAIModels();
+        break;
+    }
   }
+
+  // Get ollama models from the server
+  async getOllamaModels(): Promise<void> {
+    try {
+      const data: any = await lastValueFrom(this.http.get(this.settings.options['Ollama'].apiUrl + '/api/tags'));
+      this.settings.options['Ollama'].availableModels = [] as string[];
+      for (let model of data?.models as any[]) {
+        this.settings.options['Ollama'].availableModels.push(model?.name);
+      }
+    } catch (error) {
+      console.error('There was an error!', error);
+    }
+  }
+
+  // Get OpenAI models from the server
+  async getOpenAIModels(): Promise<void> {
+    if (!this.settings.options['OpenAI'].apiKey) {
+      console.info('Aborting getOpenAIModels because there is no API key');
+      return;
+    }
+    const url = 'https://api.openai.com/v1/engines';
+    try {
+      const data = await lastValueFrom(this.http.get(url, {
+        headers: {
+          'Authorization': `Bearer ${this.settings.options['OpenAI'].apiKey}`
+        }
+      })) as any;
+      this.settings.options['OpenAI'].availableModels = [];
+      for (let model of data?.data as any[]) {
+        this.settings.options['OpenAI'].availableModels.push(model?.id);
+      }
+    } catch (error) {
+      console.error('There was an error!', error);
+    }
+  }
+
 
   // streamWithTemplate sends a prompt to the chatbot with a template and returns a stream of responses
   streamWithSystemPrompt(system: string, prompt: string) {
-
     let template = system + ` ${prompt}`
-
     let tpl = PromptTemplate.fromTemplate(template);
-
     let chain = tpl.pipe(this.llm);
-
     return chain.stream({ prompt: prompt });
   }
 }

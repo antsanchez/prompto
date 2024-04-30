@@ -5,46 +5,42 @@
     <div class="mt-2">
         <select id="provider" name="provider" (ngModelChange)="providerChanged($event)"
             class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
-            [(ngModel)]="lc.settings.provider">
+            [(ngModel)]="options.provider">
             <option *ngFor="let provider of lc.providers" [value]="provider">{{provider}}</option>
         </select>
-        <p class="mt-2 text-sm text-gray-500">For the moment, only Ollama is available.</p>
     </div>
 </div>
 
-<!-- show ollama models dropdown -->
-<div *ngIf="lc.settings.provider === 'Ollama'" class="mt-5">
 
-    <h2 class="py-3">Ollama Settings:</h2>
-
-    <div class="sm:col-span-3">
-        <label for="model" class="block text-sm font-medium leading-6 text-gray-900">LLM Model</label>
-        <div class="mt-2">
-            <select id="model" name="model"
-                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
-                [(ngModel)]="lc.settings.model">
-                <option *ngFor="let model of lc.settings.ollamaModels" [value]="model">{{model}}</option>
-            </select>
-        </div>
-    </div>
-
+<div class="mt-5" *ngIf="options.provider === 'Ollama'">
     <div class="sm:col-span-3 mt-5">
         <label for="url" class="block text-sm font-medium leading-6 text-gray-900">URL</label>
         <div class="mt-2">
-            <input id="url" name="url" type="text" [(ngModel)]="lc.settings.ollamaURL"
+            <input id="url" name="url" type="text" [(ngModel)]="options.apiUrl"
                 class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6">
         </div>
     </div>
 </div>
 
-<!-- apiKey if not ollama -->
-<div *ngIf="lc.settings.provider !== 'Ollama'">
+<div>
     <div class="sm:col-span-3 mt-5">
         <label for="apiKey" class="block text-sm font-medium leading-6 text-gray-900">API Key</label>
         <div class="mt-2">
-            <input id="apiKey" name="apiKey" type="text" [(ngModel)]="lc.settings.apiKey"
+            <input id="apiKey" name="apiKey" type="text" [(ngModel)]="options.apiKey"
+                [disabled]="options.provider === 'Ollama'" (ngModelChange)="addedApiKey($event)"
                 class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6">
         </div>
+    </div>
+</div>
+
+<div class="sm:col-span-3 mt-5">
+    <label for="model" class="block text-sm font-medium leading-6 text-gray-900">LLM Model</label>
+    <div class="mt-2">
+        <select id="model" name="model"
+            class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+            [(ngModel)]="options.model">
+            <option *ngFor="let model of options.availableModels" [value]="model">{{model}}</option>
+        </select>
     </div>
 </div>
 

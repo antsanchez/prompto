@@ -67,7 +67,11 @@ export class ChatService {
 
     // If this is the first message, create a chat name
     if (this.history.messages.length === 1) {
-      this.history.name = await this.createChatName(prompt);
+      try {
+        this.history.name = await this.createChatName(prompt);
+      } catch (e) {
+        console.error(e);
+      }
     }
 
     const promptTemplate = PromptTemplate.fromTemplate(
@@ -82,24 +86,29 @@ export class ChatService {
 
     let chain = promptTemplate.pipe(this.lc.llm);
 
-    // Add bot message to chat history
-    let messageNumber = this.history.messages.length;
-    let stream = await chain.stream({ user_prompt: prompt, chat_history: chatStory })
-    for await (let chunk of stream) {
-      if (this.history.messages.length > messageNumber) {
-        this.history.messages[messageNumber].text += chunk;
-      } else {
-        // replace "\n\n" with "<br>"
-        this.history.messages.push({
-          text: chunk,
-          isUser: false,
-          date: new Date()
-        });
+    try {
+      // Add bot message to chat history
+      let messageNumber = this.history.messages.length;
+      let stream = await chain.stream({ user_prompt: prompt, chat_history: chatStory })
+      for await (let chunk of stream) {
+        if (this.history.messages.length > messageNumber) {
+          this.history.messages[messageNumber].text += chunk;
+        } else {
+          // replace "\n\n" with "<br>"
+          this.history.messages.push({
+            text: chunk,
+            isUser: false,
+            date: new Date()
+          });
+        }
       }
+
+
+      this.saveChat();
+    } catch (e) {
+      console.error(e);
     }
 
-
-    this.saveChat();
   }
 
 
