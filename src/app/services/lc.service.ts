@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { Ollama } from "@langchain/community/llms/ollama";
+import { ChatOllama } from "@langchain/community/chat_models/ollama";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { HttpClient } from '@angular/common/http';
-import { catchError } from 'rxjs/operators';
-import { ChatOpenAI } from "@langchain/openai";
 import { Runnable } from '@langchain/core/runnables';
+import { ChatOpenAI } from "@langchain/openai";
+import { ChatMistralAI } from "@langchain/mistralai";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { lastValueFrom } from 'rxjs';
 
@@ -18,8 +18,14 @@ export type Options = {
   model: string;
   apiKey: string;
   apiUrl: string;
+  temperature?: number;
   availableModels: string[];
 };
+
+const PROVIDER_OLLAMA = 'Ollama';
+const PROVIDER_OPENAI = 'OpenAI';
+const PROVIDER_ANTHROPIC = 'Anthropic';
+const PROVIDER_MISTRAL = 'Mistral';
 
 @Injectable({
   providedIn: 'root'
@@ -30,74 +36,91 @@ export class LcService {
   private settings: Settings = {
     provider: 'Ollama',
     options: {
-      'Ollama': {
-        provider: 'Ollama',
+      PROVIDER_OLLAMA: {
+        provider: PROVIDER_OLLAMA,
         model: 'gpt2',
         apiKey: '',
         apiUrl: 'http://localhost:11434',
+        temperature: 0.7,
         availableModels: []
       },
-      'OpenAI': {
-        provider: 'OpenAI',
+      PROVIDER_OPENAI: {
+        provider: PROVIDER_OPENAI,
         model: 'gpt-3.5-turbo',
         apiKey: '',
         apiUrl: '',
+        temperature: 0.7,
         availableModels: []
       },
-      'Anthropic': {
-        provider: 'Anthropic',
+      PROVIDER_ANTHROPIC: {
+        provider: PROVIDER_ANTHROPIC,
         model: '',
         apiKey: '',
         apiUrl: '',
+        temperature: 0.7,
         availableModels: []
       },
+      PROVIDER_MISTRAL: {
+        provider: PROVIDER_MISTRAL,
+        model: '',
+        apiKey: '',
+        apiUrl: '',
+        temperature: 0.7,
+        availableModels: []
+      }
     }
   };
 
   public providers = [
-    'Ollama',
-    'OpenAI',
-    'Anthropic'
+    PROVIDER_OLLAMA,
+    PROVIDER_OPENAI,
+    PROVIDER_ANTHROPIC,
+    PROVIDER_MISTRAL
   ];
 
   public llm: Runnable = {} as Runnable;
 
   constructor(private http: HttpClient) { }
 
-  createLLM(): void {
+  createLLM(): Error | void {
     switch (this.settings.provider) {
-      case 'OpenAI':
-        if (!this.settings.options['OpenAI'].apiKey) {
-          console.info('Aborting OpenAI because there is no API key');
-          return;
+      case PROVIDER_OPENAI:
+        if (!this.settings.options[PROVIDER_OPENAI].apiKey) {
+          return new Error('No API key');
         }
-        try {
-          this.llm = new ChatOpenAI({
-            apiKey: this.settings.options[this.settings.provider].apiKey,
-            model: this.settings.options[this.settings.provider].model,
-          });
-        } catch (error) {
-          console.error('There was an error!', error);
-        }
+        this.llm = new ChatOpenAI({
+          apiKey: this.settings.options[PROVIDER_OPENAI].apiKey,
+          model: this.settings.options[PROVIDER_OPENAI].model,
+          temperature: this.settings.options[PROVIDER_OPENAI].temperature,
+        });
         return;
-      case 'Ollama':
-        try {
-          this.llm = new Ollama({
-            baseUrl: this.settings.options[this.settings.provider].apiUrl,
-            model: this.settings.options[this.settings.provider].model,
-          });
-        } catch (error) {
-          console.error('There was an error!', error);
-        }
+      case PROVIDER_OLLAMA:
+        this.llm = new ChatOllama({
+          baseUrl: this.settings.options[PROVIDER_OLLAMA].apiUrl,
+          model: this.settings.options[PROVIDER_OLLAMA].model,
+          temperature: this.settings.options[PROVIDER_OLLAMA].temperature,
+        });
         return;
-      case 'Anthropic':
+      case PROVIDER_ANTHROPIC:
         if (!this.settings.options[this.settings.provider].apiKey) {
-          console.info('Aborting Anthropic because there is no API key');
-          return;
+          return new Error('No API key');
         }
         this.llm = new ChatAnthropic({
-          apiKey: this.settings.options[this.settings.provider].apiKey,
+          apiKey: this.settings.options[PROVIDER_ANTHROPIC].apiKey,
+          model: this.settings.options[PROVIDER_ANTHROPIC].model,
+          temperature: this.settings.options[PROVIDER_ANTHROPIC].temperature,
         });
+        return
+      case PROVIDER_MISTRAL:
+        if (!this.settings.options[this.settings.provider].apiKey) {
+          return new Error('No API key');
+        }
+        this.llm = new ChatMistralAI({
+          apiKey: this.settings.options[PROVIDER_MISTRAL].apiKey,
+          model: this.settings.options[PROVIDER_MISTRAL].model,
+          temperature: this.settings.options[PROVIDER_MISTRAL].temperature,
+        });
+        return
     }
   }
 
@@ -110,6 +133,11 @@ export class LcService {
   setProvider(provider: string) {
     this.settings.provider = provider;
     this.createLLM();
+  }
+
+  // getModel returns the model
+  getModel(): string {
+    return this.settings.options[this.settings.provider]?.model || '';
   }
 
   // getOptions returns the options for the provider
@@ -149,10 +177,8 @@ export class LcService {
   loadSettings() {
     let settings = localStorage.getItem('settings');
     if (settings) {
-      this.settings = JSON.parse(settings);
+      this.settings = JSON.parse(settings) as Settings;
     }
-
-    this.createLLM();
   }
 
   // invoke sends a prompt to the chatbot and returns the response
@@ -170,44 +196,63 @@ export class LcService {
       case 'Ollama':
         await this.getOllamaModels();
         break;
-      case 'OpenAI':
+      case PROVIDER_OPENAI:
         await this.getOpenAIModels();
+        break;
+      case PROVIDER_ANTHROPIC:
+        this.getAnthropicModels();
+        break;
+      case PROVIDER_MISTRAL:
+        await this.getMistralModels();
         break;
     }
   }
 
   // Get ollama models from the server
   async getOllamaModels(): Promise<void> {
-    try {
-      const data: any = await lastValueFrom(this.http.get(this.settings.options['Ollama'].apiUrl + '/api/tags'));
-      this.settings.options['Ollama'].availableModels = [] as string[];
-      for (let model of data?.models as any[]) {
-        this.settings.options['Ollama'].availableModels.push(model?.name);
-      }
-    } catch (error) {
-      console.error('There was an error!', error);
+    const data: any = await lastValueFrom(this.http.get(this.settings.options['Ollama'].apiUrl + '/api/tags'));
+    this.settings.options['Ollama'].availableModels = [] as string[];
+    for (let model of data?.models as any[]) {
+      this.settings.options['Ollama'].availableModels.push(model?.name);
     }
   }
 
   // Get OpenAI models from the server
   async getOpenAIModels(): Promise<void> {
-    if (!this.settings.options['OpenAI'].apiKey) {
+    if (!this.settings.options[PROVIDER_OPENAI].apiKey) {
       console.info('Aborting getOpenAIModels because there is no API key');
       return;
     }
     const url = 'https://api.openai.com/v1/engines';
-    try {
-      const data = await lastValueFrom(this.http.get(url, {
-        headers: {
-          'Authorization': `Bearer ${this.settings.options['OpenAI'].apiKey}`
-        }
-      })) as any;
-      this.settings.options['OpenAI'].availableModels = [];
-      for (let model of data?.data as any[]) {
-        this.settings.options['OpenAI'].availableModels.push(model?.id);
+    const data = await lastValueFrom(this.http.get(url, {
+      headers: {
+        'Authorization': `Bearer ${this.settings.options[PROVIDER_OPENAI].apiKey}`
       }
-    } catch (error) {
-      console.error('There was an error!', error);
+    })) as any;
+    this.settings.options[PROVIDER_OPENAI].availableModels = [];
+    for (let model of data?.data as any[]) {
+      this.settings.options[PROVIDER_OPENAI].availableModels.push(model?.id);
+    }
+  }
+
+  getAnthropicModels() {
+    this.settings.options[PROVIDER_ANTHROPIC].availableModels = ['claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307'];
+  }
+
+  async getMistralModels(): Promise<void> {
+    if (!this.settings.options[PROVIDER_MISTRAL].apiKey) {
+      console.info('Aborting getOpenAIModels because there is no API key');
+      return;
+    }
+    const url = 'https://api.mistralai.com/v1/models';
+    const data = await lastValueFrom(this.http.get(url, {
+      headers: {
+        'Authorization': `Bearer ${this.settings.options[PROVIDER_MISTRAL].apiKey}`
+      }
+    })) as any;
+    this.settings.options[PROVIDER_MISTRAL].availableModels = [];
+    for (let model of data?.data as any[]) {
+      this.settings.options[PROVIDER_MISTRAL].availableModels.push(model?.id);
     }
   }
 

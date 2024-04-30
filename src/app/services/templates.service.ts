@@ -62,7 +62,7 @@ export class TemplatesService {
     this.output = '';
     let stream = await this.lc.streamWithSystemPrompt(this.system, this.prompt);
     for await (let chunk of stream) {
-      this.output += chunk;
+      this.output += chunk?.content;
     }
   }
 

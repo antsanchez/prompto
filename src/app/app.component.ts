@@ -31,7 +31,11 @@ export class AppComponent {
     public templateService: TemplatesService,
     public lc: LcService,
   ) {
-    this.lc.loadSettings();
+    try {
+      this.lc.loadSettings();
+    } catch (error) {
+      console.error('Error loading settings:', error);
+    }
   }
 
   toggleSidebar() {
