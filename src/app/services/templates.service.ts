@@ -20,6 +20,13 @@ export class TemplatesService {
 
   constructor(private lc: LcService) { }
 
+  new() {
+    this.name = '';
+    this.system = '';
+    this.prompt = '';
+    this.output = '';
+  }
+
   // get retrieves the templates from local storage
   loadTemplates() {
     let tmpl = localStorage.getItem('templates');

@@ -17,7 +17,6 @@ export class ConversationComponent {
 
   public loading: boolean = false;
   public prompt: string = "";
-  public chatKey: string = "";
 
   constructor(
     public chatService: ChatService,
@@ -48,9 +47,9 @@ export class ConversationComponent {
   }
 
   loadChatFromURL() {
-    this.chatKey = this.activatedRoute.snapshot.paramMap.get('chat') || '';
-    if (this.chatKey) {
-      this.chatService.loadChat(this.chatKey);
+    let chatKey = this.activatedRoute.snapshot.paramMap.get('chat') || '';
+    if (chatKey) {
+      this.chatService.loadChat(chatKey);
     }
   }
 

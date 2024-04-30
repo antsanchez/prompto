@@ -43,14 +43,14 @@ export class SidebarComponent {
 
   // Navigate to the /template route and load the template
   selectTemplate(template: System) {
-    this.router.navigate(['/template', template.name]);
+    this.router.navigate(['/templates', template.name]);
     this.templatesService.loadTemplate(template.name);
   }
 
   // Deletes a template from the template list
   deleteTemplate(template: System) {
     this.templatesService.deleteTemplate(template.name);
-    this.router.navigate(['/template', '']);
+    this.router.navigate(['/templates', '']);
   }
 
   // Pipe for shorting the name to 20 characters and adding ellipsis

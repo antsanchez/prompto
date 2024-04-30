@@ -4,6 +4,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { ChatService } from './services/chat.service';
 import { TemplatesService } from './services/templates.service';
+import { LcService } from './services/lc.service';
 
 
 @Component({
@@ -27,8 +28,11 @@ export class AppComponent {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     public chatService: ChatService,
-    public templateService: TemplatesService
-  ) { }
+    public templateService: TemplatesService,
+    public lc: LcService,
+  ) {
+    this.lc.loadSettings();
+  }
 
   toggleSidebar() {
     this.isSidebarVisible = !this.isSidebarVisible;

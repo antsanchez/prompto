@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HelpersService } from '../../services/helpers.service';
 import { TemplatesService } from '../../services/templates.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-template',
@@ -19,8 +20,19 @@ export class TemplateComponent {
 
   constructor(
     public helpers: HelpersService,
-    public templateService: TemplatesService
-  ) { }
+    public templateService: TemplatesService,
+    private activatedRoute: ActivatedRoute
+  ) {
+    this.templateService.new();
+    this.loadTemplateFromURL();
+  }
+
+  loadTemplateFromURL() {
+    let templateName = this.activatedRoute.snapshot.paramMap.get('template') || '';
+    if (templateName) {
+      this.templateService.loadTemplate(templateName);
+    }
+  }
 
   async stream() {
     this.loading = true;
@@ -34,5 +46,9 @@ export class TemplateComponent {
     this.templateService.save();
     this.loadingSave = false;
     this.openSave = false;
+  }
+
+  new() {
+    this.templateService.new();
   }
 }

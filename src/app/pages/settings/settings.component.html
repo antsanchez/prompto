@@ -1,0 +1,63 @@
+<div class="sm:col-span-3">
+    <h2 class="py-3">LLM Settings:</h2>
+
+    <label for="provider" class="block text-sm font-medium leading-6 text-gray-900">LLM Provider</label>
+    <div class="mt-2">
+        <select id="provider" name="provider" (ngModelChange)="providerChanged($event)"
+            class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+            [(ngModel)]="lc.settings.provider">
+            <option *ngFor="let provider of lc.providers" [value]="provider">{{provider}}</option>
+        </select>
+        <p class="mt-2 text-sm text-gray-500">For the moment, only Ollama is available.</p>
+    </div>
+</div>
+
+<!-- show ollama models dropdown -->
+<div *ngIf="lc.settings.provider === 'Ollama'" class="mt-5">
+
+    <h2 class="py-3">Ollama Settings:</h2>
+
+    <div class="sm:col-span-3">
+        <label for="model" class="block text-sm font-medium leading-6 text-gray-900">LLM Model</label>
+        <div class="mt-2">
+            <select id="model" name="model"
+                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+                [(ngModel)]="lc.settings.model">
+                <option *ngFor="let model of lc.settings.ollamaModels" [value]="model">{{model}}</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="sm:col-span-3 mt-5">
+        <label for="url" class="block text-sm font-medium leading-6 text-gray-900">URL</label>
+        <div class="mt-2">
+            <input id="url" name="url" type="text" [(ngModel)]="lc.settings.ollamaURL"
+                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6">
+        </div>
+    </div>
+</div>
+
+<!-- apiKey if not ollama -->
+<div *ngIf="lc.settings.provider !== 'Ollama'">
+    <div class="sm:col-span-3 mt-5">
+        <label for="apiKey" class="block text-sm font-medium leading-6 text-gray-900">API Key</label>
+        <div class="mt-2">
+            <input id="apiKey" name="apiKey" type="text" [(ngModel)]="lc.settings.apiKey"
+                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6">
+        </div>
+    </div>
+</div>
+
+<button type="submit" (click)="save()"
+    class="inline-flex items-center rounded-md mt-6 bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+        class="mr-2 w-5 h-5">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+            class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0 1 20.25 6v12A2.25 2.25 0 0 1 18 20.25H6A2.25 2.25 0 0 1 3.75 18V6A2.25 2.25 0 0 1 6 3.75h1.5m9 0h-9" />
+        </svg>
+    </svg>
+
+    Save
+</button>

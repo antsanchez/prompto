@@ -25,16 +25,15 @@
                 <div class="flex">
                     <button type="submit" (click)="openSave = true"
                         class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                        Save
                         <svg *ngIf="!loadingSave" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor" class="ml-2 w-5 h-5">
+                            stroke-width="1.5" stroke="currentColor" class="mr-2 w-5 h-5">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                 stroke="currentColor" class="w-6 h-6">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0 1 20.25 6v12A2.25 2.25 0 0 1 18 20.25H6A2.25 2.25 0 0 1 3.75 18V6A2.25 2.25 0 0 1 6 3.75h1.5m9 0h-9" />
                             </svg>
                         </svg>
-                        <svg *ngIf="loadingSave" class="animate-spin ml-2 w-5 h-5" xmlns="http://www.w3.org/2000/svg"
+                        <svg *ngIf="loadingSave" class="animate-spin mr-2 w-5 h-5" xmlns="http://www.w3.org/2000/svg"
                             fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
                             </circle>
@@ -42,6 +41,16 @@
                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                             </path>
                         </svg>
+                        Save
+                    </button>
+                    <button type="button" (click)="new()"
+                        class="inline-flex items-center rounded-md ml-2 bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="mr-2 w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                        New Template
                     </button>
                 </div>
                 <div class="flex-shrink-0">
@@ -111,7 +120,7 @@
                     </button>
                 </div>
                 <div class="sm:flex sm:items-start">
-                    <div
+                    <div (click)="openSave = false"
                         class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" class="h-6 w-6 text-red-600">
@@ -131,6 +140,9 @@
                                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                                     placeholder="Template Name" aria-describedby="email-description">
                             </div>
+                            <p class="mt-2 text-sm text-gray-500" *ngIf="templateService.name !== ''">
+                                Saving with the same name will overwrite the existing template.
+                            </p>
                         </div>
                     </div>
                 </div>
