@@ -1,27 +1,42 @@
-# Prompto
+# LangChain Chatbot UI
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.6.
+Welcome to the Angular Langchain.js Chatbot UI, an open-source project that provides a user-friendly interface for interacting with various language models (LLMs) from different providers such as OpenAI, Anthropic, Mistral, and Ollama. This application is currently in beta, and we welcome contributions and collaborations from the community.
 
-## Development server
+## Features
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+- **Multiple LLMs**: Easily switch between different Large Language Models (LLMs) such as OpenAI, Anthropic, Mistral, and Ollama.
+- **Model Selection**: Choose the specific model you wish to use for each LLM.
+- **Temperature Settings**: Adjust the temperature to fine-tune the responses from your chosen LLM.
+- **Chatbot UI**: Engage with a chatbot interface that remembers the conversation context.
+- **Notebook**: Utilize a notebook feature to send prompts to the LLM and receive responses without prior context or memory.
+- **Templates**: Define and save reusable prompts for specific use cases. Pass a "contextual" prompt alongside your saved template for dynamic interaction. Create as many templates as needed.
 
-## Code scaffolding
+## Running the Application
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+The application runs entirely in the browser, providing a seamless user experience. Please note that the actual LLMs are not hosted within the application.
 
-## Build
+To run the LangChain Chatbot UI on your local machine, follow these steps:
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+1. Clone the repository to your local machine.
+2. Navigate to the project directory.
+3. Run `npm install` to install all the necessary dependencies.
+4. Once the installation is complete, run `ng serve` to start the development server.
+5. Open your browser and go to `http://localhost:4200/` to view the application.
 
-## Running unit tests
+## Roadmap
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+- Expand the list of available LLMs supported by LangChain.js.
+- Enhance the Chat Conversation Memory feature by adding an option for summarization, reducing the need to pass the entire chat history.
+- Introduce the ability to create custom tools and agents.
 
-## Running end-to-end tests
+## Contributing
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+We encourage the community to contribute to the development of LangChain Chatbot UI. Whether it's feature enhancements, bug fixes, or documentation improvements, your pull requests are welcome.
 
-## Further help
+## License
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+This project is open-sourced under the MIT License. 
+
+---
+
+**Note**: As this project is in beta, we are actively working on improvements and new features. We appreciate your support and contributions during this phase.
