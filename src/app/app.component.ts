@@ -59,4 +59,10 @@ export class AppComponent {
     this.templateService.loadTemplates()
   }
 
+  using(): string {
+    let provider = this.lc.getProvider() || 'No LLM selected';
+    let model = this.lc.getModel() || 'No model selected';
+    return `LLM: ${provider} - Model: ${model}`;
+  }
+
 }

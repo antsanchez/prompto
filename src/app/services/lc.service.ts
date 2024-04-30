@@ -162,8 +162,12 @@ export class LcService {
 
   // setOptions sets the options for the provider
   setOptions(options: Options) {
-    this.settings.provider = options.provider;
-    this.settings.options[options.provider] = options;
+    const { provider } = options;
+    if (!this.providers.includes(provider)) {
+      throw new Error(`Unsupported provider: ${provider}`);
+    }
+    this.settings.provider = provider;
+    this.settings.options[provider] = options;
     this.saveSettings();
     this.createLLM();
   }
@@ -183,11 +187,17 @@ export class LcService {
 
   // invoke sends a prompt to the chatbot and returns the response
   invoke(prompt: string): Promise<string> {
+    if (!this.llm) {
+      throw new Error('LLM not initialized');
+    }
     return this.llm.invoke(prompt);
   }
 
   // stream sends a prompt to the chatbot and returns a stream of responses
   stream(prompt: string) {
+    if (!this.llm) {
+      throw new Error('LLM not initialized');
+    }
     return this.llm.stream(prompt);
   }
 
@@ -207,6 +217,7 @@ export class LcService {
         break;
     }
   }
+
 
   // Get ollama models from the server
   async getOllamaModels(): Promise<void> {

@@ -21,7 +21,11 @@
             ],
             "tsConfig": "tsconfig.app.json",
             "assets": [
-              "src/favicon.ico",
+              "src/favicon-32x32.png",
+              "src/favicon-16x16.png",
+              "src/apple-touch-icon.png",
+              "src/site.webmanifest",
+              "src/safari-pinned-tab.svg",
               "src/assets"
             ],
             "styles": [
@@ -80,7 +84,11 @@
             ],
             "tsConfig": "tsconfig.spec.json",
             "assets": [
-              "src/favicon.ico",
+              "src/favicon-32x32.png",
+              "src/favicon-16x16.png",
+              "src/apple-touch-icon.png",
+              "src/site.webmanifest",
+              "src/safari-pinned-tab.svg",
               "src/assets"
             ],
             "styles": [
