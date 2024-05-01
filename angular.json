@@ -21,12 +21,11 @@
             ],
             "tsConfig": "tsconfig.app.json",
             "assets": [
-              "src/favicon-32x32.png",
-              "src/favicon-16x16.png",
-              "src/apple-touch-icon.png",
-              "src/site.webmanifest",
-              "src/safari-pinned-tab.svg",
-              "src/assets"
+              "src/favicons",
+              "src/manifest.json",
+              "src/browserconfig.xml",
+              "src/assets",
+              "src/_redirects"
             ],
             "styles": [
               "src/styles.css"
@@ -47,7 +46,8 @@
                   "maximumError": "4kb"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "serviceWorker": "ngsw-config.json"
             },
             "development": {
               "optimization": false,
@@ -84,12 +84,11 @@
             ],
             "tsConfig": "tsconfig.spec.json",
             "assets": [
-              "src/favicon-32x32.png",
-              "src/favicon-16x16.png",
-              "src/apple-touch-icon.png",
-              "src/site.webmanifest",
-              "src/safari-pinned-tab.svg",
-              "src/assets"
+              "src/favicons",
+              "src/manifest.json",
+              "src/browserconfig.xml",
+              "src/assets",
+              "src/_redirects"
             ],
             "styles": [
               "src/styles.css"
