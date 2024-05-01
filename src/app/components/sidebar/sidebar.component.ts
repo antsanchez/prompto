@@ -1,4 +1,4 @@
-import { Component, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { ChatKeys } from '../../services/chat.service';
 import { CommonModule } from '@angular/common';
@@ -17,6 +17,7 @@ export class SidebarComponent {
   @Input() chats: ChatKeys[] = [] as ChatKeys[];
   @Input() templates: System[] = [] as System[];
   @Input() sidebarOpen: boolean = true;
+  @Output() sidebarOpenChange = new EventEmitter<boolean>();
 
   constructor(
     private router: Router,
@@ -27,12 +28,16 @@ export class SidebarComponent {
 
   closeSidebar() {
     this.sidebarOpen = false;
+    this.sidebarOpenChange.emit(this.sidebarOpen);
   }
 
   // Navigates to the /conversation route and loads the chat
-  selectChat(chat: ChatKeys) {
+  selectChat(chat: ChatKeys, close: boolean = false) {
     this.router.navigate(['/conversation', chat.key]);
     this.chatService.loadChat(chat.key);
+    if (close) {
+      this.closeSidebar();
+    }
   }
 
   // Deletes a chat from the chat list
@@ -42,9 +47,12 @@ export class SidebarComponent {
   }
 
   // Navigate to the /template route and load the template
-  selectTemplate(template: System) {
+  selectTemplate(template: System, close: boolean = false) {
     this.router.navigate(['/templates', template.name]);
     this.templatesService.loadTemplate(template.name);
+    if (close) {
+      this.closeSidebar();
+    }
   }
 
   // Deletes a template from the template list

@@ -1,12 +1,25 @@
 <app-error *ngIf="error" [error]="error"></app-error>
 
-<div class="sm:col-span-3">
-    <h2 class="py-3">LLM Settings:</h2>
+<h2 class="py-3 text-lg">LLM Settings</h2>
+<p class="text-gray-900">
+    Prompto runs entirely within your web browser, ensuring a smooth and responsive experience. While Prompto itself
+    doesn't require a server, the language models (LLMs) you interact with may be hosted on external servers. This means
+    that your browser communicates directly with the chosen LLM.
+</p>
+<p class="text-gray-900 mt-2">
+    For simplicity and user privacy, all settings and chat conversations are stored solely in your browser's local
+    storage.
+    This approach allows you to maintain your preferences and conversation history without the need for server storage,
+    but it also comes with security risks. You can delete all settings and chat conversations at any time with the
+    button below.
+</p>
+
+<div class="sm:col-span-3 mt-6">
 
     <label for="provider" class="block text-sm font-medium leading-6 text-gray-900">LLM Provider</label>
     <div class="mt-2">
         <select id="provider" name="provider" (ngModelChange)="providerChanged($event)"
-            class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+            class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6"
             [(ngModel)]="options.provider">
             <option *ngFor="let provider of lc.providers" [value]="provider">{{provider}}</option>
         </select>
@@ -19,7 +32,7 @@
         <label for="url" class="block text-sm font-medium leading-6 text-gray-900">URL</label>
         <div class="mt-2">
             <input id="url" name="url" type="text" [(ngModel)]="options.apiUrl"
-                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6">
+                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6">
         </div>
     </div>
 </div>
@@ -30,7 +43,22 @@
         <div class="mt-2">
             <input id="apiKey" name="apiKey" type="text" [(ngModel)]="options.apiKey"
                 (ngModelChange)="addedApiKey($event)"
-                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6">
+                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6">
+            <p class="text-sm text-gray-500 mt-1 sm:max-w-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-5 h-5 inline text-orange-600">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                </svg>
+
+                Your browser will use this key to communicate with the API, and it will be stored in your browser's
+                local storage for convenience. Please be aware that storing sensitive information in local storage comes
+                with security risks. If you are not confortable with this, please consider running <a
+                    href="https://ollama.com/" target="_blank"
+                    class="underline text-blue-600 hover:text-blue-400">Ollama</a> locally, where no API key is
+                required. You can also delete all settings and chat conversations at any time by clicking the button
+                below.
+            </p>
         </div>
     </div>
 </div>
@@ -39,7 +67,7 @@
     <label for="model" class="block text-sm font-medium leading-6 text-gray-900">LLM Model</label>
     <div class="mt-2">
         <select id="model" name="model"
-            class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+            class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6"
             [(ngModel)]="options.model">
             <option *ngFor="let model of options.availableModels" [value]="model">{{model}}</option>
         </select>
@@ -52,14 +80,14 @@
     <div class="mt-2">
         <input id="temperature" name="temperature" type="number" step="0.1" min="0.0" max="1.0"
             [(ngModel)]="options.temperature"
-            class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+            class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6"
             oninput="this.value = Math.min(Math.max(parseFloat(this.value), 0.0), 1.0).toFixed(1);">
     </div>
 </div>
 
 
 <button type="submit" (click)="save()"
-    class="inline-flex items-center rounded-md mt-6 bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+    class="inline-flex items-center rounded-md mt-6 bg-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600">
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
         class="mr-2 w-5 h-5">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
@@ -71,3 +99,33 @@
 
     Save
 </button>
+
+<!-- button for deleting all settings -->
+<div class="mt-6" id="delete">
+    <!-- separator -->
+    <div class="border-t border-gray-200"></div>
+
+    <p class="text-gray-900 mt-6">
+        If you want to delete all settings, chat conversations and prompt templates, you can do so by clicking the
+        button
+        below. This action is irreversible and will remove all data stored in your browser's local storage.
+    </p>
+
+    <button type="submit" (click)="deleteAllLocalStorage()"
+        class="inline-flex items-center rounded-md mt-6 bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
+        <svg *ngIf="!loadingDelete" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+            stroke-width="1.5" stroke="currentColor" class="mr-2 w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+        </svg>
+        <svg *ngIf="loadingDelete" class="animate-spin mr-2 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+            viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+            </path>
+        </svg>
+
+        Delete All Settings, Chat Conversations and Prompt Templates
+    </button>
+</div>

@@ -3,6 +3,8 @@ import { LcService, Options } from '../../services/lc.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ErrorComponent } from '../../components/error/error.component';
+import { ChatService } from '../../services/chat.service';
+import { TemplatesService } from '../../services/templates.service';
 
 @Component({
   selector: 'app-settings',
@@ -14,11 +16,14 @@ import { ErrorComponent } from '../../components/error/error.component';
 export class SettingsComponent {
 
   public loading = false;
+  public loadingDelete = false;
   public options: Options = {} as Options;
   public error: string = '';
 
   constructor(
     public lc: LcService,
+    private chatService: ChatService,
+    private templatesService: TemplatesService
   ) {
     try {
       this.lc.loadSettings();
@@ -66,6 +71,23 @@ export class SettingsComponent {
     this.loading = true;
     this.lc.setOptions(this.options);
     this.loading = false;
+  }
+
+  deleteAllLocalStorage() {
+    this.loadingDelete = true;
+    if (confirm('Are you sure you want to delete all chat history and templates? This action cannot be undone.') == true) {
+      try {
+        this.lc.clearOptions();
+        this.chatService.deleteAll();
+        this.templatesService.deleteAll();
+        this.options = this.lc.getOptions();
+      } catch (error) {
+        this.error = 'There was an error deleting the local storage. Please try again or delete it manually.'
+        console.error('Error deleting local storage:', error);
+        this.loadingDelete = false;
+      }
+    }
+    this.loadingDelete = false;
   }
 
 }

@@ -19,13 +19,21 @@ export class TemplateComponent {
   public loadingSave: boolean = false;
   public openSave: boolean = false;
   public error: string = "";
+  public showInfo: boolean = false;
 
   constructor(
     public helpers: HelpersService,
     public templateService: TemplatesService,
     private activatedRoute: ActivatedRoute
   ) {
-    this.templateService.new();
+    try {
+      this.templateService.new();
+    } catch (error) {
+      this.error = 'There was an error creating a new template. Please make sure your settings are correct and try again.';
+      console.error('Error creating new template:', error);
+      return;
+    }
+
     this.loadTemplateFromURL();
   }
 

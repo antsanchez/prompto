@@ -27,49 +27,52 @@ const PROVIDER_OPENAI = 'OpenAI';
 const PROVIDER_ANTHROPIC = 'Anthropic';
 const PROVIDER_MISTRAL = 'Mistral';
 
+const DEFAULT_SETTINGS: Settings = {
+  provider: PROVIDER_OLLAMA,
+  options: {
+    [PROVIDER_OLLAMA]: {
+      provider: PROVIDER_OLLAMA,
+      model: 'llama3',
+      apiKey: '',
+      apiUrl: 'http://localhost:11434',
+      temperature: 0.7,
+      availableModels: []
+    },
+    [PROVIDER_OPENAI]: {
+      provider: PROVIDER_OPENAI,
+      model: 'gpt-3.5-turbo',
+      apiKey: '',
+      apiUrl: '',
+      temperature: 0.7,
+      availableModels: []
+    },
+    [PROVIDER_ANTHROPIC]: {
+      provider: PROVIDER_ANTHROPIC,
+      model: '',
+      apiKey: '',
+      apiUrl: '',
+      temperature: 0.7,
+      availableModels: []
+    },
+    [PROVIDER_MISTRAL]: {
+      provider: PROVIDER_MISTRAL,
+      model: '',
+      apiKey: '',
+      apiUrl: '',
+      temperature: 0.7,
+      availableModels: []
+    }
+  }
+}
+
+
 @Injectable({
   providedIn: 'root'
 })
 export class LcService {
 
   // Settings are saved into the local storage
-  private settings: Settings = {
-    provider: 'Ollama',
-    options: {
-      PROVIDER_OLLAMA: {
-        provider: PROVIDER_OLLAMA,
-        model: 'gpt2',
-        apiKey: '',
-        apiUrl: 'http://localhost:11434',
-        temperature: 0.7,
-        availableModels: []
-      },
-      PROVIDER_OPENAI: {
-        provider: PROVIDER_OPENAI,
-        model: 'gpt-3.5-turbo',
-        apiKey: '',
-        apiUrl: '',
-        temperature: 0.7,
-        availableModels: []
-      },
-      PROVIDER_ANTHROPIC: {
-        provider: PROVIDER_ANTHROPIC,
-        model: '',
-        apiKey: '',
-        apiUrl: '',
-        temperature: 0.7,
-        availableModels: []
-      },
-      PROVIDER_MISTRAL: {
-        provider: PROVIDER_MISTRAL,
-        model: '',
-        apiKey: '',
-        apiUrl: '',
-        temperature: 0.7,
-        availableModels: []
-      }
-    }
-  };
+  private settings: Settings = {} as Settings;
 
   public providers = [
     PROVIDER_OLLAMA,
@@ -80,7 +83,13 @@ export class LcService {
 
   public llm: Runnable = {} as Runnable;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {
+    this.setDefaultSettings();
+  }
+
+  setDefaultSettings() {
+    this.settings = DEFAULT_SETTINGS;
+  }
 
   createLLM(): Error | void {
     switch (this.settings.provider) {
@@ -177,6 +186,18 @@ export class LcService {
     localStorage.setItem('settings', JSON.stringify(this.settings));
   }
 
+  // clearOptions clears the options for the provider
+  clearOptions() {
+    this.removeSettings();
+    this.setDefaultSettings();
+    this.createLLM();
+  }
+
+  // removeSettings removes the settings from the local storage
+  private removeSettings() {
+    localStorage.removeItem('settings');
+  }
+
   // loadSettings loads the settings from the local storage
   loadSettings() {
     let settings = localStorage.getItem('settings');
@@ -270,9 +291,8 @@ export class LcService {
 
   // streamWithTemplate sends a prompt to the chatbot with a template and returns a stream of responses
   streamWithSystemPrompt(system: string, prompt: string) {
-    let template = system + ` ${prompt}`
-    let tpl = PromptTemplate.fromTemplate(template);
+    let tpl = PromptTemplate.fromTemplate(`System prompt: ${system}\n\n${prompt}\n\nResponse:`);
     let chain = tpl.pipe(this.llm);
-    return chain.stream({ prompt: prompt });
+    return chain.stream({ system: system, prompt: prompt });
   }
 }

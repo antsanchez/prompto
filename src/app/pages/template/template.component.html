@@ -1,82 +1,89 @@
 <app-error *ngIf="error" [error]="error"></app-error>
 
 <div>
-    <form class="relative">
-        <div
-            class="overflow-hidden rounded-lg border border-gray-300 shadow-sm focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500">
-            <label for="prompt" class="sr-only">System Prompt</label>
-            <textarea rows="4" name="system" id="system" [(ngModel)]="templateService.system"
-                class="block w-full border-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
-                placeholder="Write your system prompt.."></textarea>
-        </div>
-    </form>
+    <div class="flex justify-between pb-1">
+        <label for="prompt">System Prompt</label>
+        <a class="cursor-pointer text-blue-500" (click)="showInfo = true">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="w-5 h-5 inline">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+            </svg>
+            What are Templates?
+        </a>
+    </div>
+
+    <div
+        class="overflow-hidden rounded-lg border border-gray-300 shadow-sm focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+        <textarea rows="4" name="system" id="system" [(ngModel)]="templateService.system"
+            class="block w-full border-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
+            placeholder="Write your system prompt.."></textarea>
+    </div>
 </div>
 
 <div class="mt-4">
-    <form class="relative">
-        <div
-            class="overflow-hidden rounded-lg border border-gray-300 shadow-sm focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500">
-            <label for="prompt" class="sr-only">User Prompt</label>
-            <textarea rows="4" name="prompt" id="prompt" [(ngModel)]="templateService.prompt"
-                class="block w-full border-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
-                placeholder="Write your prompt.."></textarea>
-        </div>
+    <div
+        class="overflow-hidden rounded-lg border border-gray-300 shadow-sm focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+        <label for="prompt" class="sr-only">User Prompt</label>
+        <textarea rows="4" name="prompt" id="prompt" [(ngModel)]="templateService.prompt"
+            class="block w-full border-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
+            placeholder="Write your prompt.."></textarea>
+    </div>
 
-        <div class="inset-x-px bottom-0">
-            <div class="flex items-center justify-between space-x-3 border-t border-gray-200 py-2">
-                <div class="flex">
-                    <button type="submit" (click)="openSave = true"
-                        class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                        <svg *ngIf="!loadingSave" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor" class="mr-2 w-5 h-5">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-6 h-6">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0 1 20.25 6v12A2.25 2.25 0 0 1 18 20.25H6A2.25 2.25 0 0 1 3.75 18V6A2.25 2.25 0 0 1 6 3.75h1.5m9 0h-9" />
-                            </svg>
-                        </svg>
-                        <svg *ngIf="loadingSave" class="animate-spin mr-2 w-5 h-5" xmlns="http://www.w3.org/2000/svg"
-                            fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                            </circle>
-                            <path class="opacity-75" fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                            </path>
-                        </svg>
-                        Save
-                    </button>
-                    <button type="button" (click)="new()"
-                        class="inline-flex items-center rounded-md ml-2 bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+    <div class="inset-x-px bottom-0">
+        <div class="flex items-center justify-between space-x-3 border-t border-gray-200 py-2">
+            <div class="flex">
+                <button type="submit" (click)="openSave = true"
+                    class="inline-flex items-center rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600">
+                    <svg *ngIf="!loadingSave" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke-width="1.5" stroke="currentColor" class="mr-2 w-5 h-5">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="mr-2 w-5 h-5">
+                            stroke="currentColor" class="w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                d="M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0 1 20.25 6v12A2.25 2.25 0 0 1 18 20.25H6A2.25 2.25 0 0 1 3.75 18V6A2.25 2.25 0 0 1 6 3.75h1.5m9 0h-9" />
                         </svg>
-                        New Template
-                    </button>
-                </div>
-                <div class="flex-shrink-0">
-                    <button type="submit" (click)="stream()"
-                        class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                        Send
-                        <svg *ngIf="!loading" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor" class="ml-2 w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
-                        </svg>
-                        <svg *ngIf="loading" class="animate-spin ml-2 w-5 h-5" xmlns="http://www.w3.org/2000/svg"
-                            fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                            </circle>
-                            <path class="opacity-75" fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                            </path>
-                        </svg>
-                    </button>
-                </div>
+                    </svg>
+                    <svg *ngIf="loadingSave" class="animate-spin mr-2 w-5 h-5" xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                    Save
+                </button>
+                <button type="button" (click)="new()"
+                    class="inline-flex items-center rounded-md ml-2 bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="mr-2 w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                    New Template
+                </button>
+            </div>
+            <div class="flex-shrink-0">
+                <button type="submit" (click)="stream()"
+                    class="inline-flex items-center rounded-md bg-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600">
+                    Send
+                    <svg *ngIf="!loading" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke-width="1.5" stroke="currentColor" class="ml-2 w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+                    </svg>
+                    <svg *ngIf="loading" class="animate-spin ml-2 w-5 h-5" xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                </button>
             </div>
         </div>
-    </form>
+    </div>
 </div>
 
 <div class="mt-6">
@@ -113,7 +120,7 @@
                 class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
                 <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
                     <button type="button"
-                        class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
                         <span class="sr-only">Close</span>
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
                             aria-hidden="true">
@@ -139,7 +146,7 @@
                                 Name</label>
                             <div class="mt-2">
                                 <input type="text" name="name" id="name" [(ngModel)]="templateService.name" required
-                                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:text-sm sm:leading-6"
                                     placeholder="Template Name" aria-describedby="email-description">
                             </div>
                             <p class="mt-2 text-sm text-gray-500" *ngIf="templateService.name !== ''">
@@ -153,6 +160,69 @@
                         class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto">Save</button>
                     <button type="button" (click)="openSave = false"
                         class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="relative z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true" *ngIf="showInfo">
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+
+    <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+        <div class="flex min-h-full items-end justify-center text-left p-4 sm:items-center sm:p-0">
+            <div
+                class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left text-sm shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:p-6">
+                <div>
+                    <div class="mt-3 text-left sm:mt-5">
+                        <h3 class="text-lg font-semibold leading-6 text-gray-900" id="modal-title">
+                            Prompt Templates
+                        </h3>
+                        <div class="mt-2">
+                            <div>
+                                <p>Templates let you save frequently used prompts for interacting with LLMs. They act as
+                                    pre-defined contexts that you can reuse, saving you time
+                                    and effort.</p>
+                            </div>
+
+                            <h3 class="text-md font-bold mb-4 mt-6">How It Works:</h3>
+
+                            <p><span class="font-bold">System
+                                    Prompt:</span> This sets the scene for the LLM. It's like giving the LLM
+                                instructions (e.g.,
+                                "You are a code reviewer. Please analyze the following Python code"). This part
+                                remains constant for the template.</p>
+                            <p class="mt-2"><span class="font-bold">User
+                                    Prompt (Not Saved):</span> Here's where you'll enter the specific question or
+                                code snippet you want the LLM
+                                to analyze. This changes every time you use the template.</p>
+
+                            <h3 class="text-md font-bold mb-4 mt-6">Save Your Template:</h3>
+
+                            <p class="mb-2 text-sm">Give your template a descriptive name for easy identification. This
+                                name,
+                                along with the System Prompt, gets stored locally.</p>
+                            <p class="text-sm">You can update your saved prompts by resaving it with the same
+                                name.</p>
+
+                            <h3 class="text-md font-bold mb-4 mt-6">Using a Template:</h3>
+
+                            <ul class="list-disc text-sm pl-4 space-y-2">
+                                <li>Select the desired template from the sidebar. This loads the System Prompt.</li>
+                                <li>Customize the User Prompt: Edit this field with your specific question or code for
+                                    the current interaction.</li>
+                                <li>Send the combined prompt (System Prompt + User Prompt) to the LLM to get its
+                                    response.</li>
+                            </ul>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-5 sm:mt-6">
+                    <button type="button" (click)="showInfo = false"
+                        class="inline-flex w-full justify-center rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600">
+                        Go back
+                    </button>
                 </div>
             </div>
         </div>

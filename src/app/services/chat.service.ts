@@ -142,7 +142,6 @@ export class ChatService {
     for (let i = 0; i < localStorage.length; i++) {
       let key = localStorage.key(i);
       if (key && key.startsWith("chat_")) {
-        console.log("key", key)
         let chat = localStorage.getItem(key);
         if (chat) {
           let chatObj = JSON.parse(chat);
@@ -178,4 +177,16 @@ export class ChatService {
     }
     return chatHistory;
   }
+
+  // deleteAll deletes all chat history from local storage
+  deleteAll() {
+    for (let i = 0; i < localStorage.length; i++) {
+      let key = localStorage.key(i);
+      if (key && key.startsWith("chat_")) {
+        localStorage.removeItem(key);
+        this.deleteChat(key);
+      }
+    }
+  }
+
 }

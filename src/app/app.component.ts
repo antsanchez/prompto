@@ -38,8 +38,8 @@ export class AppComponent {
     }
   }
 
-  toggleSidebar() {
-    this.isSidebarVisible = !this.isSidebarVisible;
+  openSidebar() {
+    this.isSidebarVisible = true;
   }
 
   // Detect every time a route change occurs

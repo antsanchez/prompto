@@ -30,6 +30,29 @@ export class NotebookComponent {
     this.scrollToBottom();
   }
 
+  new() {
+    this.prompt = "";
+    this.output = "";
+    this.error = "";
+    this.loading = false;
+
+    try {
+      this.lcService.loadSettings();
+    } catch (error) {
+      this.error = 'There was an error loading the settings. Please make sure your settings are correct and try again.';
+      console.error('Error loading settings:', error);
+      return;
+    }
+
+    try {
+      this.lcService.createLLM();
+    } catch (error) {
+      this.error = 'There was an error creating the model. Please make sure your settings are correct and try again.';
+      console.error('Error creating the model:', error);
+      return;
+    }
+  }
+
   scrollToBottom(): void {
     this.myScrollContainer.nativeElement.scrollIntoView();
   }

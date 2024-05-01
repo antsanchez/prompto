@@ -18,13 +18,18 @@ export class TemplatesService {
   public output: string = '';
   public name: string = '';
 
-  constructor(private lc: LcService) { }
+  constructor(
+    private lc: LcService) { }
 
   new() {
     this.name = '';
     this.system = '';
     this.prompt = '';
     this.output = '';
+
+    this.loadTemplates();
+    this.lc.loadSettings();
+    this.lc.createLLM();
   }
 
   // get retrieves the templates from local storage
@@ -57,6 +62,11 @@ export class TemplatesService {
     localStorage.setItem('templates', JSON.stringify(this.templates));
   }
 
+  // deleteAll removes all templates from local storage
+  deleteAll() {
+    localStorage.removeItem('templates');
+    this.templates = [] as System[];
+  }
 
   async stream() {
     this.output = '';

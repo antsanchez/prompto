@@ -1,15 +1,23 @@
-# LangChain Chatbot UI
+# Prompto
 
-Welcome to the Angular Langchain.js Chatbot UI, an open-source project that provides a user-friendly interface for interacting with various language models (LLMs) from different providers such as OpenAI, Anthropic, Mistral, and Ollama. This application is currently in beta, and we welcome contributions and collaborations from the community.
+Welcome to Prompto, an open-source project designed to provide a user-friendly interface for interacting with a variety of Language Models (LLMs) via LangChain Js. Prompto, a blend of the word 'Prompt' and the Italian word 'Pronto' (meaning ready and quick), is aptly named as it allows for the quick and easy switching between different LLMs, directly from your browser.
 
 ## Features
 
-- **Multiple LLMs**: Easily switch between different Large Language Models (LLMs) such as OpenAI, Anthropic, Mistral, and Ollama.
-- **Model Selection**: Choose the specific model you wish to use for each LLM.
+- **Multiple LLMs**: Effortlessly switch between a range of Large Language Models (LLMs) supported by LangChain Js.
 - **Temperature Settings**: Adjust the temperature to fine-tune the responses from your chosen LLM.
 - **Chatbot UI**: Engage with a chatbot interface that remembers the conversation context.
 - **Notebook**: Utilize a notebook feature to send prompts to the LLM and receive responses without prior context or memory.
-- **Templates**: Define and save reusable prompts for specific use cases. Pass a "contextual" prompt alongside your saved template for dynamic interaction. Create as many templates as needed.
+- **Templates**: Create, save, and reuse prompts for specific use cases. Incorporate a "contextual" prompt alongside your saved template for dynamic interaction.
+
+## Data Storage and Security
+
+**Important Note:** Prompto saves your chat history, prompt templates, and settings on your browser for easy access. This is convenient, but there's a small catch: information saved on your local storage can be accessed by others in some situations.
+
+Prompto provides a button on the settings page that allows you to clear all saved data, including chat conversations, prompt templates, and settings. 
+
+## Live Example
+You can view a live example of the LangChain Chatbot UI by visiting the following link: [Prompto](https://prompto.asanchez.dev/)
 
 ## Running the Application
 
@@ -25,13 +33,13 @@ To run the LangChain Chatbot UI on your local machine, follow these steps:
 
 ## Roadmap
 
-- Expand the list of available LLMs supported by LangChain.js.
+- Broaden the spectrum of LLMs supported by LangChain.js.
 - Enhance the Chat Conversation Memory feature by adding an option for summarization, reducing the need to pass the entire chat history.
 - Introduce the ability to create custom tools and agents.
 
 ## Contributing
 
-We encourage the community to contribute to the development of LangChain Chatbot UI. Whether it's feature enhancements, bug fixes, or documentation improvements, your pull requests are welcome.
+If you're interested in contributing, please fork the repository and submit a pull request with your proposed changes. Whether it's feature enhancements, bug fixes, or documentation improvements, all contributions are greatly appreciated.
 
 ## License
 
@@ -39,4 +47,4 @@ This project is open-sourced under the MIT License.
 
 ---
 
-**Note**: As this project is in beta, we are actively working on improvements and new features. We appreciate your support and contributions during this phase.
+**Note**: As this project is in beta, I am actively working on improvements and new features. I appreciate your support and contributions during this phase.
