@@ -17,7 +17,8 @@ Welcome to Prompto, an open-source project designed to provide a user-friendly i
 Prompto provides a button on the settings page that allows you to clear all saved data, including chat conversations, prompt templates, and settings. 
 
 ## Live Example
-You can view a live example of the LangChain Chatbot UI by visiting the following link: [Prompto](https://prompto.asanchez.dev/)
+You can view a live example of the LangChain Chatbot UI by visiting the following link: [Prompto](https://prompto.asanchez.dev/).
+The application can be installed as a PWA on your device.
 
 ## Running the Application
 
@@ -30,6 +31,9 @@ To run the LangChain Chatbot UI on your local machine, follow these steps:
 3. Run `npm install` to install all the necessary dependencies.
 4. Once the installation is complete, run `ng serve` to start the development server.
 5. Open your browser and go to `http://localhost:4200/` to view the application.
+
+## Ollama
+If you are running Ollama and you want to connect it to Prompto from a different domain than localhost, you will need to add the domain to the CORS configuration in the Ollama server. To do this, read the following blog post: [How to Handle CORS Settings in OLLAMA: A Comprehensive Guide](https://medium.com/dcoderai/how-to-handle-cors-settings-in-ollama-a-comprehensive-guide-ee2a5a1beef0) or the official documentation: [How do I configure Ollama server?](https://github.com/ollama/ollama/blob/main/docs/faq.md#how-do-i-configure-ollama-server).
 
 ## Roadmap
 
