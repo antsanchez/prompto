@@ -1,4 +1,5 @@
 <app-error *ngIf="error" [error]="error"></app-error>
+<app-not-connected *ngIf="!lc.isConnected()"></app-not-connected>
 
 <h2 class="py-3 text-lg">LLM Settings</h2>
 <p class="text-gray-900">
