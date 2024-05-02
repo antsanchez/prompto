@@ -32,6 +32,10 @@ export class TemplatesService {
     this.lc.createLLM();
   }
 
+  isConnected() {
+    return this.lc.isConnected();
+  }
+
   // get retrieves the templates from local storage
   loadTemplates() {
     let tmpl = localStorage.getItem('templates');

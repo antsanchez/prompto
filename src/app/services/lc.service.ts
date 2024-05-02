@@ -73,6 +73,7 @@ export class LcService {
 
   // Settings are saved into the local storage
   private settings: Settings = {} as Settings;
+  private connected: boolean = false;
 
   public providers = [
     PROVIDER_OLLAMA,
@@ -89,6 +90,21 @@ export class LcService {
 
   setDefaultSettings() {
     this.settings = DEFAULT_SETTINGS;
+  }
+
+  isConnected(): boolean {
+    if (!this.llm) {
+      return false;
+    }
+    // Exception for Anthropic, since we are not getting the models from the server prior to the conversations
+    if (!this.connected && this.settings.provider !== PROVIDER_ANTHROPIC) {
+      console.log('Not connected', this.connected, this.settings.provider);
+      return false;
+    }
+    if (this.settings.options[this.settings.provider].availableModels.length === 0) {
+      return false;
+    }
+    return true;
   }
 
   createLLM(): Error | void {
@@ -209,6 +225,7 @@ export class LcService {
   // invoke sends a prompt to the chatbot and returns the response
   invoke(prompt: string): Promise<string> {
     if (!this.llm) {
+      this.connected = false;
       throw new Error('LLM not initialized');
     }
     return this.llm.invoke(prompt);
@@ -217,6 +234,7 @@ export class LcService {
   // stream sends a prompt to the chatbot and returns a stream of responses
   stream(prompt: string) {
     if (!this.llm) {
+      this.connected = false;
       throw new Error('LLM not initialized');
     }
     return this.llm.stream(prompt);
@@ -242,10 +260,18 @@ export class LcService {
 
   // Get ollama models from the server
   async getOllamaModels(): Promise<void> {
-    const data: any = await lastValueFrom(this.http.get(this.settings.options['Ollama'].apiUrl + '/api/tags'));
-    this.settings.options['Ollama'].availableModels = [] as string[];
-    for (let model of data?.models as any[]) {
-      this.settings.options['Ollama'].availableModels.push(model?.name);
+    const url = this.settings.options['Ollama'].apiUrl + '/api/tags';
+    try {
+      const data: any = await lastValueFrom(this.http.get(url));
+      this.settings.options['Ollama'].availableModels = [] as string[];
+      for (let model of data?.models as any[]) {
+        this.settings.options['Ollama'].availableModels.push(model?.name);
+      }
+      this.connected = true;
+    } catch (e) {
+      this.connected = false;
+      console.error('Error getting Ollama models:', e);
+      throw new Error('Error getting Ollama models');
     }
   }
 
@@ -255,16 +281,24 @@ export class LcService {
       console.info('Aborting getOpenAIModels because there is no API key');
       return;
     }
-    const url = 'https://api.openai.com/v1/engines';
-    const data = await lastValueFrom(this.http.get(url, {
-      headers: {
-        'Authorization': `Bearer ${this.settings.options[PROVIDER_OPENAI].apiKey}`
+    try {
+      const url = 'https://api.openai.com/v1/engines';
+      const data = await lastValueFrom(this.http.get(url, {
+        headers: {
+          'Authorization': `Bearer ${this.settings.options[PROVIDER_OPENAI].apiKey}`
+        }
+      })) as any;
+      this.settings.options[PROVIDER_OPENAI].availableModels = [];
+      for (let model of data?.data as any[]) {
+        this.settings.options[PROVIDER_OPENAI].availableModels.push(model?.id);
       }
-    })) as any;
-    this.settings.options[PROVIDER_OPENAI].availableModels = [];
-    for (let model of data?.data as any[]) {
-      this.settings.options[PROVIDER_OPENAI].availableModels.push(model?.id);
+      this.connected = true;
+    } catch (e) {
+      this.connected = false;
+      console.error('Error getting OpenAI models:', e);
+      throw new Error('Error getting OpenAI models');
     }
+
   }
 
   getAnthropicModels() {
@@ -276,15 +310,22 @@ export class LcService {
       console.info('Aborting getOpenAIModels because there is no API key');
       return;
     }
-    const url = 'https://api.mistralai.com/v1/models';
-    const data = await lastValueFrom(this.http.get(url, {
-      headers: {
-        'Authorization': `Bearer ${this.settings.options[PROVIDER_MISTRAL].apiKey}`
+    try {
+      const url = 'https://api.mistralai.com/v1/models';
+      const data = await lastValueFrom(this.http.get(url, {
+        headers: {
+          'Authorization': `Bearer ${this.settings.options[PROVIDER_MISTRAL].apiKey}`
+        }
+      })) as any;
+      this.settings.options[PROVIDER_MISTRAL].availableModels = [];
+      for (let model of data?.data as any[]) {
+        this.settings.options[PROVIDER_MISTRAL].availableModels.push(model?.id);
       }
-    })) as any;
-    this.settings.options[PROVIDER_MISTRAL].availableModels = [];
-    for (let model of data?.data as any[]) {
-      this.settings.options[PROVIDER_MISTRAL].availableModels.push(model?.id);
+      this.connected = true;
+    } catch (e) {
+      this.connected = false;
+      console.error('Error getting Mistral models:', e);
+      throw new Error('Error getting Mistral models');
     }
   }
 

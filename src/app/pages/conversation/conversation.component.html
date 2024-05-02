@@ -2,6 +2,7 @@
 
 <!-- Chat messages -->
 <div class="lg:ml-72 fixed top-20 left-6 right-6 bottom-60 overflow-y-scroll">
+  <app-not-connected *ngIf="!chatService.isConnected()"></app-not-connected>
   <div class="space-y-6" *ngFor="let msg of chatService.history.messages">
     <div class="flex items-start space-x-3 pt-2 pb-2">
       <div>

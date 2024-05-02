@@ -37,6 +37,10 @@ export class ChatService {
     this.lc.createLLM();
   }
 
+  isConnected() {
+    return this.lc.isConnected();
+  }
+
   // createChatName creates a chat name based on the first user prompt
   async createChatName(prompt: string) {
     let fullPrompt = PromptTemplate.fromTemplate(

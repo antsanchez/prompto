@@ -5,11 +5,12 @@ import { HelpersService } from '../../services/helpers.service';
 import { TemplatesService } from '../../services/templates.service';
 import { ActivatedRoute } from '@angular/router';
 import { ErrorComponent } from '../../components/error/error.component';
+import { NotConnectedComponent } from '../../components/not-connected/not-connected.component';
 
 @Component({
   selector: 'app-template',
   standalone: true,
-  imports: [FormsModule, CommonModule, ErrorComponent],
+  imports: [FormsModule, CommonModule, ErrorComponent, NotConnectedComponent],
   templateUrl: './template.component.html',
   styleUrl: './template.component.css'
 })

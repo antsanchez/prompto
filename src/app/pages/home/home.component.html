@@ -1,4 +1,6 @@
-<h1 class="text-3xl font-bold mb-4">Welcome to Prompto</h1>
+<app-not-connected *ngIf="!lc.isConnected()"></app-not-connected>
+
+<h1 class="text-3xl font-bold mb-4 mt-4">Welcome to Prompto</h1>
 <p class="">
     Prompto is an open-source web application designed to make interacting with large language models (LLMs) simple
     and efficient.
@@ -19,7 +21,9 @@
     that your browser communicates directly with the chosen LLM.
 </p>
 <p class="mt-2">
-    For simplicity and user privacy, all settings and chat conversations are stored solely in your browser's local
+    For simplicity and user privacy, all <a routerLink="/settings"
+        class="underline cursor-pointer text-blue-500">settings</a> and chat conversations are stored solely
+    in your browser's local
     storage.
     This approach allows you to maintain your preferences and conversation history without the need for server storage,
     but it also comes with security risks. You can delete all settings and chat conversations at any time on the

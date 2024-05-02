@@ -4,11 +4,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HelpersService } from '../../services/helpers.service';
 import { ErrorComponent } from '../../components/error/error.component';
+import { NotConnectedComponent } from '../../components/not-connected/not-connected.component';
 
 @Component({
   selector: 'app-notebook',
   standalone: true,
-  imports: [FormsModule, CommonModule, ErrorComponent],
+  imports: [FormsModule, CommonModule, ErrorComponent, NotConnectedComponent],
   templateUrl: './notebook.component.html',
   styleUrl: './notebook.component.css'
 })
@@ -20,7 +21,7 @@ export class NotebookComponent {
   public error: string = "";
 
   constructor(
-    public lcService: LcService,
+    public lc: LcService,
     public helpers: HelpersService,
   ) { }
 
@@ -37,7 +38,7 @@ export class NotebookComponent {
     this.loading = false;
 
     try {
-      this.lcService.loadSettings();
+      this.lc.loadSettings();
     } catch (error) {
       this.error = 'There was an error loading the settings. Please make sure your settings are correct and try again.';
       console.error('Error loading settings:', error);
@@ -45,7 +46,7 @@ export class NotebookComponent {
     }
 
     try {
-      this.lcService.createLLM();
+      this.lc.createLLM();
     } catch (error) {
       this.error = 'There was an error creating the model. Please make sure your settings are correct and try again.';
       console.error('Error creating the model:', error);
@@ -61,7 +62,7 @@ export class NotebookComponent {
     this.loading = true;
     this.output = "";
     try {
-      let stream = await this.lcService.stream(this.prompt);
+      let stream = await this.lc.stream(this.prompt);
       for await (let chunk of stream) {
         this.output += chunk?.content;
       }

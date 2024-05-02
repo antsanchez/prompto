@@ -5,11 +5,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ChatService } from '../../services/chat.service';
 import { HelpersService } from '../../services/helpers.service';
 import { ErrorComponent } from '../../components/error/error.component';
+import { NotConnectedComponent } from '../../components/not-connected/not-connected.component';
 
 @Component({
   selector: 'app-conversation',
   standalone: true,
-  imports: [FormsModule, CommonModule, ErrorComponent],
+  imports: [FormsModule, CommonModule, ErrorComponent, NotConnectedComponent],
   templateUrl: './conversation.component.html',
   styleUrl: './conversation.component.css'
 })
@@ -28,7 +29,7 @@ export class ConversationComponent {
     try {
       this.chatService.new();
     } catch (error) {
-      this.error = 'There was an error creating a new chat. Please make sure your settings are correct and try again.';
+      this.error = 'There was an error creating a new chat. Are you connected to the LLM? Please make sure your settings are correct and try again.';
       console.error('Error creating new chat:', error);
       return;
     }
@@ -57,7 +58,7 @@ export class ConversationComponent {
       this.prompt = "";
       this.loading = false;
     }, (error) => {
-      this.error = 'There was an error chatting. Please make sure your settings are correct and try again.'
+      this.error = 'Are you connected to the LLM? Please make sure your settings are correct and try again.'
       console.error('Error chatting:', error);
       this.loading = false;
     });

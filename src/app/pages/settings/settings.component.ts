@@ -5,11 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { ErrorComponent } from '../../components/error/error.component';
 import { ChatService } from '../../services/chat.service';
 import { TemplatesService } from '../../services/templates.service';
+import { NotConnectedComponent } from '../../components/not-connected/not-connected.component';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [FormsModule, CommonModule, ErrorComponent],
+  imports: [FormsModule, CommonModule, ErrorComponent, NotConnectedComponent],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.css'
 })
