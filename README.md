@@ -17,14 +17,14 @@ Welcome to Prompto, an open-source project designed to provide a user-friendly i
 Prompto provides a button on the settings page that allows you to clear all saved data, including chat conversations, prompt templates, and settings. 
 
 ## Live Example
-You can view a live example of the LangChain Chatbot UI by visiting the following link: [Prompto](https://prompto.asanchez.dev/).
+You can view a live example of Prompto by visiting the following link: [Prompto](https://prompto.asanchez.dev/).
 The application can be installed as a PWA on your device.
 
 ## Running the Application
 
 The application runs entirely in the browser, providing a seamless user experience. Please note that the actual LLMs are not hosted within the application.
 
-To run the LangChain Chatbot UI on your local machine, follow these steps:
+To run the Prompto on your local machine, follow these steps:
 
 1. Clone the repository to your local machine.
 2. Navigate to the project directory.
