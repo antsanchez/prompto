@@ -1,3 +1,22 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.chat-message a {
+    color: #007bff;
+    text-decoration: underline !important;
+}
+
+.chat-message pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    background-color: grey;
+    color: #fff;
+    padding: 1rem;
+    font-family: monospace;
+}
+.chat-message ul,
+.chat-message ol {
+    list-style-type: disc;
+    margin-left: 1rem;
+}
