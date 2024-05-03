@@ -24,6 +24,16 @@
             [(ngModel)]="options.provider">
             <option *ngFor="let provider of lc.providers" [value]="provider">{{provider}}</option>
         </select>
+        <p class="text-sm text-gray-500 mt-1 sm:max-w-xl">If you are running Ollama and you want to connect it to
+            Prompto from a different domain than localhost, you will need to add the domain to the CORS configuration in
+            the Ollama server. To do this, read the following blog post: <a
+                href="https://medium.com/dcoderai/how-to-handle-cors-settings-in-ollama-a-comprehensive-guide-ee2a5a1beef0"
+                class="underline text-blue-600 hover:text-blue-400" target="_blank">How to Handle CORS Settings in
+                OLLAMA: A Comprehensive Guide</a> or the official documentation: <a
+                href="https://github.com/ollama/ollama/blob/main/docs/faq.md#how-do-i-configure-ollama-server"
+                class="underline text-blue-600 hover:text-blue-400" target="_blank">How do I configure Ollama
+                server?</a>.
+        </p>
     </div>
 </div>
 
