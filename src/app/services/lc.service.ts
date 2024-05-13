@@ -6,6 +6,7 @@ import { Runnable } from '@langchain/core/runnables';
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatMistralAI } from "@langchain/mistralai";
 import { ChatAnthropic } from "@langchain/anthropic";
+import { ChatCohere } from "@langchain/cohere";
 import { lastValueFrom } from 'rxjs';
 
 export type Settings = {
@@ -26,6 +27,9 @@ const PROVIDER_OLLAMA = 'Ollama';
 const PROVIDER_OPENAI = 'OpenAI';
 const PROVIDER_ANTHROPIC = 'Anthropic';
 const PROVIDER_MISTRAL = 'Mistral';
+const PROVIDER_COHERE = 'Cohere';
+
+const DEFAULT_TEMPERATURE = 0.7;
 
 const DEFAULT_SETTINGS: Settings = {
   provider: PROVIDER_OLLAMA,
@@ -35,7 +39,7 @@ const DEFAULT_SETTINGS: Settings = {
       model: 'llama3',
       apiKey: '',
       apiUrl: 'http://localhost:11434',
-      temperature: 0.7,
+      temperature: DEFAULT_TEMPERATURE,
       availableModels: []
     },
     [PROVIDER_OPENAI]: {
@@ -43,7 +47,7 @@ const DEFAULT_SETTINGS: Settings = {
       model: 'gpt-3.5-turbo',
       apiKey: '',
       apiUrl: '',
-      temperature: 0.7,
+      temperature: DEFAULT_TEMPERATURE,
       availableModels: []
     },
     [PROVIDER_ANTHROPIC]: {
@@ -51,7 +55,7 @@ const DEFAULT_SETTINGS: Settings = {
       model: '',
       apiKey: '',
       apiUrl: '',
-      temperature: 0.7,
+      temperature: DEFAULT_TEMPERATURE,
       availableModels: []
     },
     [PROVIDER_MISTRAL]: {
@@ -59,7 +63,15 @@ const DEFAULT_SETTINGS: Settings = {
       model: '',
       apiKey: '',
       apiUrl: '',
-      temperature: 0.7,
+      temperature: DEFAULT_TEMPERATURE,
+      availableModels: []
+    },
+    [PROVIDER_COHERE]: {
+      provider: PROVIDER_COHERE,
+      model: '',
+      apiKey: '',
+      apiUrl: '',
+      temperature: DEFAULT_TEMPERATURE,
       availableModels: []
     }
   }
@@ -79,7 +91,8 @@ export class LcService {
     PROVIDER_OLLAMA,
     PROVIDER_OPENAI,
     PROVIDER_ANTHROPIC,
-    PROVIDER_MISTRAL
+    PROVIDER_MISTRAL,
+    PROVIDER_COHERE
   ];
 
   public llm: Runnable = {} as Runnable;
@@ -144,6 +157,16 @@ export class LcService {
           apiKey: this.settings.options[PROVIDER_MISTRAL].apiKey,
           model: this.settings.options[PROVIDER_MISTRAL].model,
           temperature: this.settings.options[PROVIDER_MISTRAL].temperature,
+        });
+        return
+      case PROVIDER_COHERE:
+        if (!this.settings.options[this.settings.provider].apiKey) {
+          return new Error('No API key');
+        }
+        this.llm = new ChatCohere({
+          apiKey: this.settings.options[PROVIDER_COHERE].apiKey,
+          model: this.settings.options[PROVIDER_COHERE].model,
+          temperature: this.settings.options[PROVIDER_COHERE].temperature,
         });
         return
     }
@@ -220,6 +243,12 @@ export class LcService {
     if (settings) {
       this.settings = JSON.parse(settings) as Settings;
     }
+
+    for (let provider of this.providers) {
+      if (!this.settings.options[provider]) {
+        this.settings.options[provider] = DEFAULT_SETTINGS.options[provider];
+      }
+    }
   }
 
   // invoke sends a prompt to the chatbot and returns the response
@@ -243,23 +272,26 @@ export class LcService {
   async getModels(provider: string): Promise<void> {
     switch (provider) {
       case 'Ollama':
-        await this.getOllamaModels();
+        await this.getModelsFromOllama();
         break;
       case PROVIDER_OPENAI:
-        await this.getOpenAIModels();
+        await this.getModelsFromOpenAI();
         break;
       case PROVIDER_ANTHROPIC:
-        this.getAnthropicModels();
+        this.getModelsFromAnthropic();
         break;
       case PROVIDER_MISTRAL:
-        await this.getMistralModels();
+        await this.getModelsFromMistral();
+        break;
+      case PROVIDER_COHERE:
+        await this.getModelsFromCohere();
         break;
     }
   }
 
 
   // Get ollama models from the server
-  async getOllamaModels(): Promise<void> {
+  async getModelsFromOllama(): Promise<void> {
     const url = this.settings.options['Ollama'].apiUrl + '/api/tags';
     try {
       const data: any = await lastValueFrom(this.http.get(url));
@@ -276,7 +308,7 @@ export class LcService {
   }
 
   // Get OpenAI models from the server
-  async getOpenAIModels(): Promise<void> {
+  async getModelsFromOpenAI(): Promise<void> {
     if (!this.settings.options[PROVIDER_OPENAI].apiKey) {
       console.info('Aborting getOpenAIModels because there is no API key');
       return;
@@ -301,11 +333,11 @@ export class LcService {
 
   }
 
-  getAnthropicModels() {
+  getModelsFromAnthropic() {
     this.settings.options[PROVIDER_ANTHROPIC].availableModels = ['claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307'];
   }
 
-  async getMistralModels(): Promise<void> {
+  async getModelsFromMistral(): Promise<void> {
     if (!this.settings.options[PROVIDER_MISTRAL].apiKey) {
       console.info('Aborting getOpenAIModels because there is no API key');
       return;
@@ -326,6 +358,32 @@ export class LcService {
       this.connected = false;
       console.error('Error getting Mistral models:', e);
       throw new Error('Error getting Mistral models');
+    }
+  }
+
+  async getModelsFromCohere(): Promise<void> {
+    if (!this.settings.options[PROVIDER_COHERE].apiKey) {
+      console.info('Aborting getCohereModels because there is no API key');
+      return;
+    }
+
+    try {
+      const url = 'https://api.cohere.ai/v1/models';
+      const data = await lastValueFrom(this.http.get(url, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${this.settings.options[PROVIDER_COHERE].apiKey}`
+        }
+      })) as any;
+      this.settings.options[PROVIDER_COHERE].availableModels = [];
+      for (let model of data?.models as any[]) {
+        this.settings.options[PROVIDER_COHERE].availableModels.push(model?.name);
+      }
+      this.connected = true;
+    } catch (e) {
+      this.connected = false;
+      console.error('Error getting Cohere models:', e);
+      throw new Error('Error getting Cohere models');
     }
   }
 
