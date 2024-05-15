@@ -9,6 +9,7 @@ Welcome to Prompto, an open-source project designed to provide a user-friendly i
 - **Chatbot UI**: Engage with a chatbot interface that remembers the conversation context.
 - **Notebook**: Utilize a notebook feature to send prompts to the LLM and receive responses without prior context or memory.
 - **Templates**: Create, save, and reuse prompts for specific use cases. Incorporate a "contextual" prompt alongside your saved template for dynamic interaction.
+- **Arena**: Engage in a conversation with multiple LLMs simultaneously, comparing their responses side by side.
 
 ## Data Storage and Security
 
