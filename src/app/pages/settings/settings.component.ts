@@ -1,6 +1,4 @@
 import { Component } from '@angular/core';
-import { ChatService } from '../../services/chat.service';
-import { TemplatesService } from '../../services/templates.service';
 import { SharedModule } from '../../shared/shared.module';
 import { Options, SettingsService } from '../../services/settings.service';
 
@@ -20,8 +18,6 @@ export class SettingsComponent {
 
   constructor(
     public ss: SettingsService,
-    private chatService: ChatService,
-    private templatesService: TemplatesService
   ) {
 
   }
@@ -39,7 +35,6 @@ export class SettingsComponent {
       this.ss.setConnected(true);
     } catch (error) {
       this.ss.setConnected(false);
-      this.error = 'There was an error initializing the settings. Please try again.';
       console.error('Error initializing settings:', error);
     }
   }
