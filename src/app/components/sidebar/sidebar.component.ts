@@ -1,29 +1,24 @@
-import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { ChatKeys } from '../../services/chat.service';
-import { CommonModule } from '@angular/common';
-import { ChatService } from '../../services/chat.service';
-import { System, TemplatesService } from '../../services/templates.service';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { SharedModule } from '../../shared/shared.module';
+import { Keys, SettingsService, System } from '../../services/settings.service';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, CommonModule],
+  imports: [SharedModule],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.css'
 })
 export class SidebarComponent {
 
-  @Input() chats: ChatKeys[] = [] as ChatKeys[];
-  @Input() templates: System[] = [] as System[];
   @Input() sidebarOpen: boolean = true;
   @Output() sidebarOpenChange = new EventEmitter<boolean>();
 
   constructor(
     private router: Router,
     public activatedRoute: ActivatedRoute,
-    private chatService: ChatService,
-    public templatesService: TemplatesService
+    public ss: SettingsService
   ) { }
 
   closeSidebar() {
@@ -32,24 +27,36 @@ export class SidebarComponent {
   }
 
   // Navigates to the /conversation route and loads the chat
-  selectChat(chat: ChatKeys, close: boolean = false) {
+  selectChat(chat: Keys, close: boolean = false) {
     this.router.navigate(['/conversation', chat.key]);
-    this.chatService.loadChat(chat.key);
     if (close) {
       this.closeSidebar();
     }
   }
 
   // Deletes a chat from the chat list
-  deleteChat(chat: ChatKeys) {
-    this.chatService.deleteChat(chat.key);
+  deleteChat(chat: Keys) {
+    this.ss.deleteChat(chat.key);
     this.router.navigate(['/conversation', '']);
+  }
+
+  // Navigate to the /arena route and load the arena
+  selectArena(arena: Keys, close: boolean = false) {
+    this.router.navigate(['/arena', arena.key]);
+    if (close) {
+      this.closeSidebar();
+    }
+  }
+
+  // Deletes an arena from the arena list
+  deleteArena(arena: Keys) {
+    this.ss.deleteArena(arena.key);
+    this.router.navigate(['/arena', ''])
   }
 
   // Navigate to the /template route and load the template
   selectTemplate(template: System, close: boolean = false) {
     this.router.navigate(['/templates', template.name]);
-    this.templatesService.loadTemplate(template.name);
     if (close) {
       this.closeSidebar();
     }
@@ -57,7 +64,7 @@ export class SidebarComponent {
 
   // Deletes a template from the template list
   deleteTemplate(template: System) {
-    this.templatesService.deleteTemplate(template.name);
+    this.ss.deleteTemplate(template.name);
     this.router.navigate(['/templates', '']);
   }
 
@@ -71,10 +78,16 @@ export class SidebarComponent {
 
   // Checks if the app is on the /conversation route and if the chat key matches the current key
   isChatSelected(key: string) {
-    return this.router.url.includes("/conversation") && this.chatService.currentKey === key;
+    return this.router.url.includes("/conversation") && this.ss.currentChatKey === key;
   }
 
+  // Checks if the app is on the /templates route and if the template name matches the current name
   isTemplateSelected(name: string) {
-    return this.router.url.includes("/templates") && this.templatesService.name === name;
+    return this.router.url.includes("/templates") && this.ss.currentTemplateName === name;
+  }
+
+  // Checks if the app is on the /arena route and if the arena key matches the current key
+  isArenaSelected(key: string) {
+    return this.router.url.includes("/arena") && this.ss.currentArenaKey === key;
   }
 }

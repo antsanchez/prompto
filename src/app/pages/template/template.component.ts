@@ -1,70 +1,91 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, OnDestroy } from '@angular/core';
 import { HelpersService } from '../../services/helpers.service';
 import { TemplatesService } from '../../services/templates.service';
 import { ActivatedRoute } from '@angular/router';
-import { ErrorComponent } from '../../components/error/error.component';
-import { NotConnectedComponent } from '../../components/not-connected/not-connected.component';
+import { SharedModule } from '../../shared/shared.module';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-template',
   standalone: true,
-  imports: [FormsModule, CommonModule, ErrorComponent, NotConnectedComponent],
+  imports: [SharedModule],
   templateUrl: './template.component.html',
-  styleUrl: './template.component.css'
+  styleUrls: ['./template.component.css']  // Note: Fixed 'styleUrl' to 'styleUrls' for array usage
 })
-export class TemplateComponent {
+export class TemplateComponent implements OnDestroy {
 
   public loading: boolean = false;
   public loadingSave: boolean = false;
   public openSave: boolean = false;
   public error: string = "";
   public showInfo: boolean = false;
+  private destroy$ = new Subject<void>();
 
   constructor(
     public helpers: HelpersService,
     public templateService: TemplatesService,
     private activatedRoute: ActivatedRoute
   ) {
+    this.initTemplate();
+    this.subscribeToRouteParams();
+  }
+
+  private async initTemplate() {
     try {
-      this.templateService.new();
+      await this.templateService.new();
+      this.templateService.setConnected(true);
     } catch (error) {
-      this.error = 'There was an error creating a new template. Please make sure your settings are correct and try again.';
-      console.error('Error creating new template:', error);
-      return;
-    }
-
-    this.loadTemplateFromURL();
-  }
-
-  loadTemplateFromURL() {
-    let templateName = this.activatedRoute.snapshot.paramMap.get('template') || '';
-    if (templateName) {
-      this.templateService.loadTemplate(templateName);
+      this.errorHandling('Error creating a new template:', error);
+      this.templateService.setConnected(false);
     }
   }
+
+  private subscribeToRouteParams() {
+    this.activatedRoute.paramMap.pipe(takeUntil(this.destroy$)).subscribe({
+      next: (params) => {
+        const templateName = params.get('template') || '';
+        if (templateName) {
+          this.templateService.loadTemplate(templateName);
+        } else {
+          this.templateService.new();
+        }
+      },
+      error: (error) => this.errorHandling('Error loading template from URL:', error)
+    });
+  }
+
 
   async stream() {
     this.loading = true;
-    this.templateService.stream().then(() => {
-      this.loading = false;
-    }, (error) => {
-      this.error = 'There was an error streaming the template. Please make sure your settings are correct and try again.'
-      console.error('Error streaming the template:', error);
+    try {
+      await this.templateService.stream();
+    } catch (error) {
+      this.errorHandling('Error streaming the template:', error);
+    } finally {
       this.loading = false;
     }
-    );
   }
 
   save() {
     this.loadingSave = true;
-    this.templateService.save();
-    this.loadingSave = false;
-    this.openSave = false;
+    try {
+      this.templateService.save();
+    } catch (error) {
+      this.errorHandling('Error saving the template:', error);
+    } finally {
+      this.loadingSave = false;
+      this.openSave = false;
+    }
   }
 
-  new() {
-    this.templateService.new();
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private errorHandling(message: string, error: any): void {
+    console.error(message, error);
+    this.error = 'There was an error with your request. Please check your connection and settings and try again.';
   }
 }

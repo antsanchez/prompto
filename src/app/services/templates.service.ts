@@ -1,75 +1,67 @@
 import { Injectable } from '@angular/core';
 import { LcService } from './lc.service';
-
-export type System = {
-  name: string;
-  system: string;
-};
+import { System } from './settings.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TemplatesService {
 
-  public templates: System[] = [] as System[];
-
   public system: string = '';
   public prompt: string = '';
   public output: string = '';
-  public name: string = '';
 
   constructor(
-    private lc: LcService) { }
+    public lc: LcService) { }
 
   new() {
-    this.name = '';
+    this.lc.s.currentTemplateName = '';
     this.system = '';
     this.prompt = '';
     this.output = '';
 
-    this.loadTemplates();
-    this.lc.loadSettings();
-    this.lc.createLLM();
+    this.lc.s.loadTemplates();
+    this.lc.s.loadSettings();
+    this.lc.createLLM(this.lc.s.getProvider()).then((llm) => {
+      this.lc.llm = llm;
+    }, (error) => {
+      console.error('Error creating LLM:', error);
+      throw new Error('Error creating LLM');
+    });
   }
 
   isConnected() {
-    return this.lc.isConnected();
+    return this.lc.s.isConnected();
   }
 
-  // get retrieves the templates from local storage
-  loadTemplates() {
-    let tmpl = localStorage.getItem('templates');
-    if (tmpl === null) {
-      this.templates = [] as System[];
-    } else {
-      this.templates = JSON.parse(tmpl);
-    }
+  setConnected(connected: boolean) {
+    this.lc.s.setConnected(connected);
   }
 
   // Saves the template to local storage
   save() {
-    if (this.name === '') {
+    if (this.lc.s.currentTemplateName === '') {
       return;
     }
 
-    this.loadTemplates()
+    this.lc.s.loadTemplates()
 
     // if template exists by name, update it
-    let existing = this.templates.find((template: System) => template.name === this.name) as System;
+    let existing = this.lc.s.templates.find((template: System) => template.name === this.lc.s.currentTemplateName) as System;
     if (existing) {
       existing.system = this.system;
-      localStorage.setItem('templates', JSON.stringify(this.templates));
+      localStorage.setItem('templates', JSON.stringify(this.lc.s.templates));
       return;
     }
 
-    this.templates.push({ name: this.name, system: this.system });
-    localStorage.setItem('templates', JSON.stringify(this.templates));
+    this.lc.s.templates.push({ name: this.lc.s.currentTemplateName, system: this.system });
+    localStorage.setItem('templates', JSON.stringify(this.lc.s.templates));
   }
 
   // deleteAll removes all templates from local storage
   deleteAll() {
     localStorage.removeItem('templates');
-    this.templates = [] as System[];
+    this.lc.s.templates = [] as System[];
   }
 
   async stream() {
@@ -83,16 +75,10 @@ export class TemplatesService {
   loadTemplate(name: string) {
     this.prompt = '';
     this.output = '';
-    let template = this.templates.find((template) => template.name === name);
+    let template = this.lc.s.templates.find((template) => template.name === name);
     if (template) {
-      this.name = template.name;
+      this.lc.s.currentTemplateName = template.name;
       this.system = template.system;
     }
-  }
-
-  deleteTemplate(name: string) {
-    this.loadTemplates();
-    this.templates = this.templates.filter((template) => template.name !== name);
-    localStorage.setItem('templates', JSON.stringify(this.templates));
   }
 } 

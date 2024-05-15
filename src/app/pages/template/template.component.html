@@ -53,7 +53,7 @@
                     </svg>
                     Save
                 </button>
-                <button type="button" (click)="new()"
+                <button type="button" (click)="templateService.new()"
                     class="inline-flex items-center rounded-md ml-2 bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="mr-2 w-5 h-5">
@@ -125,11 +125,13 @@
                             <label for="name" class="block text-sm font-medium leading-6 text-gray-900">Template
                                 Name</label>
                             <div class="mt-2">
-                                <input type="text" name="name" id="name" [(ngModel)]="templateService.name" required
+                                <input type="text" name="name" id="name"
+                                    [(ngModel)]="templateService.lc.s.currentTemplateName" required
                                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:text-sm sm:leading-6"
                                     placeholder="Template Name" aria-describedby="email-description">
                             </div>
-                            <p class="mt-2 text-sm text-gray-500" *ngIf="templateService.name !== ''">
+                            <p class="mt-2 text-sm text-gray-500"
+                                *ngIf="templateService.lc.s.currentTemplateName !== ''">
                                 Saving with the same name will overwrite the existing template.
                             </p>
                         </div>
@@ -170,7 +172,7 @@
                             <p><span class="font-bold">System
                                     Prompt:</span> This sets the scene for the LLM. It's like giving the LLM
                                 instructions (e.g.,
-                                "You are a code reviewer. Please analyze the following Python code"). This part
+                                "You are a code reviewer. Please analyze the following Python code:"). This part
                                 remains constant for the template.</p>
                             <p class="mt-2"><span class="font-bold">User
                                     Prompt (Not Saved):</span> Here's where you'll enter the specific question or
