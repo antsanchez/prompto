@@ -1,16 +1,13 @@
 import { Component } from '@angular/core';
-import { LcService, Options } from '../../services/lc.service';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { ErrorComponent } from '../../components/error/error.component';
 import { ChatService } from '../../services/chat.service';
 import { TemplatesService } from '../../services/templates.service';
-import { NotConnectedComponent } from '../../components/not-connected/not-connected.component';
+import { SharedModule } from '../../shared/shared.module';
+import { Options, SettingsService } from '../../services/settings.service';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [FormsModule, CommonModule, ErrorComponent, NotConnectedComponent],
+  imports: [SharedModule],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.css'
 })
@@ -22,55 +19,56 @@ export class SettingsComponent {
   public error: string = '';
 
   constructor(
-    public lc: LcService,
+    public ss: SettingsService,
     private chatService: ChatService,
     private templatesService: TemplatesService
   ) {
-    try {
-      this.lc.loadSettings();
-    } catch (error) {
-      this.error = 'There was an error loading the settings. Please try again.'
-      console.error('Error loading settings:', error);
-      return;
-    }
 
-    try {
-      this.lc.createLLM();
-    } catch (error) {
-      this.error = 'There was an error creating the LLM. Please try again.'
-      console.error('Error creating LLM:', error);
-      return;
-    }
+  }
 
-    this.options = this.lc.getOptions();
-    this.lc.getModels(this.options.provider);
+  async ngOnInit() {
+    try {
+      // Load settings
+      await this.ss.loadSettings();
+
+      // Get options
+      this.options = this.ss.getOptions();
+
+      // Get models
+      await this.ss.getModels(this.options.provider);
+      this.ss.setConnected(true);
+    } catch (error) {
+      this.ss.setConnected(false);
+      this.error = 'There was an error initializing the settings. Please try again.';
+      console.error('Error initializing settings:', error);
+    }
   }
 
   async providerChanged(provider: any) {
-    this.options = this.lc.getOptionsFromProvider(provider);
-    this.lc.getModels(provider).then(() => {
-      this.options.availableModels = this.lc.getAvailableModels(provider);
-    }, (error) => {
-      this.error = 'There was an error getting the models. Please make sure all settings are correct and try again.'
+    this.options = this.ss.getOptionsFromProvider(provider);
+    try {
+      await this.ss.getModels(provider);
+      this.options.availableModels = this.ss.getAvailableModels(provider);
+    } catch (error) {
+      this.error = 'There was an error getting the models. Please make sure all settings are correct and try again.';
       console.error('Error getting models:', error);
     }
-    )
   }
 
   async addedApiKey(apiKey: string) {
-    this.lc.setApiKeyTemporarily(this.lc.getProvider(), apiKey)
-    this.lc.getModels(this.options.provider).then(() => {
-      this.options.availableModels = this.lc.getAvailableModels(this.options.provider);
-    }, (error) => {
-      this.error = 'There was an error getting the models. Please make sure all settings are correct and try again.'
+    this.ss.setApiKeyTemporarily(this.ss.getProvider(), apiKey);
+    try {
+      await this.ss.getModels(this.options.provider);
+      this.options.availableModels = this.ss.getAvailableModels(this.options.provider);
+    } catch (error) {
+      this.error = 'There was an error getting the models. Please make sure all settings are correct and try again.';
       console.error('Error getting models:', error);
     }
-    )
   }
 
   save() {
     this.loading = true;
-    this.lc.setOptions(this.options);
+    this.ss.setOptions(this.options);
     this.loading = false;
   }
 
@@ -78,10 +76,7 @@ export class SettingsComponent {
     this.loadingDelete = true;
     if (confirm('Are you sure you want to delete all chat history and templates? This action cannot be undone.') == true) {
       try {
-        this.lc.clearOptions();
-        this.chatService.deleteAll();
-        this.templatesService.deleteAll();
-        this.options = this.lc.getOptions();
+        this.ss.deleteAll();
       } catch (error) {
         this.error = 'There was an error deleting the local storage. Please try again or delete it manually.'
         console.error('Error deleting local storage:', error);

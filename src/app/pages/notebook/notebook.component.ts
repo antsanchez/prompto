@@ -1,77 +1,94 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnDestroy } from '@angular/core';
 import { LcService } from '../../services/lc.service';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { HelpersService } from '../../services/helpers.service';
-import { ErrorComponent } from '../../components/error/error.component';
-import { NotConnectedComponent } from '../../components/not-connected/not-connected.component';
+import { SharedModule } from '../../shared/shared.module';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-notebook',
   standalone: true,
-  imports: [FormsModule, CommonModule, ErrorComponent, NotConnectedComponent],
+  imports: [SharedModule],
   templateUrl: './notebook.component.html',
-  styleUrl: './notebook.component.css'
+  styleUrls: ['./notebook.component.css']  // Fixed: 'styleUrl' to 'styleUrls' and array usage
 })
-export class NotebookComponent {
-
+export class NotebookComponent implements OnDestroy {
   public loading: boolean = false;
   public prompt: string = "";
   public output: string = "";
   public error: string = "";
 
-  constructor(
-    public lc: LcService,
-    public helpers: HelpersService,
-  ) { }
+  private destroy$ = new Subject<void>();
 
   @ViewChild('scrollMe') private myScrollContainer!: ElementRef;
+
+  constructor(
+    public lc: LcService,
+    public helpers: HelpersService
+  ) { }
 
   ngAfterViewChecked() {
     this.scrollToBottom();
   }
 
   new() {
+    this.resetNotebook();
+
+    try {
+      this.lc.s.loadSettings();
+    } catch (error) {
+      this.handleError('Error loading settings:', error);
+      return;
+    }
+
+    this.createLLM();
+  }
+
+  private async createLLM() {
+    try {
+      const llm = await this.lc.createLLM(this.lc.s.getProvider());
+      this.lc.llm = llm;
+      this.lc.s.setConnected(true);
+    } catch (error) {
+      this.handleError('Error creating LLM:', error);
+      this.lc.s.setConnected(false);
+    }
+  }
+
+  private resetNotebook() {
     this.prompt = "";
     this.output = "";
     this.error = "";
     this.loading = false;
-
-    try {
-      this.lc.loadSettings();
-    } catch (error) {
-      this.error = 'There was an error loading the settings. Please make sure your settings are correct and try again.';
-      console.error('Error loading settings:', error);
-      return;
-    }
-
-    try {
-      this.lc.createLLM();
-    } catch (error) {
-      this.error = 'There was an error creating the model. Please make sure your settings are correct and try again.';
-      console.error('Error creating the model:', error);
-      return;
-    }
   }
 
   scrollToBottom(): void {
-    this.myScrollContainer.nativeElement.scrollIntoView();
+    this.myScrollContainer.nativeElement.scrollIntoView({ behavior: 'smooth' });
   }
 
   async invoke() {
     this.loading = true;
     this.output = "";
     try {
-      let stream = await this.lc.stream(this.prompt);
+      const stream = await this.lc.stream(this.prompt);
       for await (let chunk of stream) {
         this.output += chunk?.content;
       }
-      this.loading = false;
     } catch (error) {
-      this.error = 'There was an error invoking the model. Please make sure your settings are correct and try again.'
-      console.error('Error invoking the model:', error);
+      this.handleError('Error invoking the model:', error);
+      this.lc.s.setConnected(false);
+    } finally {
       this.loading = false;
     }
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private handleError(message: string, error: any): void {
+    console.error(message, error);
+    this.error = 'There was an error with your request. Please check your connection and settings and try again.';
+  }
 }

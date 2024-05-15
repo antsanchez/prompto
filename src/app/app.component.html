@@ -1,7 +1,6 @@
 <div>
 
-  <app-sidebar [chats]="chatService.chats" [templates]="templateService.templates"
-    [(sidebarOpen)]="isSidebarVisible"></app-sidebar>
+  <app-sidebar [(sidebarOpen)]="isSidebarVisible"></app-sidebar>
 
   <div class="lg:pl-72">
     <div class="sticky top-0 z-40 lg:mx-auto lg:max-w-7xl lg:px-8">
@@ -15,7 +14,7 @@
           </svg>
         </button>
 
-        <h1 class="text-lg font-semibold leading-6 text-gray-900">{{ title }} | {{ using() }}</h1>
+        <h1 class="text-lg font-semibold leading-6 text-gray-900">{{ showTitle(title) }}</h1>
 
       </div>
     </div>

@@ -1,5 +1,5 @@
 <app-error *ngIf="error" [error]="error"></app-error>
-<app-not-connected *ngIf="!lc.isConnected()"></app-not-connected>
+<app-not-connected *ngIf="!ss.isConnected()"></app-not-connected>
 
 <h2 class="py-3 text-lg">LLM Settings</h2>
 <p class="text-gray-900">
@@ -16,13 +16,12 @@
 </p>
 
 <div class="sm:col-span-3 mt-6">
-
     <label for="provider" class="block text-sm font-medium leading-6 text-gray-900">LLM Provider</label>
     <div class="mt-2">
         <select id="provider" name="provider" (ngModelChange)="providerChanged($event)"
             class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6"
             [(ngModel)]="options.provider">
-            <option *ngFor="let provider of lc.providers" [value]="provider">{{provider}}</option>
+            <option *ngFor="let provider of ss.listProviders()" [value]="provider">{{provider}}</option>
         </select>
         <p class="text-sm text-gray-500 mt-1 sm:max-w-xl">If you are running Ollama and you want to connect it to
             Prompto from a different domain than localhost, you will need to add the domain to the CORS configuration in

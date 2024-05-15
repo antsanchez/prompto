@@ -2,9 +2,7 @@ import { Component } from '@angular/core';
 import { NavigationEnd, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Router, ActivatedRoute } from '@angular/router';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
-import { ChatService } from './services/chat.service';
-import { TemplatesService } from './services/templates.service';
-import { LcService } from './services/lc.service';
+import { SettingsService } from './services/settings.service';
 
 
 @Component({
@@ -27,12 +25,10 @@ export class AppComponent {
   constructor(
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    public chatService: ChatService,
-    public templateService: TemplatesService,
-    public lc: LcService,
+    public ss: SettingsService,
   ) {
     try {
-      this.lc.loadSettings();
+      this.ss.loadSettings();
     } catch (error) {
       console.error('Error loading settings:', error);
     }
@@ -55,14 +51,19 @@ export class AppComponent {
       }
     });
 
-    this.chatService.loadChatNames()
-    this.templateService.loadTemplates()
+    this.ss.loadKeys()
+    this.ss.loadTemplates()
   }
 
-  using(): string {
-    let provider = this.lc.getProvider() || 'No LLM selected';
-    let model = this.lc.getModel() || 'No model selected';
-    return `LLM: ${provider} - Model: ${model}`;
+  // Show the title of the page
+  showTitle(title: string): string {
+    if (this.router.url === '/arena') {
+      return 'Arena';
+    }
+
+    let provider = this.ss.getProvider() || 'No LLM selected';
+    let model = this.ss.getModel() || 'No model selected';
+    return `${title} | ${provider} (${model}) | Temperature: ${this.ss.getTemperature()}`;
   }
 
 }

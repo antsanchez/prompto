@@ -1,50 +1,57 @@
 import { Routes } from '@angular/router';
-import { ConversationComponent } from './pages/conversation/conversation.component';
-import { NotebookComponent } from './pages/notebook/notebook.component';
-import { HomeComponent } from './pages/home/home.component';
-import { TemplateComponent } from './pages/template/template.component';
-import { SettingsComponent } from './pages/settings/settings.component';
 
 export const routes: Routes = [
     {
         path: '',
-        component: HomeComponent,
+        loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent),
         title: 'Prompto',
         data: { title: "Dashboard" }
     },
     {
         path: 'settings',
-        component: SettingsComponent,
+        loadComponent: () => import('./pages/settings/settings.component').then(m => m.SettingsComponent),
         title: 'Settings',
         data: { title: "Settings" }
     },
     {
         path: 'conversation/:chat',
-        component: ConversationComponent,
+        loadComponent: () => import('./pages/conversation/conversation.component').then(m => m.ConversationComponent),
         title: 'Chat',
         data: { title: "Chat" }
     },
     {
         path: 'conversation',
-        component: ConversationComponent,
+        loadComponent: () => import('./pages/conversation/conversation.component').then(m => m.ConversationComponent),
         title: 'Chat',
         data: { title: "Chat" }
     },
     {
+        path: 'arena',
+        loadComponent: () => import('./pages/arena/arena.component').then(m => m.ArenaComponent),
+        title: 'Arena',
+        data: { title: "Arena" }
+    },
+    {
+        path: 'arena/:chat',
+        loadComponent: () => import('./pages/arena/arena.component').then(m => m.ArenaComponent),
+        title: 'Arena',
+        data: { title: "Arena" }
+    },
+    {
         path: 'notebook',
-        component: NotebookComponent,
+        loadComponent: () => import('./pages/notebook/notebook.component').then(m => m.NotebookComponent),
         title: 'Notebook',
         data: { title: "Notebook" }
     },
     {
         path: 'templates/:template',
-        component: TemplateComponent,
+        loadComponent: () => import('./pages/template/template.component').then(m => m.TemplateComponent),
         title: 'Templates',
         data: { title: "Templates" }
     },
     {
         path: 'templates',
-        component: TemplateComponent,
+        loadComponent: () => import('./pages/template/template.component').then(m => m.TemplateComponent),
         title: 'Templates',
         data: { title: "Templates" }
     }

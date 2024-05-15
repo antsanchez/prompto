@@ -1,78 +1,120 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { Component, ElementRef, ViewChild, OnDestroy, HostListener } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ChatService } from '../../services/chat.service';
 import { HelpersService } from '../../services/helpers.service';
-import { ErrorComponent } from '../../components/error/error.component';
-import { NotConnectedComponent } from '../../components/not-connected/not-connected.component';
+import { SharedModule } from '../../shared/shared.module';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-conversation',
   standalone: true,
-  imports: [FormsModule, CommonModule, ErrorComponent, NotConnectedComponent],
+  imports: [SharedModule],
   templateUrl: './conversation.component.html',
-  styleUrl: './conversation.component.css'
+  styleUrls: ['./conversation.component.css']
 })
-export class ConversationComponent {
-
+export class ConversationComponent implements OnDestroy {
   public loading: boolean = false;
   public prompt: string = "";
   public error: string = "";
+  isDesktop: boolean = window.innerWidth > 1024;
+  private destroy$ = new Subject<void>();
+
+  @ViewChild('scrollMe') private myScrollContainer!: ElementRef;
 
   constructor(
     public chatService: ChatService,
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    public helpers: HelpersService,
+    public helpers: HelpersService
   ) {
-    try {
-      this.chatService.new();
-    } catch (error) {
-      this.error = 'There was an error creating a new chat. Are you connected to the LLM? Please make sure your settings are correct and try again.';
-      console.error('Error creating new chat:', error);
-      return;
-    }
-
-    try {
-      this.loadChatFromURL();
-    } catch (error) {
-      this.error = 'There was an error loading the chat from the URL. Please try again.'
-      console.error('Error loading chat from URL:', error);
-    }
+    this.handleNewChat();
+    this.loadChatFromURL();
+    this.subscribeToRouteParams();
+    this.chatService.checkConnection();
   }
 
-  @ViewChild('scrollMe') private myScrollContainer!: ElementRef;
+  @HostListener('window:resize')
+  onResize() {
+    this.isDesktop = window.innerWidth > 1024;
+  }
 
   ngAfterViewChecked() {
     this.scrollToBottom();
   }
 
   scrollToBottom(): void {
-    this.myScrollContainer.nativeElement.scrollIntoView();
+    this.myScrollContainer.nativeElement.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  private subscribeToRouteParams() {
+    this.activatedRoute.paramMap.pipe(takeUntil(this.destroy$)).subscribe({
+      next: (params) => {
+        const chatKey = params.get('chat') || '';
+        if (chatKey) {
+          this.chatService.loadChat(chatKey);
+        } else {
+          this.newChat();
+        }
+      },
+      error: (error) => {
+        this.handleError('Error loading chat from URL:', error);
+      }
+    });
+  }
+
+
+  private async handleNewChat() {
+    try {
+      await this.chatService.newChat();
+    } catch (error) {
+      this.handleError('Error creating a new chat:', error);
+    }
+  }
+
+  private async loadChatFromURL() {
+    try {
+      const chatKey = this.activatedRoute.snapshot.paramMap.get('chat') || '';
+      if (chatKey) {
+        await this.chatService.loadChat(chatKey);
+      }
+    } catch (error) {
+      this.handleError('Error loading chat from URL:', error);
+    }
   }
 
   async chat() {
     this.loading = true;
-    this.chatService.chat(this.prompt).then(() => {
+    try {
+      await this.chatService.chat(this.prompt);
       this.prompt = "";
+      this.chatService.setConnected(true);
+    } catch (error) {
+      this.handleError('Error chatting:', error);
+      this.chatService.setConnected(false);
+    } finally {
       this.loading = false;
-    }, (error) => {
-      this.error = 'Are you connected to the LLM? Please make sure your settings are correct and try again.'
-      console.error('Error chatting:', error);
-      this.loading = false;
-    });
+    }
   }
 
-  loadChatFromURL() {
-    let chatKey = this.activatedRoute.snapshot.paramMap.get('chat') || '';
-    if (chatKey) {
-      this.chatService.loadChat(chatKey);
+  async onKeydown() {
+    if (this.chatService.enterSubmit) {
+      this.chat();
     }
   }
 
   newChat() {
-    this.chatService.new();
+    this.handleNewChat();
     this.router.navigate(['/conversation', '']);
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private handleError(message: string, error: any) {
+    console.error(message, error);
+    this.error = 'There was an error with your request. Please check your connection and settings and try again.';
   }
 }
