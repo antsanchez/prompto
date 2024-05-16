@@ -24,6 +24,7 @@
     "@langchain/mistralai": "^0.0.19",
     "@tailwindcss/forms": "^0.5.7",
     "@tailwindcss/typography": "^0.5.13",
+    "highlight.js": "^11.9.0",
     "langchain": "^0.1.36",
     "marked": "^12.0.2",
     "rxjs": "~7.8.0",
