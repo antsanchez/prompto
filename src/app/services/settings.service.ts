@@ -277,10 +277,11 @@ export class SettingsService {
   // Get Anthropic models (hardcoded for now, since there is no API to get the models)
   getModelsFromAnthropic() {
     this.settings.options[PROVIDERS.ANTHROPIC].availableModels = [
-      'claude-3-opus-20240229',
-      'claude-3-sonnet-20240229',
-      'claude-3-5-sonnet-20240620',
       'claude-3-haiku-20240307',
+      'claude-3-sonnet-20240229',
+      'claude-3-opus-latest',
+      'claude-3-5-sonnet-latest',
+      'claude-3-5-haiku-latest',
     ];
   }
 
