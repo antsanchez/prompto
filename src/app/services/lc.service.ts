@@ -19,7 +19,7 @@ export class LcService {
   }
 
   // createLLM creates the LLM based on the provider
-  async createLLM(provider: string, model: string = ''): Promise<Runnable> {
+  async createLLM(provider: string, model: string = '') {
     if (model === '' || !model) {
       model = this.s.settings.options[provider].model;
     }
@@ -47,7 +47,7 @@ export class LcService {
           temperature: this.s.settings.options[PROVIDERS.OPENAI].temperature,
         });
       case PROVIDERS.OLLAMA:
-        const { ChatOllama } = await import('@langchain/community/chat_models/ollama');
+        const { ChatOllama } = await import('@langchain/ollama');
         this.cache[PROVIDERS.OLLAMA] = ChatOllama;
         return new ChatOllama({
           baseUrl: this.s.settings.options[PROVIDERS.OLLAMA].apiUrl,
@@ -86,6 +86,17 @@ export class LcService {
           apiKey: this.s.settings.options[PROVIDERS.COHERE].apiKey,
           model: model,
           temperature: this.s.settings.options[PROVIDERS.COHERE].temperature,
+        });
+      case PROVIDERS.GOOGLE:
+        if (!this.s.settings.options[PROVIDERS.GOOGLE].apiKey) {
+          throw new Error('No API key');
+        }
+        const { ChatGoogleGenerativeAI } = await import('@langchain/google-genai');
+        this.cache[PROVIDERS.GOOGLE] = ChatGoogleGenerativeAI;
+        return new ChatGoogleGenerativeAI({
+          apiKey: this.s.settings.options[PROVIDERS.GOOGLE].apiKey,
+          model: model,
+          temperature: this.s.settings.options[PROVIDERS.GOOGLE].temperature,
         });
     }
     throw new Error('Unsupported provider');

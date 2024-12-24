@@ -52,4 +52,9 @@ This project is open-sourced under the MIT License.
 
 ---
 
-**Note**: As this project is in beta, I am actively working on improvements and new features. I appreciate your support and contributions during this phase.
+**Note**: 
+As this project is in beta, I am actively working on improvements and new features. I appreciate your support and contributions during this phase.
+
+This project is not affiliated with OpenAI, LangChain or any other provider. It is an independent project designed to provide a user-friendly interface for interacting with LLMs.
+
+This project is not associated with the french trademark Prompto registered in the field of AI.

@@ -32,7 +32,8 @@ export const PROVIDERS = {
   OPENAI: 'OpenAI',
   ANTHROPIC: 'Anthropic',
   MISTRAL: 'Mistral',
-  COHERE: 'Cohere'
+  COHERE: 'Cohere',
+  GOOGLE: 'Google',
 };
 
 const DEFAULT_TEMPERATURE = 0.7;
@@ -51,7 +52,7 @@ const DEFAULT_SETTINGS: Settings = {
     },
     [PROVIDERS.OPENAI]: {
       provider: PROVIDERS.OPENAI,
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4.5-turbo',
       apiKey: '',
       apiUrl: '',
       temperature: DEFAULT_TEMPERATURE,
@@ -59,7 +60,7 @@ const DEFAULT_SETTINGS: Settings = {
     },
     [PROVIDERS.ANTHROPIC]: {
       provider: PROVIDERS.ANTHROPIC,
-      model: 'claude-3-opus-20240229',
+      model: 'claude-3-5-sonnet-20240620',
       apiKey: '',
       apiUrl: '',
       temperature: DEFAULT_TEMPERATURE,
@@ -80,7 +81,15 @@ const DEFAULT_SETTINGS: Settings = {
       apiUrl: '',
       temperature: DEFAULT_TEMPERATURE,
       availableModels: []
-    }
+    },
+    [PROVIDERS.GOOGLE]: {
+      provider: PROVIDERS.GOOGLE,
+      model: '',
+      apiKey: '',
+      apiUrl: '',
+      temperature: DEFAULT_TEMPERATURE,
+      availableModels: []
+    },
   }
 }
 
@@ -267,7 +276,13 @@ export class SettingsService {
 
   // Get Anthropic models (hardcoded for now, since there is no API to get the models)
   getModelsFromAnthropic() {
-    this.settings.options[PROVIDERS.ANTHROPIC].availableModels = ['claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307'];
+    this.settings.options[PROVIDERS.ANTHROPIC].availableModels = [
+      'claude-3-haiku-20240307',
+      'claude-3-sonnet-20240229',
+      'claude-3-opus-latest',
+      'claude-3-5-sonnet-latest',
+      'claude-3-5-haiku-latest',
+    ];
   }
 
   // Get Mistral models from the server
@@ -318,6 +333,15 @@ export class SettingsService {
     }
   }
 
+  // getModelsFromGoogle gets the models from Google
+  async getModelsFromGoogle() {
+    this.settings.options[PROVIDERS.GOOGLE].availableModels = [
+      'gemini-1.5-flash',
+      'gemini-1.5-pro',
+      'gemini-1.0-pro'
+    ];
+  }
+
   // getModels gets the models from the server
   async getModels(provider: string): Promise<void> {
     switch (provider) {
@@ -335,6 +359,9 @@ export class SettingsService {
         break;
       case PROVIDERS.COHERE:
         await this.getModelsFromCohere();
+        break;
+      case PROVIDERS.GOOGLE:
+        await this.getModelsFromGoogle();
         break;
     }
   }
