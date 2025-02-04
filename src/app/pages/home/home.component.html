@@ -2,35 +2,43 @@
 
 <h1 class="text-3xl font-bold mb-4 mt-4">Welcome to Prompto</h1>
 <p class="">
-    Prompto is an open-source web application designed to make interacting with large language models (LLMs) simple
-    and efficient.
+    Prompto, a blend of 'Prompt' and the Italian word 'Pronto' (meaning ready and quick), is an open-source Angular
+    application
+    designed to provide a user-friendly interface for interacting with a variety of Language Models (LLMs) via
+    LangChain.js.
 </p>
 
-<ul class="list-disc list-inside mx-auto mt-4 mb-8 ">
-    <li>Switch between LLMs: Effortlessly try out different LLMs, all within your browser.</li>
-    <li>Fine-tune responses: Adjust the temperature setting to control the creativity and risk level of the LLM's
-        outputs.</li>
-    <li>Chat or Notebook: Choose between a chatbot interface that remembers conversations or a notebook for sending
-        prompts without context.</li>
-    <li>Templates: Create templates for frequently used prompts and add context on the fly.</li>
-    <li>Areana: Engage in a conversation with multiple LLMs simultaneously, comparing their responses side by side.</li>
+<ul class="list-disc list-inside mx-auto mt-4 mb-8">
+    <li>Multiple LLMs: Effortlessly switch between different LLMs supported by LangChain.js.</li>
+    <li>Temperature Control: Fine-tune the temperature to adjust the creativity and predictability of responses.</li>
+    <li>Multiple Interaction Modes:
+        <ul class="list-disc list-inside ml-6">
+            <li>Chat: Engage with a chatbot interface that maintains conversation context</li>
+            <li>Notebook: Send prompts without prior context for isolated responses</li>
+            <li>Templates: Create, save, and reuse prompts with dynamic contextual elements</li>
+            <li>Arena: Compare responses from multiple LLMs side by side</li>
+            <li>Discussion: Create dynamic conversations between multiple AI personas</li>
+        </ul>
+    </li>
 </ul>
 
-<p class="">
-    Prompto runs entirely within your web browser, ensuring a smooth and responsive experience. While Prompto itself
-    doesn't require a server, the language models (LLMs) you interact with may be hosted on external servers. This means
-    that your browser communicates directly with the chosen LLM.
-</p>
 <p class="mt-2">
-    For simplicity and user privacy, all <a routerLink="/settings"
-        class="underline cursor-pointer text-blue-500">settings</a> and chat conversations are stored solely
-    in your browser's local
-    storage.
-    This approach allows you to maintain your preferences and conversation history without the need for server storage,
-    but it also comes with security risks. You can delete all settings and chat conversations at any time on the
-    settings page.
+    Prompto runs entirely in your browser as a Progressive Web Application (PWA). While the interface is serverless,
+    your browser communicates directly with your chosen LLM provider through LangChain.js integrations.
 </p>
+
 <p class="mt-2">
-    Checkout the source code on <a href="https://github.com/antsanchez/prompto" target="_blank"
-        class="underline cursor-pointer text-blue-500">GitHub</a>.
+    For convenience and privacy, all <a routerLink="/settings"
+        class="underline cursor-pointer text-blue-500">settings</a>,
+    chat histories, templates, and configurations are stored in your browser's local storage. While this enables easy
+    access
+    to your data, please note that information in local storage can be accessed by others in some situations. You can
+    clear
+    all stored data at any time from the settings page.
+</p>
+
+<p class="mt-2">
+    View the source code or contribute on <a href="https://github.com/antsanchez/prompto" target="_blank"
+        rel="noopener noreferrer" class="underline cursor-pointer text-blue-500">GitHub</a>. This project is open-source
+    under the MIT License.
 </p>
