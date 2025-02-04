@@ -1,6 +1,14 @@
 # Prompto
 
-Welcome to Prompto, an open-source project designed to provide a user-friendly interface for interacting with a variety of Language Models (LLMs) via LangChain Js. Prompto, a blend of the word 'Prompt' and the Italian word 'Pronto' (meaning ready and quick), is aptly named as it allows for the quick and easy switching between different LLMs, directly from your browser.
+Welcome to Prompto, an open-source Angular application designed to provide a user-friendly interface for interacting with a variety of Language Models (LLMs) via LangChain.js. Prompto, a blend of the word 'Prompt' and the Italian word 'Pronto' (meaning ready and quick), is aptly named as it allows for the quick and easy switching between different LLMs, directly from your browser.
+
+## Technology Stack
+
+- **Frontend**: Angular ^17
+- **UI Framework**: TailwindCSS
+- **Markdown Processing**: Marked with syntax highlighting via highlight.js
+- **LLM Integration**: LangChain.js
+- **PWA Support**: Service Worker
 
 ## Features
 
@@ -10,6 +18,7 @@ Welcome to Prompto, an open-source project designed to provide a user-friendly i
 - **Notebook**: Utilize a notebook feature to send prompts to the LLM and receive responses without prior context or memory.
 - **Templates**: Create, save, and reuse prompts for specific use cases. Incorporate a "contextual" prompt alongside your saved template for dynamic interaction.
 - **Arena**: Engage in a conversation with multiple LLMs simultaneously, comparing their responses side by side.
+- **Discussion**: Create dynamic conversations between multiple AI personas to explore topics from different perspectives.
 
 ## Data Storage and Security
 
@@ -21,17 +30,37 @@ Prompto provides a button on the settings page that allows you to clear all save
 You can view a live example of Prompto by visiting the following link: [Prompto](https://prompto.asanchez.dev/).
 The application can be installed as a PWA on your device.
 
-## Running the Application
+## Installation
 
-The application runs entirely in the browser, providing a seamless user experience. Please note that the actual LLMs are not hosted within the application.
+1. Clone the repository to your local machine
+2. Navigate to the project directory
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Start the development server:
+   ```bash
+   ng serve
+   ```
+5. Open your browser and navigate to `http://localhost:4200`
 
-To run the Prompto on your local machine, follow these steps:
+### Production Build
 
-1. Clone the repository to your local machine.
-2. Navigate to the project directory.
-3. Run `npm install` to install all the necessary dependencies.
-4. Once the installation is complete, run `ng serve` to start the development server.
-5. Open your browser and go to `http://localhost:4200/` to view the application.
+To create a production build:
+
+```bash
+ng build --configuration=production
+```
+
+The build artifacts will be stored in the `dist/prompto` directory.
+
+## Development
+
+The project uses Angular's latest features including:
+- Standalone components
+- Lazy loading for all routes
+- Service workers for PWA support
+- TypeScript strict mode enabled
 
 ## Ollama
 If you are running Ollama and you want to connect it to Prompto from a different domain than localhost, you will need to add the domain to the CORS configuration in the Ollama server. To do this, read the following blog post: [How to Handle CORS Settings in OLLAMA: A Comprehensive Guide](https://medium.com/dcoderai/how-to-handle-cors-settings-in-ollama-a-comprehensive-guide-ee2a5a1beef0) or the official documentation: [How do I configure Ollama server?](https://github.com/ollama/ollama/blob/main/docs/faq.md#how-do-i-configure-ollama-server).
@@ -44,7 +73,14 @@ If you are running Ollama and you want to connect it to Prompto from a different
 
 ## Contributing
 
-If you're interested in contributing, please fork the repository and submit a pull request with your proposed changes. Whether it's feature enhancements, bug fixes, or documentation improvements, all contributions are greatly appreciated.
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a new branch for your feature
+3. Follow the existing code style (2 spaces for indentation as per .editorconfig)
+4. Submit a pull request
+
+Whether it's feature enhancements, bug fixes, or documentation improvements, all contributions are greatly appreciated.
 
 ## License
 

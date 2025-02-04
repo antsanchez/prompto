@@ -1,7 +1,8 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
 import { Keys, SettingsService, System } from '../../services/settings.service';
+import { version } from '../../../../package.json';
 
 @Component({
   selector: 'app-sidebar',
@@ -10,7 +11,9 @@ import { Keys, SettingsService, System } from '../../services/settings.service';
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.css'
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit, OnDestroy {
+
+  public version: string = version;
 
   @Input() sidebarOpen: boolean = true;
   @Output() sidebarOpenChange = new EventEmitter<boolean>();
@@ -20,6 +23,15 @@ export class SidebarComponent {
     public activatedRoute: ActivatedRoute,
     public ss: SettingsService
   ) { }
+  ngOnDestroy(): void {
+    // Perform any necessary cleanup
+    console.log('SidebarComponent is being destroyed');
+  }
+
+  ngOnInit() {
+    // Load initial data
+    this.ss.loadKeys();
+  }
 
   closeSidebar() {
     this.sidebarOpen = false;
@@ -68,6 +80,21 @@ export class SidebarComponent {
     this.router.navigate(['/templates', '']);
   }
 
+  // Navigate to the /discussion route and load the discussion
+  selectDiscussion(discussion: Keys, close: boolean = false) {
+    this.ss.currentDiscussionKey = discussion.key;  // Set current discussion key
+    this.router.navigate(['/discussion', discussion.key]);
+    if (close) {
+      this.closeSidebar();
+    }
+  }
+
+  // Deletes a discussion from the discussion list
+  deleteDiscussion(discussion: Keys) {
+    this.ss.deleteDiscussion(discussion.key);
+    this.router.navigate(['/discussion', '']);
+  }
+
   // Pipe for shorting the name to 20 characters and adding ellipsis
   shortName(name: string) {
     if (name === undefined) {
@@ -89,5 +116,10 @@ export class SidebarComponent {
   // Checks if the app is on the /arena route and if the arena key matches the current key
   isArenaSelected(key: string) {
     return this.router.url.includes("/arena") && this.ss.currentArenaKey === key;
+  }
+
+  // Checks if the app is on the /discussion route and if the discussion key matches the current key
+  isDiscussionSelected(key: string) {
+    return this.router.url.includes("/discussion") && this.ss.currentDiscussionKey === key;
   }
 }

@@ -42,7 +42,7 @@ export class ChatService {
     public lc: LcService,
   ) {
     this.lc.s.loadSettings();
-    this.enterSubmit = this.lc.s.settings.enterSubmit;
+    this.enterSubmit = this.lc.s.settings().enterSubmit;
   }
 
 
@@ -123,7 +123,7 @@ export class ChatService {
     let fullPrompt = PromptTemplate.fromTemplate(
       `Try to guess the theme of this chat conversation based on the first user prompt and give it a brief, 
       descriptive name using only letters, no longer than 50-60 characters (shorter is better). 
-      If you're unsure, repeat the user prompt. 
+      If you're unsure, repeat the user prompt. Answer only with the name of the chat theme. Keep it simple and clear, no more than a few words.
       Here is the user prompt: ${prompt}`
     );
 
@@ -165,7 +165,8 @@ export class ChatService {
     // If this is the first message, create a chat name
     if (this.history.messages.length === 1) {
       let answer = await this.createChatName(prompt, this.lc.llm);
-      this.history.name = answer?.content
+      // Remove any content between <> brackets
+      this.history.name = answer?.content.replace(/<[^>]*>/g, "");
     }
 
     let chain = this.createChatChain(this.lc.llm);
@@ -336,6 +337,26 @@ export class ChatService {
       return "No chat history";
     }
     return chatHistory;
+  }
+
+  loadDiscussion(key: string) {
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+    return null;
+  }
+
+  getSavedDiscussions() {
+    const keys = Object.keys(localStorage).filter(key => key.startsWith('discussion_'));
+    return keys.map(key => ({
+      key,
+      name: JSON.parse(localStorage.getItem(key) || '{}').title || 'Untitled Discussion'
+    }));
+  }
+
+  deleteDiscussion(key: string) {
+    localStorage.removeItem(key);
   }
 
 }
