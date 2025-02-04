@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output, OnInit, OnDestroy } from '@angu
 import { ActivatedRoute, Router } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
 import { Keys, SettingsService, System } from '../../services/settings.service';
+import { version } from '../../../../package.json';
 
 @Component({
   selector: 'app-sidebar',
@@ -11,6 +12,8 @@ import { Keys, SettingsService, System } from '../../services/settings.service';
   styleUrl: './sidebar.component.css'
 })
 export class SidebarComponent implements OnInit, OnDestroy {
+
+  public version: string = version;
 
   @Input() sidebarOpen: boolean = true;
   @Output() sidebarOpenChange = new EventEmitter<boolean>();
