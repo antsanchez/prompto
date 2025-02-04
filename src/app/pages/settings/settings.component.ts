@@ -1,6 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { SharedModule } from '../../shared/shared.module';
-import { Options, SettingsService } from '../../services/settings.service';
+import { Options, SettingsService, Provider } from '../../services/settings.service';
+
+interface State {
+  loading: boolean;
+  loadingDelete: boolean;
+  error: string;
+}
 
 @Component({
   selector: 'app-settings',
@@ -9,76 +15,107 @@ import { Options, SettingsService } from '../../services/settings.service';
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.css'
 })
-export class SettingsComponent {
+export class SettingsComponent implements OnInit {
+  public state: State = {
+    loading: false,
+    loadingDelete: false,
+    error: ''
+  };
 
-  public loading = false;
-  public loadingDelete = false;
   public options: Options = {} as Options;
-  public error: string = '';
+  public selectedTab: Provider = Provider.OLLAMA;
+  public readonly providers = Provider;
 
-  constructor(
-    public ss: SettingsService,
-  ) {
+  constructor(public ss: SettingsService) { }
 
+  async ngOnInit(): Promise<void> {
+    await this.initializeSettings();
   }
 
-  async ngOnInit() {
+  private async initializeSettings(): Promise<void> {
     try {
-      // Load settings
       await this.ss.loadSettings();
-
-      // Get options
+      this.selectedTab = this.ss.getProvider();
       this.options = this.ss.getOptions();
-
-      // Get models
-      await this.ss.getModels(this.options.provider);
+      await this.loadModels(this.options.provider);
       this.ss.setConnected(true);
     } catch (error) {
+      this.handleError('Error initializing settings:', error);
       this.ss.setConnected(false);
-      console.error('Error initializing settings:', error);
     }
   }
 
-  async providerChanged(provider: any) {
-    this.options = this.ss.getOptionsFromProvider(provider);
+  private async loadModels(provider: Provider): Promise<void> {
+    this.clearError();
+    this.options.availableModels = [];
+
     try {
       await this.ss.getModels(provider);
-      this.options.availableModels = this.ss.getAvailableModels(provider);
+      this.options = this.ss.getOptionsFromProvider(provider);
     } catch (error) {
-      this.error = 'There was an error getting the models. Please make sure all settings are correct and try again.';
-      console.error('Error getting models:', error);
+      this.handleError('Error getting models:', error);
     }
   }
 
-  async addedApiKey(apiKey: string) {
+  private handleError(message: string, error: unknown, customMessage?: string): void {
+    this.state.error = customMessage || 'There was an error getting the models. Please make sure all settings are correct and try again.';
+    console.error(message, error);
+  }
+
+  private clearError(): void {
+    this.state.error = '';
+  }
+
+  async providerChanged(provider: Provider): Promise<void> {
+    this.options = this.ss.getOptionsFromProvider(provider);
+    await this.loadModels(provider);
+  }
+
+  async addedApiKey(apiKey: string): Promise<void> {
     this.ss.setApiKeyTemporarily(this.ss.getProvider(), apiKey);
+    await this.loadModels(this.options.provider);
+  }
+
+  save(): void {
+    this.withLoading(() => {
+      this.ss.setOptions(this.options);
+    });
+  }
+
+  private withLoading(action: () => void): void {
+    this.state.loading = true;
     try {
-      await this.ss.getModels(this.options.provider);
-      this.options.availableModels = this.ss.getAvailableModels(this.options.provider);
-    } catch (error) {
-      this.error = 'There was an error getting the models. Please make sure all settings are correct and try again.';
-      console.error('Error getting models:', error);
+      action();
+    } finally {
+      this.state.loading = false;
     }
   }
 
-  save() {
-    this.loading = true;
-    this.ss.setOptions(this.options);
-    this.loading = false;
-  }
-
-  deleteAllLocalStorage() {
-    this.loadingDelete = true;
-    if (confirm('Are you sure you want to delete all chat history and templates? This action cannot be undone.') == true) {
+  deleteAllLocalStorage(): void {
+    this.state.loadingDelete = true;
+    if (confirm('Are you sure you want to delete all chat history and templates? This action cannot be undone.')) {
       try {
         this.ss.deleteAll();
       } catch (error) {
-        this.error = 'There was an error deleting the local storage. Please try again or delete it manually.'
-        console.error('Error deleting local storage:', error);
-        this.loadingDelete = false;
+        this.handleError(
+          'Error deleting local storage:',
+          error,
+          'There was an error deleting the local storage. Please try again or delete it manually.'
+        );
       }
     }
-    this.loadingDelete = false;
+    this.state.loadingDelete = false;
   }
 
+  async selectTab(provider: Provider): Promise<void> {
+    this.selectedTab = provider;
+    await this.providerChanged(provider);
+  }
+
+  async setAsDefault(): Promise<void> {
+    this.options = this.ss.getOptionsFromProvider(this.selectedTab);
+    await this.loadModels(this.selectedTab);
+    this.ss.setOptions(this.options);
+    this.ss.saveSettings();
+  }
 }

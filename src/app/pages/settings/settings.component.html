@@ -1,4 +1,4 @@
-<app-error *ngIf="error" [error]="error"></app-error>
+<app-error *ngIf="state.error" [error]="state.error"></app-error>
 <app-not-connected *ngIf="!ss.isConnected()"></app-not-connected>
 
 <h2 class="py-3 text-lg">LLM Settings</h2>
@@ -15,102 +15,102 @@
     button below.
 </p>
 
-<div class="sm:col-span-3 mt-6">
-    <label for="provider" class="block text-sm font-medium leading-6 text-gray-900">LLM Provider</label>
-    <div class="mt-2">
-        <select id="provider" name="provider" (ngModelChange)="providerChanged($event)"
-            class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6"
-            [(ngModel)]="options.provider">
-            <option *ngFor="let provider of ss.listProviders()" [value]="provider">{{provider}}</option>
-        </select>
-        <p class="text-sm text-gray-500 mt-1 sm:max-w-xl">If you are running Ollama and you want to connect it to
-            Prompto from a different domain than localhost, you will need to add the domain to the CORS configuration in
-            the Ollama server. To do this, read the following blog post: <a
-                href="https://medium.com/dcoderai/how-to-handle-cors-settings-in-ollama-a-comprehensive-guide-ee2a5a1beef0"
-                class="underline text-blue-600 hover:text-blue-400" target="_blank">How to Handle CORS Settings in
-                OLLAMA: A Comprehensive Guide</a> or the official documentation: <a
-                href="https://github.com/ollama/ollama/blob/main/docs/faq.md#how-do-i-configure-ollama-server"
-                class="underline text-blue-600 hover:text-blue-400" target="_blank">How do I configure Ollama
-                server?</a>.
-        </p>
-    </div>
+<!-- Provider Tabs -->
+<div class="border-b border-gray-200 mt-6">
+    <nav class="-mb-px flex space-x-8" aria-label="Providers">
+        <div *ngFor="let provider of ss.listProviders()" class="relative">
+            <button
+                [class]="selectedTab === provider ? 
+                'border-orange-500 text-orange-600 border-b-2 py-4 px-1 text-sm font-medium' : 
+                'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 border-b-2 py-4 px-1 text-sm font-medium'"
+                (click)="selectTab(provider)">
+                {{provider}}
+                <span *ngIf="ss.getProvider() === provider"
+                    class="absolute -top-1 -right-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none transform translate-x-1/2 -translate-y-1/2 rounded-full bg-orange-500 text-white">
+                    Default
+                </span>
+            </button>
+        </div>
+    </nav>
 </div>
 
+<!-- Provider Specific Settings -->
+<div class="mt-6">
+    <!-- Set as Default Provider -->
+    <div class="mb-6">
+        <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" [checked]="ss.getProvider() === selectedTab" (change)="setAsDefault()"
+                class="sr-only peer">
+            <div
+                class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500">
+            </div>
+            <span class="ms-3 text-sm font-medium text-gray-900">Set as Default Provider</span>
+        </label>
+        <p class="text-sm text-gray-500 mt-1">When activated, this provider and its selected model will be used as the
+            default for new chats.</p>
+    </div>
 
-<div class="mt-5" *ngIf="options.provider === 'Ollama'">
-    <div class="sm:col-span-3 mt-5">
-        <label for="url" class="block text-sm font-medium leading-6 text-gray-900">URL</label>
-        <div class="mt-2">
-            <input id="url" name="url" type="text" [(ngModel)]="options.apiUrl"
-                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6">
+    <!-- Ollama Specific Settings -->
+    <div *ngIf="selectedTab === providers.OLLAMA" class="space-y-6">
+        <div class="sm:col-span-3">
+            <label for="url" class="block text-sm font-medium leading-6 text-gray-900">Ollama URL</label>
+            <div class="mt-2">
+                <input id="url" name="url" type="text" [(ngModel)]="options.apiUrl"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6">
+            </div>
         </div>
     </div>
-</div>
 
-<div>
-    <div class="sm:col-span-3 mt-5">
-        <label for="apiKey" class="block text-sm font-medium leading-6 text-gray-900">API Key</label>
-        <div class="mt-2">
-            <input id="apiKey" name="apiKey" type="text" [(ngModel)]="options.apiKey"
-                (ngModelChange)="addedApiKey($event)"
-                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6">
-            <p class="text-sm text-gray-500 mt-1 sm:max-w-xl">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="w-5 h-5 inline text-orange-600">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
-                </svg>
-
-                Your browser will use this key to communicate with the API, and it will be stored in your browser's
-                local storage for convenience. Please be aware that storing sensitive information in local storage comes
-                with security risks. If you are not confortable with this, please consider running <a
-                    href="https://ollama.com/" target="_blank"
-                    class="underline text-blue-600 hover:text-blue-400">Ollama</a> locally, where no API key is
-                required. You can also delete all settings and chat conversations at any time by clicking the button
-                below.
-            </p>
+    <!-- API Key for non-Ollama providers -->
+    <div *ngIf="selectedTab !== providers.OLLAMA" class="space-y-6">
+        <div class="sm:col-span-3">
+            <label for="apiKey" class="block text-sm font-medium leading-6 text-gray-900">{{selectedTab}} API
+                Key</label>
+            <div class="mt-2">
+                <input id="apiKey" name="apiKey" type="text" [(ngModel)]="options.apiKey"
+                    (ngModelChange)="addedApiKey($event)"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6">
+            </div>
         </div>
     </div>
-</div>
 
-<div class="sm:col-span-3 mt-5">
-    <label for="model" class="block text-sm font-medium leading-6 text-gray-900">LLM Model</label>
-    <div class="mt-2">
-        <select id="model" name="model"
-            class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6"
-            [(ngModel)]="options.model">
-            <option *ngFor="let model of options.availableModels" [value]="model">{{model}}</option>
-        </select>
+    <!-- Common Settings -->
+    <div class="space-y-6">
+        <div class="sm:col-span-3">
+            <label for="model" class="block text-sm font-medium leading-6 text-gray-900">Model</label>
+            <div class="mt-2">
+                <select id="model" name="model"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6"
+                    [(ngModel)]="options.model">
+                    <option *ngFor="let model of options.availableModels" [value]="model">{{model}}</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="sm:col-span-3">
+            <label for="temperature" class="block text-sm font-medium leading-6 text-gray-900">Temperature</label>
+            <div class="mt-2">
+                <input id="temperature" name="temperature" type="number" step="0.1" min="0.0" max="1.0"
+                    [(ngModel)]="options.temperature"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6"
+                    oninput="this.value = Math.min(Math.max(parseFloat(this.value), 0.0), 1.0).toFixed(1);">
+            </div>
+        </div>
     </div>
-</div>
 
-<!-- temperature from 0.0 to 1.0 -->
-<div class="sm:col-span-3 mt-5">
-    <label for="temperature" class="block text-sm font-medium leading-6 text-gray-900">Temperature</label>
-    <div class="mt-2">
-        <input id="temperature" name="temperature" type="number" step="0.1" min="0.0" max="1.0"
-            [(ngModel)]="options.temperature"
-            class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6"
-            oninput="this.value = Math.min(Math.max(parseFloat(this.value), 0.0), 1.0).toFixed(1);">
-    </div>
-</div>
-
-
-<button type="submit" (click)="save()"
-    class="inline-flex items-center rounded-md mt-6 bg-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600">
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-        class="mr-2 w-5 h-5">
+    <!-- Save Button -->
+    <button type="submit" (click)="save()"
+        class="inline-flex items-center rounded-md mt-6 bg-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-            class="w-6 h-6">
+            class="mr-2 w-5 h-5">
             <path stroke-linecap="round" stroke-linejoin="round"
                 d="M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0 1 20.25 6v12A2.25 2.25 0 0 1 18 20.25H6A2.25 2.25 0 0 1 3.75 18V6A2.25 2.25 0 0 1 6 3.75h1.5m9 0h-9" />
         </svg>
-    </svg>
+        Save
+    </button>
+</div>
 
-    Save
-</button>
-
-<!-- button for deleting all settings -->
+<!-- Delete Settings Section -->
 <div class="mt-6" id="delete">
     <!-- separator -->
     <div class="border-t border-gray-200"></div>
@@ -123,13 +123,13 @@
 
     <button type="submit" (click)="deleteAllLocalStorage()"
         class="inline-flex items-center rounded-md mt-6 bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
-        <svg *ngIf="!loadingDelete" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+        <svg *ngIf="!state.loadingDelete" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
             stroke-width="1.5" stroke="currentColor" class="mr-2 w-5 h-5">
             <path stroke-linecap="round" stroke-linejoin="round"
                 d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
         </svg>
-        <svg *ngIf="loadingDelete" class="animate-spin mr-2 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none"
-            viewBox="0 0 24 24">
+        <svg *ngIf="state.loadingDelete" class="animate-spin mr-2 w-5 h-5" xmlns="http://www.w3.org/2000/svg"
+            fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor"
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">

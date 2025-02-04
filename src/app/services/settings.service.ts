@@ -1,6 +1,44 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { lastValueFrom } from 'rxjs';
+import { signal } from '@angular/core';
+
+export enum Provider {
+  OLLAMA = 'Ollama',
+  OPENAI = 'OpenAI',
+  ANTHROPIC = 'Anthropic',
+  MISTRAL = 'Mistral',
+  COHERE = 'Cohere',
+  GOOGLE = 'Google'
+}
+
+export interface ISettingsService {
+  checkConnection(): void;
+  clearAndResetOptions(): void;
+  deleteAll(): void;
+  deleteArena(key: string): void;
+  deleteChat(key: string): void;
+  deleteDiscussion(key: string): void;
+  deleteTemplate(name: string): void;
+  getAvailableModels(provider: Provider): string[];
+  getModel(): string;
+  getModels(provider: Provider): Promise<void>;
+  getOptions(): Options;
+  getOptionsFromProvider(provider: Provider): Options;
+  getProvider(): Provider;
+  getTemperature(): number;
+  isConnected(): boolean;
+  listProviders(): Provider[];
+  loadKeys(): void;
+  loadSettings(): void;
+  loadTemplates(): void;
+  saveSettings(): void;
+  setApiKeyTemporarily(provider: Provider, apiKey: string): void;
+  setConnected(connected: boolean): void;
+  setDefaultSettings(): void;
+  setEnterSubmit(enterSubmit: boolean): void;
+  setOptions(options: Options): void;
+}
 
 export type Keys = {
   key: string;
@@ -13,13 +51,13 @@ export type System = {
 };
 
 export type Settings = {
-  provider: string;
-  enterSubmit: boolean;
-  options: { [provider: string]: Options }
+  readonly provider: Provider;
+  readonly enterSubmit: boolean;
+  readonly options: Readonly<Record<Provider, Options>>;
 };
 
 export type Options = {
-  provider: string;
+  provider: Provider;
   model: string;
   apiKey: string;
   apiUrl: string;
@@ -27,63 +65,54 @@ export type Options = {
   availableModels: string[];
 };
 
-export const PROVIDERS = {
-  OLLAMA: 'Ollama',
-  OPENAI: 'OpenAI',
-  ANTHROPIC: 'Anthropic',
-  MISTRAL: 'Mistral',
-  COHERE: 'Cohere',
-  GOOGLE: 'Google',
-};
-
 const DEFAULT_TEMPERATURE = 0.7;
 
 const DEFAULT_SETTINGS: Settings = {
-  provider: PROVIDERS.OLLAMA,
+  provider: Provider.OLLAMA,
   enterSubmit: false,
   options: {
-    [PROVIDERS.OLLAMA]: {
-      provider: PROVIDERS.OLLAMA,
+    [Provider.OLLAMA]: {
+      provider: Provider.OLLAMA,
       model: 'llama3',
       apiKey: '',
       apiUrl: 'http://localhost:11434',
       temperature: DEFAULT_TEMPERATURE,
       availableModels: []
     },
-    [PROVIDERS.OPENAI]: {
-      provider: PROVIDERS.OPENAI,
+    [Provider.OPENAI]: {
+      provider: Provider.OPENAI,
       model: 'gpt-4.5-turbo',
       apiKey: '',
       apiUrl: '',
       temperature: DEFAULT_TEMPERATURE,
       availableModels: []
     },
-    [PROVIDERS.ANTHROPIC]: {
-      provider: PROVIDERS.ANTHROPIC,
+    [Provider.ANTHROPIC]: {
+      provider: Provider.ANTHROPIC,
       model: 'claude-3-5-sonnet-20240620',
       apiKey: '',
       apiUrl: '',
       temperature: DEFAULT_TEMPERATURE,
       availableModels: []
     },
-    [PROVIDERS.MISTRAL]: {
-      provider: PROVIDERS.MISTRAL,
+    [Provider.MISTRAL]: {
+      provider: Provider.MISTRAL,
       model: '',
       apiKey: '',
       apiUrl: '',
       temperature: DEFAULT_TEMPERATURE,
       availableModels: []
     },
-    [PROVIDERS.COHERE]: {
-      provider: PROVIDERS.COHERE,
+    [Provider.COHERE]: {
+      provider: Provider.COHERE,
       model: '',
       apiKey: '',
       apiUrl: '',
       temperature: DEFAULT_TEMPERATURE,
       availableModels: []
     },
-    [PROVIDERS.GOOGLE]: {
-      provider: PROVIDERS.GOOGLE,
+    [Provider.GOOGLE]: {
+      provider: Provider.GOOGLE,
       model: '',
       apiKey: '',
       apiUrl: '',
@@ -96,10 +125,12 @@ const DEFAULT_SETTINGS: Settings = {
 @Injectable({
   providedIn: 'root'
 })
-export class SettingsService {
+export class SettingsService implements ISettingsService {
+  // Change from private to public and rename
+  public readonly settings = signal<Settings>({} as Settings);
+  public readonly savedDiscussionsSignal = signal<number>(0);
+  public readonly savedDiscussions$ = this.savedDiscussionsSignal.asReadonly();
 
-  // Settings are saved into the local storage
-  public settings: Settings = {} as Settings;
   private connectionChecked: boolean = false;
   private connected: boolean = false;
 
@@ -109,110 +140,132 @@ export class SettingsService {
   public arenas: Keys[] = [] as Keys[];
   public currentArenaKey: string = "";
 
+  public discussions: Keys[] = [] as Keys[];
+  public currentDiscussionKey: string = "";
+
   public templates: System[] = [] as System[];
   public currentTemplateName: string = "";
 
   constructor(private http: HttpClient) { }
 
-  // loadSettings loads the settings from the local storage
-  public loadSettings() {
+  private handleError(error: unknown, message: string): never {
+    if (error instanceof Error) {
+      throw new Error(`${message}: ${error.message}`);
+    }
+    throw new Error(message);
+  }
+
+  public loadSettings(): void {
     let settings = localStorage.getItem('settings');
     if (settings) {
-      this.settings = JSON.parse(settings) as Settings;
+      this.settings.set(JSON.parse(settings) as Settings);
     }
 
-    // Check if the settings are empty
-    if (Object.keys(this.settings).length === 0) {
+    if (Object.keys(this.settings()).length === 0) {
       this.setDefaultSettings();
     }
 
     for (let provider of this.listProviders()) {
-      if (!this.settings.options[provider]) {
-        this.settings.options[provider] = DEFAULT_SETTINGS.options[provider];
+      if (!this.settings().options[provider]) {
+        const currentSettings = this.settings();
+        const newSettings = {
+          ...currentSettings,
+          options: {
+            ...currentSettings.options,
+            [provider]: DEFAULT_SETTINGS.options[provider]
+          }
+        };
+        this.settings.set(newSettings);
       }
     }
   }
 
-  // getSettings sets the default settings
-  public setDefaultSettings() {
-    this.settings = DEFAULT_SETTINGS;
+  public setDefaultSettings(): void {
+    this.settings.set(DEFAULT_SETTINGS);
   }
 
-  // saveSettings saves the settings to the local storage
-  public saveSettings() {
-    localStorage.setItem('settings', JSON.stringify(this.settings));
+  public saveSettings(): void {
+    localStorage.setItem('settings', JSON.stringify(this.settings()));
   }
 
-  // setOptions sets the options for the provider
-  public setOptions(options: Options) {
+  public setOptions(options: Options): void {
     if (!this.listProviders().includes(options.provider)) {
       throw new Error(`setOptions Unsupported provider: ${options.provider}`);
     }
-    this.settings.provider = options.provider;
-    this.settings.options[options.provider] = options;
+    const currentSettings = this.settings();
+    this.settings.set({
+      ...currentSettings,
+      provider: options.provider,
+      options: {
+        ...currentSettings.options,
+        [options.provider]: options
+      }
+    });
     this.saveSettings();
   }
 
-  // setEnterSubmit sets the enterSubmit setting
-  public setEnterSubmit(enterSubmit: boolean) {
-    this.settings.enterSubmit = enterSubmit;
+  public setEnterSubmit(enterSubmit: boolean): void {
+    const currentSettings = this.settings();
+    this.settings.set({
+      ...currentSettings,
+      enterSubmit
+    });
     this.saveSettings();
   }
 
-  // getProvider returns the provider
-  public getProvider(): string {
-    return this.settings.provider;
+  public getProvider(): Provider {
+    return this.settings().provider;
   }
 
-  // getModel returns the model
   public getModel(): string {
-    return this.settings.options[this.getProvider()]?.model || '';
+    return this.settings().options[this.getProvider()]?.model || '';
   }
 
-  // getOptions returns the options for the provider
-  public getOptions() {
-    return this.settings.options[this.getProvider()];
+  public getOptions(): Options {
+    return this.settings().options[this.getProvider()];
   }
 
-  // clearAndResetOptions clears and resets the options 
-  public clearAndResetOptions() {
+  public clearAndResetOptions(): void {
     localStorage.removeItem('settings');
     this.setDefaultSettings();
   }
 
-  // getTemperature returns the temperature
   public getTemperature(): number {
-    return this.settings.options[this.getProvider()]?.temperature || DEFAULT_TEMPERATURE;
+    return this.settings().options[this.getProvider()]?.temperature || DEFAULT_TEMPERATURE;
   }
 
-  // listProviders returns the list of providers from the PROVIDERS object
-  public listProviders(): string[] {
-    return Object.values(PROVIDERS);
+  public listProviders(): Provider[] {
+    return Object.values(Provider);
   }
 
-  // getOptionsFromProvider returns the options for the provider
-  public getOptionsFromProvider(provider: string) {
-    return this.settings.options[provider];
+  public getOptionsFromProvider(provider: Provider): Options {
+    return this.settings().options[provider];
   }
 
-  // getAvailableModels returns the available models for the provider
-  public getAvailableModels(provider: string) {
-    return this.settings.options[provider].availableModels;
+  public getAvailableModels(provider: Provider): string[] {
+    return this.settings().options[provider].availableModels;
   }
 
-  // This function is used to set the API key temporarily, in order to be able to get the models
-  public setApiKeyTemporarily(provider: string, apiKey: string) {
-    this.settings.options[provider].apiKey = apiKey;
+  public setApiKeyTemporarily(provider: Provider, apiKey: string): void {
+    const currentSettings = this.settings();
+    this.settings.set({
+      ...currentSettings,
+      options: {
+        ...currentSettings.options,
+        [provider]: {
+          ...currentSettings.options[provider],
+          apiKey
+        }
+      }
+    });
   }
 
-  // setConnected sets the connection status
-  public setConnected(connected: boolean) {
+  public setConnected(connected: boolean): void {
     this.connectionChecked = true;
     this.connected = connected;
   }
 
-  // checkConnection checks if the service is connected, and connects if it is not
-  public checkConnection() {
+  public checkConnection(): void {
     if (!this.connectionChecked) {
       try {
         this.getModels(this.getProvider());
@@ -223,36 +276,39 @@ export class SettingsService {
     }
   }
 
-  // isConnected returns true if the the service is connected
   public isConnected(): boolean {
     if (!this.connected && this.connectionChecked) {
       console.log('Not connected')
       return false;
     }
-    if (this.settings.options[this.getProvider()].availableModels.length === 0) {
+    if (this.settings().options[this.getProvider()].availableModels.length === 0) {
       return false;
     }
     return true;
   }
 
-  // Get ollama models from the server
   async getModelsFromOllama(): Promise<void> {
-    const url = this.settings.options[PROVIDERS.OLLAMA].apiUrl + '/api/tags';
+    const url = this.settings().options[Provider.OLLAMA].apiUrl + '/api/tags';
     try {
       const data: any = await lastValueFrom(this.http.get(url));
-      this.settings.options[PROVIDERS.OLLAMA].availableModels = [] as string[];
-      for (let model of data?.models as any[]) {
-        this.settings.options[PROVIDERS.OLLAMA].availableModels.push(model?.name);
-      }
+      const currentSettings = this.settings();
+      this.settings.set({
+        ...currentSettings,
+        options: {
+          ...currentSettings.options,
+          [Provider.OLLAMA]: {
+            ...currentSettings.options[Provider.OLLAMA],
+            availableModels: data?.models?.map((model: any) => model.name) || []
+          }
+        }
+      });
     } catch (e) {
-      console.error('Error getting Ollama models:', e);
-      throw new Error('Error getting Ollama models');
+      this.handleError(e, 'Error getting Ollama models');
     }
   }
 
-  // Get OpenAI models from the server
   async getModelsFromOpenAI(): Promise<void> {
-    if (!this.settings.options[PROVIDERS.OPENAI].apiKey) {
+    if (!this.settings().options[Provider.OPENAI].apiKey) {
       console.info('Aborting getOpenAIModels because there is no API key');
       return;
     }
@@ -260,34 +316,58 @@ export class SettingsService {
       const url = 'https://api.openai.com/v1/engines';
       const data = await lastValueFrom(this.http.get(url, {
         headers: {
-          'Authorization': `Bearer ${this.settings.options[PROVIDERS.OPENAI].apiKey}`
+          'Authorization': `Bearer ${this.settings().options[Provider.OPENAI].apiKey}`
         }
       })) as any;
-      this.settings.options[PROVIDERS.OPENAI].availableModels = [];
-      for (let model of data?.data as any[]) {
-        this.settings.options[PROVIDERS.OPENAI].availableModels.push(model?.id);
-      }
+      const currentSettings = this.settings();
+      this.settings.set({
+        ...currentSettings,
+        options: {
+          ...currentSettings.options,
+          [Provider.OPENAI]: {
+            ...currentSettings.options[Provider.OPENAI],
+            availableModels: data?.data?.map((model: any) => model.id) || []
+          }
+        }
+      });
     } catch (e) {
-      console.error('Error getting OpenAI models:', e);
-      throw new Error('Error getting OpenAI models');
+      this.handleError(e, 'Error getting OpenAI models');
+    }
+  }
+
+  async getModelsFromAnthropic(): Promise<void> {
+    if (!this.settings().options[Provider.ANTHROPIC].apiKey) {
+      console.info('Aborting getAnthropicModels because there is no API key');
+      return;
     }
 
+    try {
+      const url = 'https://api.anthropic.com/v1/models';
+      const data = await lastValueFrom(this.http.get(url, {
+        headers: {
+          'x-api-key': `${this.settings().options[Provider.ANTHROPIC].apiKey}`,
+          'anthropic-version': '2023-06-01'
+        }
+      })) as any;
+
+      const currentSettings = this.settings();
+      this.settings.set({
+        ...currentSettings,
+        options: {
+          ...currentSettings.options,
+          [Provider.ANTHROPIC]: {
+            ...currentSettings.options[Provider.ANTHROPIC],
+            availableModels: data?.models?.map((model: any) => model.id) || []
+          }
+        }
+      });
+    } catch (e) {
+      this.handleError(e, 'Error getting Anthropic models');
+    }
   }
 
-  // Get Anthropic models (hardcoded for now, since there is no API to get the models)
-  getModelsFromAnthropic() {
-    this.settings.options[PROVIDERS.ANTHROPIC].availableModels = [
-      'claude-3-haiku-20240307',
-      'claude-3-sonnet-20240229',
-      'claude-3-opus-latest',
-      'claude-3-5-sonnet-latest',
-      'claude-3-5-haiku-latest',
-    ];
-  }
-
-  // Get Mistral models from the server
   async getModelsFromMistral(): Promise<void> {
-    if (!this.settings.options[PROVIDERS.MISTRAL].apiKey) {
+    if (!this.settings().options[Provider.MISTRAL].apiKey) {
       console.info('Aborting getOpenAIModels because there is no API key');
       return;
     }
@@ -295,22 +375,27 @@ export class SettingsService {
       const url = 'https://api.mistralai.com/v1/models';
       const data = await lastValueFrom(this.http.get(url, {
         headers: {
-          'Authorization': `Bearer ${this.settings.options[PROVIDERS.MISTRAL].apiKey}`
+          'Authorization': `Bearer ${this.settings().options[Provider.MISTRAL].apiKey}`
         }
       })) as any;
-      this.settings.options[PROVIDERS.MISTRAL].availableModels = [];
-      for (let model of data?.data as any[]) {
-        this.settings.options[PROVIDERS.MISTRAL].availableModels.push(model?.id);
-      }
+      const currentSettings = this.settings();
+      this.settings.set({
+        ...currentSettings,
+        options: {
+          ...currentSettings.options,
+          [Provider.MISTRAL]: {
+            ...currentSettings.options[Provider.MISTRAL],
+            availableModels: data?.data?.map((model: any) => model.id) || []
+          }
+        }
+      });
     } catch (e) {
-      console.error('Error getting Mistral models:', e);
-      throw new Error('Error getting Mistral models');
+      this.handleError(e, 'Error getting Mistral models');
     }
   }
 
-  // Get Cohere models from the server
   async getModelsFromCohere(): Promise<void> {
-    if (!this.settings.options[PROVIDERS.COHERE].apiKey) {
+    if (!this.settings().options[Provider.COHERE].apiKey) {
       console.info('Aborting getCohereModels because there is no API key');
       return;
     }
@@ -320,87 +405,155 @@ export class SettingsService {
       const data = await lastValueFrom(this.http.get(url, {
         headers: {
           'accept': 'application/json',
-          'Authorization': `Bearer ${this.settings.options[PROVIDERS.COHERE].apiKey}`
+          'Authorization': `Bearer ${this.settings().options[Provider.COHERE].apiKey}`
         }
       })) as any;
-      this.settings.options[PROVIDERS.COHERE].availableModels = [];
-      for (let model of data?.models as any[]) {
-        this.settings.options[PROVIDERS.COHERE].availableModels.push(model?.name);
-      }
+      const currentSettings = this.settings();
+      this.settings.set({
+        ...currentSettings,
+        options: {
+          ...currentSettings.options,
+          [Provider.COHERE]: {
+            ...currentSettings.options[Provider.COHERE],
+            availableModels: data?.models?.map((model: any) => model.name) || []
+          }
+        }
+      });
     } catch (e) {
-      console.error('Error getting Cohere models:', e);
-      throw new Error('Error getting Cohere models');
+      this.handleError(e, 'Error getting Cohere models');
     }
   }
 
-  // getModelsFromGoogle gets the models from Google
-  async getModelsFromGoogle() {
-    this.settings.options[PROVIDERS.GOOGLE].availableModels = [
-      'gemini-1.5-flash',
-      'gemini-1.5-pro',
-      'gemini-1.0-pro'
-    ];
-  }
+  async getModelsFromGoogle(): Promise<void> {
+    if (!this.settings().options[Provider.GOOGLE].apiKey) {
+      console.info('Aborting getGoogleModels because there is no API key');
+      return;
+    }
 
-  // getModels gets the models from the server
-  async getModels(provider: string): Promise<void> {
-    switch (provider) {
-      case PROVIDERS.OLLAMA:
-        await this.getModelsFromOllama();
-        break;
-      case PROVIDERS.OPENAI:
-        await this.getModelsFromOpenAI();
-        break;
-      case PROVIDERS.ANTHROPIC:
-        this.getModelsFromAnthropic();
-        break;
-      case PROVIDERS.MISTRAL:
-        await this.getModelsFromMistral();
-        break;
-      case PROVIDERS.COHERE:
-        await this.getModelsFromCohere();
-        break;
-      case PROVIDERS.GOOGLE:
-        await this.getModelsFromGoogle();
-        break;
+    try {
+      const url = 'https://generativelanguage.googleapis.com/v1/models';
+      const data = await lastValueFrom(this.http.get(`${url}?key=${this.settings().options[Provider.GOOGLE].apiKey}`)) as any;
+
+      const currentSettings = this.settings();
+      this.settings.set({
+        ...currentSettings,
+        options: {
+          ...currentSettings.options,
+          [Provider.GOOGLE]: {
+            ...currentSettings.options[Provider.GOOGLE],
+            availableModels: data?.models?.filter((model: any) => model?.supportedGenerationMethods?.includes('generateContent')).map((model: any) => model.name) || []
+          }
+        }
+      });
+    } catch (e) {
+      this.handleError(e, 'Error getting Google models');
     }
   }
 
-  // load all chat names from local storage
-  loadKeys() {
+  public async getModels(provider: Provider): Promise<void> {
+    try {
+      switch (provider) {
+        case Provider.OLLAMA:
+          await this.getModelsFromOllama();
+          break;
+        case Provider.OPENAI:
+          await this.getModelsFromOpenAI();
+          break;
+        case Provider.ANTHROPIC:
+          await this.getModelsFromAnthropic();
+          break;
+        case Provider.MISTRAL:
+          await this.getModelsFromMistral();
+          break;
+        case Provider.COHERE:
+          await this.getModelsFromCohere();
+          break;
+        case Provider.GOOGLE:
+          await this.getModelsFromGoogle();
+          break;
+        default:
+          throw new Error(`Unsupported provider: ${provider}`);
+      }
+    } catch (error) {
+      this.handleError(error, `Failed to get models for ${provider}`);
+    }
+  }
+
+  loadKeys(): void {
     this.chats = [] as Keys[];
+    this.loadChatsFromStorage();
+
+    this.arenas = [] as Keys[];
+    this.loadArenasFromStorage();
+
+    this.discussions = [] as Keys[];
+    this.loadDiscussionsFromStorage();
+
+    // Update the signal by incrementing its value
+    this.savedDiscussionsSignal.set(this.savedDiscussionsSignal() + 1);
+  }
+
+  private loadChatsFromStorage(): void {
     for (let i = 0; i < localStorage.length; i++) {
       let key = localStorage.key(i);
       if (key && key.startsWith("chat_")) {
-        let chat = localStorage.getItem(key);
-        if (chat) {
-          let chatObj = JSON.parse(chat);
-          this.chats.push({
-            key: key,
-            name: chatObj.name
-          });
-        }
-      }
-    }
-
-    this.arenas = [] as Keys[];
-    for (let i = 0; i < localStorage.length; i++) {
-      let key = localStorage.key(i);
-      if (key && key.startsWith("arena_")) {
-        let arena = localStorage.getItem(key);
-        if (arena) {
-          let arenaObj = JSON.parse(arena);
-          this.arenas.push({
-            key: key,
-            name: arenaObj.name
-          });
+        try {
+          let chat = localStorage.getItem(key);
+          if (chat) {
+            let chatObj = JSON.parse(chat);
+            this.chats.push({
+              key: key,
+              name: chatObj.title || 'Untitled Chat'
+            });
+          }
+        } catch (error) {
+          console.error('Error loading chat:', error);
         }
       }
     }
   }
 
-  // get retrieves the templates from local storage
-  public loadTemplates() {
+  private loadArenasFromStorage(): void {
+    for (let i = 0; i < localStorage.length; i++) {
+      let key = localStorage.key(i);
+      if (key && key.startsWith("arena_")) {
+        try {
+          let arena = localStorage.getItem(key);
+          if (arena) {
+            let arenaObj = JSON.parse(arena);
+            this.arenas.push({
+              key: key,
+              name: arenaObj.title || 'Untitled Arena'
+            });
+          }
+        } catch (error) {
+          console.error('Error loading arena:', error);
+        }
+      }
+    }
+  }
+
+  private loadDiscussionsFromStorage(): void {
+    for (let i = 0; i < localStorage.length; i++) {
+      let key = localStorage.key(i);
+      if (key && key.startsWith("discussion_")) {
+        try {
+          let discussion = localStorage.getItem(key);
+          if (discussion) {
+            let discussionObj = JSON.parse(discussion);
+            this.discussions.push({
+              key: key,
+              name: discussionObj.title || 'Untitled Discussion'
+            });
+          }
+        } catch (error) {
+          console.error('Error loading discussion:', error);
+        }
+      }
+    }
+  }
+
+  public loadTemplates(): void {
     let tmpl = localStorage.getItem('templates');
     if (tmpl === null) {
       this.templates = [] as System[];
@@ -409,8 +562,7 @@ export class SettingsService {
     }
   }
 
-  // deleteArena deletes the arena from local storage
-  public deleteArena(key: string) {
+  public deleteArena(key: string): void {
     localStorage.removeItem(key);
     this.arenas = this.arenas.filter((arena) => arena.key !== key);
     if (this.currentArenaKey === key) {
@@ -418,8 +570,7 @@ export class SettingsService {
     }
   }
 
-  // delete chat from local storage
-  public deleteChat(key: string) {
+  public deleteChat(key: string): void {
     localStorage.removeItem(key);
     this.chats = this.chats.filter((chat) => chat.key !== key);
     if (this.currentChatKey === key) {
@@ -427,15 +578,21 @@ export class SettingsService {
     }
   }
 
-  // deleteTemplate deletes the template from local storage
-  public deleteTemplate(name: string) {
+  public deleteTemplate(name: string): void {
     this.loadTemplates();
     this.templates = this.templates.filter((template) => template.name !== name);
     localStorage.setItem('templates', JSON.stringify(this.templates));
   }
 
-  public deleteAll() {
-    // Chats 
+  public deleteDiscussion(key: string): void {
+    localStorage.removeItem(key);
+    this.discussions = this.discussions.filter((discussion) => discussion.key !== key);
+    if (this.currentDiscussionKey === key) {
+      this.currentDiscussionKey = "";
+    }
+  }
+
+  public deleteAll(): void {
     for (let i = 0; i < localStorage.length; i++) {
       let key = localStorage.key(i);
       if (key && key.startsWith("chat_")) {
@@ -445,7 +602,6 @@ export class SettingsService {
     this.currentChatKey = "";
     this.chats = [] as Keys[];
 
-    // Arenas
     for (let i = 0; i < localStorage.length; i++) {
       let key = localStorage.key(i);
       if (key && key.startsWith("arena_")) {
@@ -455,11 +611,16 @@ export class SettingsService {
     this.currentArenaKey = "";
     this.arenas = [] as Keys[];
 
-    // Templates
     localStorage.removeItem('templates');
     this.templates = [] as System[];
 
-    // Options
+    for (let i = 0; i < localStorage.length; i++) {
+      let key = localStorage.key(i);
+      if (key && key.startsWith("discussion_")) {
+        localStorage.removeItem(key);
+      }
+    }
+
     this.clearAndResetOptions();
   }
 }

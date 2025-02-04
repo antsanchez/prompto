@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavigationEnd, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, RouterOutlet } from '@angular/router';
 import { Router, ActivatedRoute } from '@angular/router';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { SettingsService } from './services/settings.service';
@@ -11,8 +11,6 @@ import { SettingsService } from './services/settings.service';
   imports: [
     SidebarComponent,
     RouterOutlet,
-    RouterLink,
-    RouterLinkActive,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'

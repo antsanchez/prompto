@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { PromptTemplate } from "@langchain/core/prompts";
 import { Runnable } from '@langchain/core/runnables';
-import { PROVIDERS, SettingsService } from './settings.service';
+import { Provider, SettingsService } from './settings.service';
 
 
 @Injectable({
@@ -21,82 +21,82 @@ export class LcService {
   // createLLM creates the LLM based on the provider
   async createLLM(provider: string, model: string = '') {
     if (model === '' || !model) {
-      model = this.s.settings.options[provider].model;
+      model = this.s.settings().options[provider as Provider].model;
     }
 
     // Check if the class is already cached
     if (this.cache[provider]) {
       return new this.cache[provider]({
-        apiKey: this.s.settings.options[provider].apiKey,
+        apiKey: this.s.settings().options[provider as Provider].apiKey,
         model: model,
-        temperature: this.s.settings.options[provider].temperature,
-        baseUrl: this.s.settings.options[provider].apiUrl,
+        temperature: this.s.settings().options[provider as Provider].temperature,
+        baseUrl: this.s.settings().options[provider as Provider].apiUrl,
       });
     }
 
     switch (provider) {
-      case PROVIDERS.OPENAI:
-        if (!this.s.settings.options[PROVIDERS.OPENAI].apiKey) {
+      case Provider.OPENAI:
+        if (!this.s.settings().options[Provider.OPENAI].apiKey) {
           throw new Error('No API key');
         }
         const { ChatOpenAI } = await import('@langchain/openai');
-        this.cache[PROVIDERS.OPENAI] = ChatOpenAI;
+        this.cache[Provider.OPENAI] = ChatOpenAI;
         return new ChatOpenAI({
-          apiKey: this.s.settings.options[PROVIDERS.OPENAI].apiKey,
+          apiKey: this.s.settings().options[Provider.OPENAI].apiKey,
           model: model,
-          temperature: this.s.settings.options[PROVIDERS.OPENAI].temperature,
+          temperature: this.s.settings().options[Provider.OPENAI].temperature,
         });
-      case PROVIDERS.OLLAMA:
+      case Provider.OLLAMA:
         const { ChatOllama } = await import('@langchain/ollama');
-        this.cache[PROVIDERS.OLLAMA] = ChatOllama;
+        this.cache[Provider.OLLAMA] = ChatOllama;
         return new ChatOllama({
-          baseUrl: this.s.settings.options[PROVIDERS.OLLAMA].apiUrl,
+          baseUrl: this.s.settings().options[Provider.OLLAMA].apiUrl,
           model: model,
-          temperature: this.s.settings.options[PROVIDERS.OLLAMA].temperature,
+          temperature: this.s.settings().options[Provider.OLLAMA].temperature,
         });
-      case PROVIDERS.ANTHROPIC:
-        if (!this.s.settings.options[PROVIDERS.ANTHROPIC].apiKey) {
+      case Provider.ANTHROPIC:
+        if (!this.s.settings().options[Provider.ANTHROPIC].apiKey) {
           throw new Error('No API key');
         }
         const { ChatAnthropic } = await import('@langchain/anthropic');
-        this.cache[PROVIDERS.ANTHROPIC] = ChatAnthropic;
+        this.cache[Provider.ANTHROPIC] = ChatAnthropic;
         return new ChatAnthropic({
-          apiKey: this.s.settings.options[PROVIDERS.ANTHROPIC].apiKey,
+          apiKey: this.s.settings().options[Provider.ANTHROPIC].apiKey,
           model: model,
-          temperature: this.s.settings.options[PROVIDERS.ANTHROPIC].temperature,
+          temperature: this.s.settings().options[Provider.ANTHROPIC].temperature,
         });
-      case PROVIDERS.MISTRAL:
-        if (!this.s.settings.options[PROVIDERS.MISTRAL].apiKey) {
+      case Provider.MISTRAL:
+        if (!this.s.settings().options[Provider.MISTRAL].apiKey) {
           throw new Error('No API key');
         }
         const { ChatMistralAI } = await import('@langchain/mistralai');
-        this.cache[PROVIDERS.MISTRAL] = ChatMistralAI;
+        this.cache[Provider.MISTRAL] = ChatMistralAI;
         return new ChatMistralAI({
-          apiKey: this.s.settings.options[PROVIDERS.MISTRAL].apiKey,
+          apiKey: this.s.settings().options[Provider.MISTRAL].apiKey,
           model: model,
-          temperature: this.s.settings.options[PROVIDERS.MISTRAL].temperature,
+          temperature: this.s.settings().options[Provider.MISTRAL].temperature,
         });
-      case PROVIDERS.COHERE:
-        if (!this.s.settings.options[PROVIDERS.COHERE].apiKey) {
+      case Provider.COHERE:
+        if (!this.s.settings().options[Provider.COHERE].apiKey) {
           throw new Error('No API key');
         }
         const { ChatCohere } = await import('@langchain/cohere');
-        this.cache[PROVIDERS.COHERE] = ChatCohere;
+        this.cache[Provider.COHERE] = ChatCohere;
         return new ChatCohere({
-          apiKey: this.s.settings.options[PROVIDERS.COHERE].apiKey,
+          apiKey: this.s.settings().options[Provider.COHERE].apiKey,
           model: model,
-          temperature: this.s.settings.options[PROVIDERS.COHERE].temperature,
+          temperature: this.s.settings().options[Provider.COHERE].temperature,
         });
-      case PROVIDERS.GOOGLE:
-        if (!this.s.settings.options[PROVIDERS.GOOGLE].apiKey) {
+      case Provider.GOOGLE:
+        if (!this.s.settings().options[Provider.GOOGLE].apiKey) {
           throw new Error('No API key');
         }
         const { ChatGoogleGenerativeAI } = await import('@langchain/google-genai');
-        this.cache[PROVIDERS.GOOGLE] = ChatGoogleGenerativeAI;
+        this.cache[Provider.GOOGLE] = ChatGoogleGenerativeAI;
         return new ChatGoogleGenerativeAI({
-          apiKey: this.s.settings.options[PROVIDERS.GOOGLE].apiKey,
+          apiKey: this.s.settings().options[Provider.GOOGLE].apiKey,
           model: model,
-          temperature: this.s.settings.options[PROVIDERS.GOOGLE].temperature,
+          temperature: this.s.settings().options[Provider.GOOGLE].temperature,
         });
     }
     throw new Error('Unsupported provider');

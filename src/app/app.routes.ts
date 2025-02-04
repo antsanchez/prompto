@@ -38,6 +38,18 @@ export const routes: Routes = [
         data: { title: "Arena" }
     },
     {
+        path: 'discussion',
+        loadComponent: () => import('./pages/discussion/discussion.component').then(m => m.DiscussionComponent),
+        title: 'Discussion',
+        data: { title: "Discussion" }
+    },
+    {
+        path: 'discussion/:discussion',
+        loadComponent: () => import('./pages/discussion/discussion.component').then(m => m.DiscussionComponent),
+        title: 'Discussion',
+        data: { title: "Discussion" }
+    },
+    {
         path: 'notebook',
         loadComponent: () => import('./pages/notebook/notebook.component').then(m => m.NotebookComponent),
         title: 'Notebook',
