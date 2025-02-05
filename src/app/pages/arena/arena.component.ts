@@ -89,7 +89,6 @@ export class ArenaComponent {
 
   async chatArena() {
     if (!this.cs.arenaStarted) {
-      console.log('Arena not started, starting now.')
       try {
         this.cs.startArena();
       } catch (error) {
