@@ -278,7 +278,6 @@ export class SettingsService implements ISettingsService {
 
   public isConnected(): boolean {
     if (!this.connected && this.connectionChecked) {
-      console.log('Not connected')
       return false;
     }
     if (this.settings().options[this.getProvider()].availableModels.length === 0) {
@@ -309,7 +308,6 @@ export class SettingsService implements ISettingsService {
 
   async getModelsFromOpenAI(): Promise<void> {
     if (!this.settings().options[Provider.OPENAI].apiKey) {
-      console.info('Aborting getOpenAIModels because there is no API key');
       return;
     }
     try {
@@ -337,7 +335,6 @@ export class SettingsService implements ISettingsService {
 
   async getModelsFromAnthropic(): Promise<void> {
     if (!this.settings().options[Provider.ANTHROPIC].apiKey) {
-      console.info('Aborting getAnthropicModels because there is no API key');
       return;
     }
 
@@ -368,7 +365,6 @@ export class SettingsService implements ISettingsService {
 
   async getModelsFromMistral(): Promise<void> {
     if (!this.settings().options[Provider.MISTRAL].apiKey) {
-      console.info('Aborting getOpenAIModels because there is no API key');
       return;
     }
     try {
@@ -396,7 +392,6 @@ export class SettingsService implements ISettingsService {
 
   async getModelsFromCohere(): Promise<void> {
     if (!this.settings().options[Provider.COHERE].apiKey) {
-      console.info('Aborting getCohereModels because there is no API key');
       return;
     }
 
@@ -426,7 +421,6 @@ export class SettingsService implements ISettingsService {
 
   async getModelsFromGoogle(): Promise<void> {
     if (!this.settings().options[Provider.GOOGLE].apiKey) {
-      console.info('Aborting getGoogleModels because there is no API key');
       return;
     }
 

@@ -31,12 +31,36 @@ export class DiscussionService {
   public currentDiscussion: Discussion = {} as Discussion;
 
   constructor(
-    private lc: LcService
-  ) { }  // Remove ChatService dependency
+    public lc: LcService
+  ) {
+    this.checkConnection();
+  }
+
+  async checkConnection() {
+    try {
+      if (!this.lc.llm) {
+        this.lc.llm = await this.lc.createLLM(this.lc.s.getProvider());
+      }
+      this.setConnected(true);
+    } catch (error) {
+      console.error('Connection check failed:', error);
+      this.setConnected(false);
+      throw error;
+    }
+  }
+
+  get isConnected(): boolean {
+    return this.lc.s.isConnected();
+  }
+
+  setConnected(status: boolean) {
+    if (this.lc?.s) {
+      this.lc.s.setConnected(status);
+    }
+  }
 
   // Create a blank discussion
   async newDiscussion() {
-    console.log('Creating new discussion');
     this.currentDiscussion = {
       title: '',
       context: '',
@@ -47,7 +71,7 @@ export class DiscussionService {
   }
 
   async createDiscussion(title: string, context: string, agentData: { name: string, description: string }[]) {
-    console.log('Creating new discussion:');
+    await this.checkConnection();
 
     this.currentDiscussion = {
       title,
@@ -60,11 +84,6 @@ export class DiscussionService {
       currentAgentIndex: 0,
       messages: []
     };
-
-    this.currentDiscussion.agents.forEach(agent => {
-      console.log(agent.name, agent.description);
-    });
-    console.log("--------------------");
 
     // Initialize LLM
     try {
@@ -123,8 +142,6 @@ export class DiscussionService {
   }
 
   async startDiscussion() {
-    console.log("Starting discussion with initial prompt");
-
     if (this.currentDiscussion.messages.length === 0) {
       return this.getNextAgentResponse();
     }
@@ -133,8 +150,6 @@ export class DiscussionService {
   }
 
   async getNextAgentResponse(): Promise<Message> {
-    console.log('Getting next agent response');
-
     const currentAgent = this.currentDiscussion.agents[this.currentDiscussion.currentAgentIndex];
     const prompt = this.createAgentPrompt(currentAgent);
     const chain = prompt.pipe(this.lc.llm);
@@ -168,6 +183,7 @@ export class DiscussionService {
   }
 
   async continueDiscussion(rounds: number = 1): Promise<Message[]> {
+    await this.checkConnection();
     const messages: Message[] = [];
 
     for (let i = 0; i < rounds * this.currentDiscussion.agents.length; i++) {
@@ -179,7 +195,7 @@ export class DiscussionService {
   }
 
   async summarizeDiscussion(): Promise<string> {
-    console.log('Summarizing discussion');
+    await this.checkConnection();
 
     // Ensure LLM is initialized before summarizing
     if (!this.lc.llm) {
@@ -218,7 +234,6 @@ export class DiscussionService {
 
     // Save the summary to the current discussion
     this.currentDiscussion.summary = summary;
-    console.log('Summary:', summary);
     return summary;
   }
 
