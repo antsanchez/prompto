@@ -1,218 +1,227 @@
-<div class="container mx-auto p-4">
-    <!-- Form Section -->
-    <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-bold">Create Discussion</h2>
-        <a class="cursor-pointer text-blue-500" (click)="showInfo = true">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                stroke="currentColor" class="w-5 h-5 inline">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-            </svg>
-            What are Agent Discussions?
-        </a>
-    </div>
-    <div class="transition-all duration-300 ease-in-out overflow-hidden" [class.max-h-0]="isFormCollapsed"
-        [class.max-h-screen]="!isFormCollapsed" [class.opacity-0]="isFormCollapsed"
-        [class.opacity-100]="!isFormCollapsed" [class.mb-0]="isFormCollapsed" [class.mb-8]="!isFormCollapsed">
-        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6 bg-white p-6 rounded-lg shadow-sm border">
-            <!-- Title and Context Section -->
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Discussion Title:</label>
-                    <input type="text" formControlName="title"
-                        class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
-                </div>
+<div class="container mx-auto px-4">
+    <app-not-connected *ngIf="!isConnected" class="mb-4"></app-not-connected>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Context:</label>
-                    <textarea formControlName="context" rows="4"
-                        class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"></textarea>
-                </div>
-            </div>
-
-            <!-- Agent Configuration Section -->
-            <div class="bg-gray-50 p-4 rounded-md space-y-4">
-                <h3 class="font-medium text-gray-900 mb-3">Agent Configuration</h3>
-                <div class="grid grid-cols-2 gap-4">
+    <!-- Only show form and discussion when connected -->
+    <div *ngIf="isConnected">
+        <!-- Form Section -->
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold">Create Discussion</h2>
+            <a class="cursor-pointer text-blue-500" (click)="showInfo = true">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-5 h-5 inline">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                </svg>
+                What are Agent Discussions?
+            </a>
+        </div>
+        <div class="transition-all duration-300 ease-in-out overflow-hidden" [class.max-h-0]="isFormCollapsed"
+            [class.max-h-screen]="!isFormCollapsed" [class.opacity-0]="isFormCollapsed"
+            [class.opacity-100]="!isFormCollapsed" [class.mb-0]="isFormCollapsed" [class.mb-8]="!isFormCollapsed">
+            <form [formGroup]="form" (ngSubmit)="onSubmit()"
+                class="w-full space-y-6 bg-white p-2 rounded-lg shadow-sm border max-h-[80vh] overflow-y-auto">
+                <!-- Title and Context Section -->
+                <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Max Rounds per Agent:</label>
-                        <input type="number" formControlName="maxRounds" min="1" max="10"
-                            class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Discussion Title:</label>
+                        <input type="text" formControlName="title"
+                            class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                     </div>
+
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Number of Agents:</label>
-                        <input type="number" formControlName="agentCount" min="1" max="10"
-                            (change)="updateAgentDescriptions()"
-                            class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Context:</label>
+                        <textarea formControlName="context" rows="4"
+                            class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"></textarea>
                     </div>
                 </div>
 
-                <div formArrayName="agentDescriptions"
-                    class="mt-4 max-h-[60vh] overflow-y-auto space-y-4 p-4 bg-white rounded-md border">
-                    <div *ngFor="let agent of agentDescriptions.controls; let i = index" [formGroupName]="i"
-                        class="p-4 border rounded-md bg-gray-50 space-y-3">
+                <!-- Agent Configuration Section -->
+                <div class="space-y-4">
+                    <h3 class="font-medium text-gray-900 mb-3">Agent Configuration</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Agent {{i + 1}} Name:</label>
-                            <input type="text" formControlName="name"
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Max Rounds per Agent:</label>
+                            <input type="number" formControlName="maxRounds" min="1" max="10"
                                 class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Agent {{i + 1}}
-                                Description:</label>
-                            <textarea formControlName="description" rows="3"
-                                class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Number of Agents:</label>
+                            <input type="number" formControlName="agentCount" min="1" max="10"
+                                (change)="updateAgentDescriptions()"
+                                class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="flex space-x-4 pt-4">
-                <button type="submit" [disabled]="isLoading"
-                    class="flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-colors">
-                    Start Discussion
-                    <svg *ngIf="isLoading" class="animate-spin ml-2 w-5 h-5" xmlns="http://www.w3.org/2000/svg"
-                        fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                        </circle>
-                        <path class="opacity-75" fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                        </path>
-                    </svg>
-                </button>
-                <button type="button" [disabled]="isLoading" (click)="continueDiscussion()"
-                    class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 transition-colors">
-                    Continue Discussion
-                </button>
-                <button type="button" (click)="saveDiscussion()"
-                    class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
-                    Save Discussion
-                </button>
-                <button type="button" [disabled]="isLoading" (click)="summarizeDiscussion()"
-                    class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 disabled:opacity-50 transition-colors">
-                    Summarize Discussion
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <!-- Info Modal -->
-    <div class="relative z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true" *ngIf="showInfo">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
-
-        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-            <div class="flex min-h-full items-end justify-center text-left p-4 sm:items-center sm:p-0">
-                <div
-                    class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left text-sm shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:p-6">
-                    <div>
-                        <div class="mt-3 text-left sm:mt-5">
-                            <h3 class="text-lg font-semibold leading-6 text-gray-900" id="modal-title">
-                                Agent Discussions
-                            </h3>
-                            <div class="mt-2 space-y-4">
-                                <p>
-                                    Agent Discussions simulate conversations between multiple AI personas to explore
-                                    topics from different angles.
-                                </p>
-
-                                <h3 class="text-md font-bold mt-4">Advantages & Limitations:</h3>
-                                <div class="space-y-2">
-                                    <p class="font-bold text-green-700">Advantages:</p>
-                                    <ul class="list-disc pl-6">
-                                        <li>Explores multiple perspectives automatically</li>
-                                        <li>Uncovers unexpected insights through dialogue</li>
-                                        <li>Helps identify potential conflicts and solutions</li>
-                                        <li>Reduces single-perspective bias</li>
-                                    </ul>
-
-                                    <p class="font-bold text-red-700 mt-4">Limitations:</p>
-                                    <ul class="list-disc pl-6">
-                                        <li>Uses more tokens than single prompts</li>
-                                        <li>May not be suitable for simple, factual questions</li>
-                                        <li>Quality depends heavily on agent descriptions</li>
-                                        <li>Can sometimes generate repetitive responses</li>
-                                    </ul>
-                                </div>
-
-                                <h3 class="text-md font-bold mt-4">Writing Effective Contexts:</h3>
-                                <div class="space-y-2 bg-blue-50 p-4 rounded-md">
-                                    <p class="font-semibold">Good context should include:</p>
-                                    <ul class="list-disc pl-6">
-                                        <li>Clear problem or topic statement</li>
-                                        <li>Relevant background information</li>
-                                        <li>Specific aspects to be discussed</li>
-                                        <li>Desired outcome or goal</li>
-                                    </ul>
-                                    <p class="mt-2 text-sm italic">Example: "Analyze the environmental and economic
-                                        impacts of transitioning to electric vehicles by 2030. Consider infrastructure
-                                        requirements, job market changes, and environmental benefits."</p>
-                                </div>
-
-                                <h3 class="text-md font-bold mt-4">Creating Effective Agent Descriptions:</h3>
-                                <div class="space-y-2 bg-blue-50 p-4 rounded-md">
-                                    <p class="font-semibold">Each agent description should specify:</p>
-                                    <ul class="list-disc pl-6">
-                                        <li>Professional background or expertise</li>
-                                        <li>Perspective or stake in the discussion</li>
-                                        <li>Key concerns or priorities</li>
-                                        <li>Communication style (optional)</li>
-                                    </ul>
-                                    <p class="mt-2 text-sm italic">Example Agents:</p>
-                                    <ul class="list-disc pl-6 text-sm">
-                                        <li>"Environmental scientist with 15 years experience in climate impact
-                                            assessment. Prioritizes ecological sustainability and evidence-based
-                                            solutions."</li>
-                                        <li>"Automotive industry executive focused on manufacturing logistics and market
-                                            dynamics. Concerned with practical implementation and economic viability."
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <h3 class="text-md font-bold mt-4">Best Use Cases:</h3>
-                                <ul class="list-disc pl-6">
-                                    <li>Complex problems requiring multiple viewpoints</li>
-                                    <li>Policy or strategy discussions</li>
-                                    <li>Risk analysis and mitigation planning</li>
-                                    <li>Creative brainstorming sessions</li>
-                                </ul>
-
-                                <div class="bg-yellow-50 p-4 rounded-md mt-4">
-                                    <p class="font-semibold">💡 Pro Tip:</p>
-                                    <p class="text-sm">For better results, create agents with contrasting but
-                                        complementary perspectives rather than completely opposing viewpoints. This
-                                        encourages constructive dialogue rather than circular arguments.</p>
-                                </div>
+                    <div formArrayName="agentDescriptions" class="mt-4 w-full space-y-4 bg-white">
+                        <div *ngFor="let agent of agentDescriptions.controls; let i = index" [formGroupName]="i"
+                            class="p-2 border rounded-md bg-gray-50 space-y-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Agent {{i + 1}}
+                                    Name:</label>
+                                <input type="text" formControlName="name"
+                                    class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Agent {{i + 1}}
+                                    Description:</label>
+                                <textarea formControlName="description" rows="3"
+                                    class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
                             </div>
                         </div>
                     </div>
-                    <div class="mt-5 sm:mt-6">
-                        <button type="button" (click)="showInfo = false"
-                            class="inline-flex w-full justify-center rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600">
-                            Got it
-                        </button>
+                </div>
+
+                <div class="flex space-x-4 pt-4">
+                    <button type="submit" [disabled]="isLoading"
+                        class="flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-colors">
+                        Start Discussion
+                        <svg *ngIf="isLoading" class="animate-spin ml-2 w-5 h-5" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
+                        </svg>
+                    </button>
+                    <button type="button" [disabled]="isLoading" (click)="continueDiscussion()"
+                        class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 transition-colors">
+                        Continue Discussion
+                    </button>
+                    <button type="button" (click)="saveDiscussion()"
+                        class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
+                        Save Discussion
+                    </button>
+                    <button type="button" [disabled]="isLoading" (click)="summarizeDiscussion()"
+                        class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 disabled:opacity-50 transition-colors">
+                        Summarize Discussion
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Info Modal -->
+        <div class="relative z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true" *ngIf="showInfo">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+
+            <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+                <div class="flex min-h-full items-end justify-center text-left p-4 sm:items-center sm:p-0">
+                    <div
+                        class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left text-sm shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:p-6">
+                        <div>
+                            <div class="mt-3 text-left sm:mt-5">
+                                <h3 class="text-lg font-semibold leading-6 text-gray-900" id="modal-title">
+                                    Agent Discussions
+                                </h3>
+                                <div class="mt-2 space-y-4">
+                                    <p>
+                                        Agent Discussions simulate conversations between multiple AI personas to explore
+                                        topics from different angles.
+                                    </p>
+
+                                    <h3 class="text-md font-bold mt-4">Advantages & Limitations:</h3>
+                                    <div class="space-y-2">
+                                        <p class="font-bold text-green-700">Advantages:</p>
+                                        <ul class="list-disc pl-6">
+                                            <li>Explores multiple perspectives automatically</li>
+                                            <li>Uncovers unexpected insights through dialogue</li>
+                                            <li>Helps identify potential conflicts and solutions</li>
+                                            <li>Reduces single-perspective bias</li>
+                                        </ul>
+
+                                        <p class="font-bold text-red-700 mt-4">Limitations:</p>
+                                        <ul class="list-disc pl-6">
+                                            <li>Uses more tokens than single prompts</li>
+                                            <li>May not be suitable for simple, factual questions</li>
+                                            <li>Quality depends heavily on agent descriptions</li>
+                                            <li>Can sometimes generate repetitive responses</li>
+                                        </ul>
+                                    </div>
+
+                                    <h3 class="text-md font-bold mt-4">Writing Effective Contexts:</h3>
+                                    <div class="space-y-2 bg-blue-50 p-4 rounded-md">
+                                        <p class="font-semibold">Good context should include:</p>
+                                        <ul class="list-disc pl-6">
+                                            <li>Clear problem or topic statement</li>
+                                            <li>Relevant background information</li>
+                                            <li>Specific aspects to be discussed</li>
+                                            <li>Desired outcome or goal</li>
+                                        </ul>
+                                        <p class="mt-2 text-sm italic">Example: "Analyze the environmental and economic
+                                            impacts of transitioning to electric vehicles by 2030. Consider
+                                            infrastructure
+                                            requirements, job market changes, and environmental benefits."</p>
+                                    </div>
+
+                                    <h3 class="text-md font-bold mt-4">Creating Effective Agent Descriptions:</h3>
+                                    <div class="space-y-2 bg-blue-50 p-4 rounded-md">
+                                        <p class="font-semibold">Each agent description should specify:</p>
+                                        <ul class="list-disc pl-6">
+                                            <li>Professional background or expertise</li>
+                                            <li>Perspective or stake in the discussion</li>
+                                            <li>Key concerns or priorities</li>
+                                            <li>Communication style (optional)</li>
+                                        </ul>
+                                        <p class="mt-2 text-sm italic">Example Agents:</p>
+                                        <ul class="list-disc pl-6 text-sm">
+                                            <li>"Environmental scientist with 15 years experience in climate impact
+                                                assessment. Prioritizes ecological sustainability and evidence-based
+                                                solutions."</li>
+                                            <li>"Automotive industry executive focused on manufacturing logistics and
+                                                market
+                                                dynamics. Concerned with practical implementation and economic
+                                                viability."
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <h3 class="text-md font-bold mt-4">Best Use Cases:</h3>
+                                    <ul class="list-disc pl-6">
+                                        <li>Complex problems requiring multiple viewpoints</li>
+                                        <li>Policy or strategy discussions</li>
+                                        <li>Risk analysis and mitigation planning</li>
+                                        <li>Creative brainstorming sessions</li>
+                                    </ul>
+
+                                    <div class="bg-yellow-50 p-4 rounded-md mt-4">
+                                        <p class="font-semibold">💡 Pro Tip:</p>
+                                        <p class="text-sm">For better results, create agents with contrasting but
+                                            complementary perspectives rather than completely opposing viewpoints. This
+                                            encourages constructive dialogue rather than circular arguments.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-5 sm:mt-6">
+                            <button type="button" (click)="showInfo = false"
+                                class="inline-flex w-full justify-center rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600">
+                                Got it
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Discussion Section -->
-    <div class="relative" *ngIf="discussionService.currentDiscussion?.messages?.length ?? 0 > 0">
-        <button (click)="toggleForm()"
-            class="absolute -top-4 right-0 px-3 py-1 bg-gray-200 rounded-full text-sm hover:bg-gray-300 transition-colors">
-            {{ isFormCollapsed ? 'Show Form' : 'Hide Form' }}
-        </button>
+        <!-- Discussion Section -->
+        <div class="relative" *ngIf="discussionService.currentDiscussion?.messages?.length ?? 0 > 0">
+            <button (click)="toggleForm()"
+                class="absolute -top-4 right-0 px-3 py-1 bg-gray-200 rounded-full text-sm hover:bg-gray-300 transition-colors">
+                {{ isFormCollapsed ? 'Show Form' : 'Hide Form' }}
+            </button>
 
-        <h2 class="text-xl font-bold mb-4">Discussion:</h2>
-        <div class="space-y-4">
-            <div *ngFor="let message of discussionService.currentDiscussion.messages" class="p-4 border rounded">
-                <div class="font-bold">{{message.agentName}}</div>
-                <div class="whitespace-pre-wrap">{{message.text}}</div>
-                <div class="text-sm text-gray-500">{{message.date | date:'medium'}}</div>
+            <h2 class="text-xl font-bold mb-4">Discussion:</h2>
+            <div class="space-y-4">
+                <div *ngFor="let message of discussionService.currentDiscussion.messages" class="p-4 border rounded">
+                    <div class="font-bold">{{message.agentName}}</div>
+                    <div class="whitespace-pre-wrap">{{message.text}}</div>
+                    <div class="text-sm text-gray-500">{{message.date | date:'medium'}}</div>
+                </div>
             </div>
-        </div>
-        <div *ngIf="discussionService.currentDiscussion.summary" class="mt-8 p-4 border rounded bg-gray-100">
-            <h3 class="text-lg font-bold">Summary and Verdict:</h3>
-            <p class="whitespace-pre-wrap">{{discussionService.currentDiscussion.summary}}</p>
+            <div *ngIf="discussionService.currentDiscussion.summary" class="mt-8 p-4 border rounded bg-gray-100">
+                <h3 class="text-lg font-bold">Summary and Verdict:</h3>
+                <p class="whitespace-pre-wrap">{{discussionService.currentDiscussion.summary}}</p>
+            </div>
         </div>
     </div>
 </div>

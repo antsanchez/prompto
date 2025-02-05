@@ -23,10 +23,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
     public activatedRoute: ActivatedRoute,
     public ss: SettingsService
   ) { }
-  ngOnDestroy(): void {
-    // Perform any necessary cleanup
-    console.log('SidebarComponent is being destroyed');
-  }
+
+  ngOnDestroy(): void { }
 
   ngOnInit() {
     // Load initial data

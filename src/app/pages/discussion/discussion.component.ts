@@ -1,18 +1,19 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DiscussionService } from '../../services/discussion.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { NotConnectedComponent } from '../../components/not-connected/not-connected.component';
 
 @Component({
   selector: 'app-discussion',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, NotConnectedComponent],
   templateUrl: './discussion.component.html',
   styleUrl: './discussion.component.css'
 })
-export class DiscussionComponent {
+export class DiscussionComponent implements OnInit {
   form: FormGroup;
   isLoading = false;
   messages: any[] = [];
@@ -44,7 +45,7 @@ export class DiscussionComponent {
     this.form = this.fb.group({
       title: [''],
       context: [''],
-      agentCount: [1],
+      agentCount: [2],
       maxRounds: [3],
       agentDescriptions: this.fb.array([])
     });
@@ -53,6 +54,12 @@ export class DiscussionComponent {
     this.loadSavedDiscussions();
     this.subscribeToRouteParams();
     this.loadDiscussionFromURL();
+  }
+
+  ngOnInit() {
+    this.discussionService.checkConnection().catch(() => {
+      this.discussionService.setConnected(false);
+    });
   }
 
   toggleForm() {
@@ -137,6 +144,7 @@ export class DiscussionComponent {
   async onSubmit() {
     if (this.form.valid) {
       this.isLoading = true;
+      this.error = '';
       try {
         const agentData = this.agentDescriptions.value.map((agent: any) => ({
           name: agent.name || `Agent ${this.agentDescriptions.value.indexOf(agent) + 1}`,
@@ -151,10 +159,11 @@ export class DiscussionComponent {
 
         const maxRounds = this.form.get('maxRounds')?.value || 3;
         const newMessages = await this.discussionService.continueDiscussion(maxRounds);
-        console.log('New messages:', newMessages);
         this.isFormCollapsed = true;
+        this.discussionService.setConnected(true);
       } catch (error) {
-        console.error('Error starting discussion:', error);
+        this.handleError('Error starting discussion:', error);
+        this.discussionService.setConnected(false);
       } finally {
         this.isLoading = false;
       }
@@ -163,12 +172,15 @@ export class DiscussionComponent {
 
   async continueDiscussion() {
     this.isLoading = true;
+    this.error = '';
     try {
       const maxRounds = this.form.get('maxRounds')?.value || 1;
       await this.discussionService.continueDiscussion(maxRounds);
       this.messages = this.discussionService.currentDiscussion.messages;
+      this.discussionService.setConnected(true);
     } catch (error) {
-      console.error('Error continuing discussion:', error);
+      this.handleError('Error continuing discussion:', error);
+      this.discussionService.setConnected(false);
     } finally {
       this.isLoading = false;
     }
@@ -176,11 +188,13 @@ export class DiscussionComponent {
 
   async summarizeDiscussion() {
     this.isLoading = true;
+    this.error = '';
     try {
       this.summary = await this.discussionService.summarizeDiscussion();
-      console.log('Summary:', this.summary);
+      this.discussionService.setConnected(true);
     } catch (error) {
-      console.error('Error summarizing discussion:', error);
+      this.handleError('Error summarizing discussion:', error);
+      this.discussionService.setConnected(false);
     } finally {
       this.isLoading = false;
     }
@@ -214,5 +228,9 @@ export class DiscussionComponent {
   private handleError(message: string, error: any) {
     console.error(message, error);
     this.error = 'There was an error with your request. Please check your connection and settings and try again.';
+  }
+
+  get isConnected(): boolean {
+    return this.discussionService.isConnected;
   }
 }
