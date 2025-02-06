@@ -103,8 +103,9 @@ export class ArenaComponent {
     }
 
     this.loading = true;
-    this.cs.chatArena(this.prompt).then(() => {
-      this.prompt = "";
+    let prompt = this.prompt;
+    this.prompt = "";
+    this.cs.chatArena(prompt).then(() => {
       this.loading = false;
     }, (error) => {
       this.error = 'There was an error chatting in the arena. Please try again.';

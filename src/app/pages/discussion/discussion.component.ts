@@ -5,11 +5,17 @@ import { DiscussionService } from '../../services/discussion.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { NotConnectedComponent } from '../../components/not-connected/not-connected.component';
+import { ErrorComponent } from '../../components/error/error.component';
 
 @Component({
   selector: 'app-discussion',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NotConnectedComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    NotConnectedComponent,
+    ErrorComponent
+  ],
   templateUrl: './discussion.component.html',
   styleUrl: './discussion.component.css'
 })
@@ -161,8 +167,9 @@ export class DiscussionComponent implements OnInit {
         const newMessages = await this.discussionService.continueDiscussion(maxRounds);
         this.isFormCollapsed = true;
         this.discussionService.setConnected(true);
+        await this.saveDiscussion(); // Automatically save
       } catch (error) {
-        this.handleError('Error starting discussion:', error);
+        this.handleError('Failed to start discussion:', error);
         this.discussionService.setConnected(false);
       } finally {
         this.isLoading = false;
@@ -178,8 +185,9 @@ export class DiscussionComponent implements OnInit {
       await this.discussionService.continueDiscussion(maxRounds);
       this.messages = this.discussionService.currentDiscussion.messages;
       this.discussionService.setConnected(true);
+      await this.saveDiscussion(); // Automatically save
     } catch (error) {
-      this.handleError('Error continuing discussion:', error);
+      this.handleError('Failed to continue discussion:', error);
       this.discussionService.setConnected(false);
     } finally {
       this.isLoading = false;
@@ -192,17 +200,21 @@ export class DiscussionComponent implements OnInit {
     try {
       this.summary = await this.discussionService.summarizeDiscussion();
       this.discussionService.setConnected(true);
+      await this.saveDiscussion(); // Automatically save
     } catch (error) {
-      this.handleError('Error summarizing discussion:', error);
+      this.handleError('Failed to summarize discussion:', error);
       this.discussionService.setConnected(false);
     } finally {
       this.isLoading = false;
     }
   }
 
-  saveDiscussion() {
-    const key = this.discussionService.saveDiscussion();
-    this.loadSavedDiscussions();
+  private async saveDiscussion() {
+    try {
+      await this.discussionService.saveDiscussion();
+    } catch (error) {
+      console.error('Error saving discussion:', error);
+    }
   }
 
   async loadDiscussion(key: string) {
@@ -212,7 +224,7 @@ export class DiscussionComponent implements OnInit {
         this.summary = this.discussionService.currentDiscussion.summary || '';
       }
     } catch (error) {
-      this.handleError('Error loading discussion:', error);
+      this.handleError('Failed to load discussion:', error);
     }
   }
 
@@ -227,7 +239,16 @@ export class DiscussionComponent implements OnInit {
 
   private handleError(message: string, error: any) {
     console.error(message, error);
-    this.error = 'There was an error with your request. Please check your connection and settings and try again.';
+    let errorMessage = 'An unexpected error occurred.';
+
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    }
+
+    this.error = `${message} ${errorMessage}`;
+    setTimeout(() => this.error = '', 5000); // Clear error after 5 seconds
   }
 
   get isConnected(): boolean {

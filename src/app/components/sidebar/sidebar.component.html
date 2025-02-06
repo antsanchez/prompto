@@ -17,7 +17,7 @@
             </div>
 
             <!-- Sidebar component, swap this element with another sidebar if you like -->
-            <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4">
+            <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-white dark:bg-gray-900 px-6 pb-4">
                 <div class="flex h-16 shrink-0 items-center">
                     <svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 100" width="300" height="90"
                         class="p-2 mt-6 mb-2">
@@ -25,6 +25,10 @@
                         <style>
                             .s0 {
                                 fill: #000000
+                            }
+
+                            :root.dark .s0 {
+                                fill: #ffffff;
                             }
                         </style>
                         <path id="Prompto" class="s0" aria-label="Prompto"
@@ -36,9 +40,9 @@
                         <li>
                             <ul role="list" class="-mx-2 space-y-1">
                                 <li>
-                                    <a routerLink="/" routerLinkActive="bg-gray-50 text-orange-600"
+                                    <a routerLink="/" routerLinkActive="bg-gray-50 text-orange-600 dark:bg-gray-800"
                                         [routerLinkActiveOptions]="{exact: true}" (click)="closeSidebar()"
-                                        class="text-gray-700 hover:text-orange-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
+                                        class="text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                             stroke="currentColor" aria-hidden="true">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -48,9 +52,10 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a routerLink="/conversation/" routerLinkActive="bg-gray-50 text-orange-600"
+                                    <a routerLink="/conversation/"
+                                        routerLinkActive="bg-gray-50 text-orange-600 dark:bg-gray-800"
                                         [routerLinkActiveOptions]="{exact: true}" (click)="closeSidebar()"
-                                        class="text-gray-700 hover:text-orange-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
+                                        class="text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -60,9 +65,10 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a routerLink="/notebook" routerLinkActive="bg-gray-50 text-orange-600"
+                                    <a routerLink="/notebook"
+                                        routerLinkActive="bg-gray-50 text-orange-600 dark:bg-gray-800"
                                         [routerLinkActiveOptions]="{exact: true}" (click)="closeSidebar()"
-                                        class="text-gray-700 hover:text-orange-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
+                                        class="text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -72,9 +78,10 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a routerLink="/templates" routerLinkActive="bg-gray-50 text-orange-600"
+                                    <a routerLink="/templates"
+                                        routerLinkActive="bg-gray-50 text-orange-600 dark:bg-gray-800"
                                         [routerLinkActiveOptions]="{exact: true}" (click)="closeSidebar()"
-                                        class="text-gray-700 hover:text-orange-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
+                                        class="text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -85,9 +92,10 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a routerLink="/arena/" routerLinkActive="bg-gray-50 text-orange-600"
+                                    <a routerLink="/arena/"
+                                        routerLinkActive="bg-gray-50 text-orange-600 dark:bg-gray-800"
                                         [routerLinkActiveOptions]="{exact: true}" (click)="closeSidebar()"
-                                        class="text-gray-700 hover:text-orange-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
+                                        class="text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -97,9 +105,10 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a routerLink="/discussion" routerLinkActive="bg-gray-50 text-orange-600"
+                                    <a routerLink="/discussion"
+                                        routerLinkActive="bg-gray-50 text-orange-600 dark:bg-gray-800"
                                         [routerLinkActiveOptions]="{exact: true}" (click)="closeSidebar()"
-                                        class="text-gray-700 hover:text-orange-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
+                                        class="text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -109,10 +118,11 @@
                                     </a>
                                 </li>
                                 <li *ngIf="ss.templates && ss.templates.length > 0">
-                                    <div class="text-xs font-semibold leading-6 text-gray-400">Saved Templates</div>
+                                    <div class="text-xs font-semibold leading-6 text-gray-400 dark:text-gray-500">Saved
+                                        Templates</div>
                                     <ul role="list" class="-mx-2 mt-2 space-y-1">
                                         <li *ngFor="let template of ss.templates" class="flex items-center"
-                                            [ngClass]="{'bg-gray-50 text-orange-600': isTemplateSelected(template.name)}">
+                                            [ngClass]="{'bg-gray-50 text-orange-600 dark:bg-gray-800': isTemplateSelected(template.name)}">
                                             <!-- delete button -->
                                             <button (click)="deleteTemplate(template)"
                                                 class="text-gray-400 hover:text-red-600 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
@@ -123,18 +133,19 @@
                                                 </svg>
                                             </button>
                                             <a (click)="selectTemplate(template, true)"
-                                                [ngClass]="{'bg-gray-50 text-orange-600': isTemplateSelected(template.name)}"
-                                                class="text-gray-700 hover:text-orange-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold cursor-pointer">
+                                                [ngClass]="{'bg-gray-50 text-orange-600 dark:bg-gray-800': isTemplateSelected(template.name)}"
+                                                class="text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold cursor-pointer">
                                                 <span class="truncate">{{ shortName(template.name) }}</span>
                                             </a>
                                         </li>
                                     </ul>
                                 </li>
                                 <li *ngIf="ss.chats && ss.chats.length > 0">
-                                    <div class="text-xs font-semibold leading-6 text-gray-400">Chat History</div>
+                                    <div class="text-xs font-semibold leading-6 text-gray-400 dark:text-gray-500">Chat
+                                        History</div>
                                     <ul role="list" class="-mx-2 mt-2 space-y-1">
                                         <li *ngFor="let chat of ss.chats" class="flex items-center"
-                                            [ngClass]="{'bg-gray-50 text-orange-600': isChatSelected(chat.key)}">
+                                            [ngClass]="{'bg-gray-50 text-orange-600 dark:bg-gray-800': isChatSelected(chat.key)}">
                                             <!-- delete button -->
                                             <button (click)="deleteChat(chat)"
                                                 class="text-gray-400 hover:text-red-600 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
@@ -145,21 +156,22 @@
                                                 </svg>
                                             </button>
                                             <a (click)="selectChat(chat, true)"
-                                                [ngClass]="{'bg-gray-50 text-orange-600': isChatSelected(chat.key)}"
-                                                class="text-gray-700 hover:text-orange-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold cursor-pointer">
+                                                [ngClass]="{'bg-gray-50 text-orange-600 dark:bg-gray-800': isChatSelected(chat.key)}"
+                                                class="text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold cursor-pointer">
                                                 <span class="truncate">{{ shortName(chat.name) }}</span>
                                             </a>
                                         </li>
                                     </ul>
                                 </li>
                                 <li *ngIf="ss.arenas && ss.arenas.length > 0">
-                                    <div class="text-xs font-semibold leading-6 text-gray-400">Arena History</div>
+                                    <div class="text-xs font-semibold leading-6 text-gray-400 dark:text-gray-500">Arena
+                                        History</div>
                                     <ul role="list" class="-mx-2 mt-2 space-y-1">
                                         <li *ngFor="let arena of ss.arenas" class="flex items-center"
-                                            [ngClass]="{'bg-gray-50 text-orange-600': isArenaSelected(arena.key)}">
+                                            [ngClass]="{'bg-gray-50 text-orange-600 dark:bg-gray-800': isArenaSelected(arena.key)}">
                                             <!-- delete button -->
                                             <button (click)="deleteArena(arena)"
-                                                [ngClass]="{'bg-gray-50 text-orange-600': isArenaSelected(arena.key)}"
+                                                [ngClass]="{'bg-gray-50 text-orange-600 dark:bg-gray-800': isArenaSelected(arena.key)}"
                                                 class="text-gray-400 hover:text-red-600 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                                     stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
@@ -168,18 +180,19 @@
                                                 </svg>
                                             </button>
                                             <a (click)="selectArena(arena, true)"
-                                                [ngClass]="{'bg-gray-50 text-orange-600': isArenaSelected(arena.key)}"
-                                                class="text-gray-700 hover:text-orange-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold cursor-pointer">
+                                                [ngClass]="{'bg-gray-50 text-orange-600 dark:bg-gray-800': isArenaSelected(arena.key)}"
+                                                class="text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold cursor-pointer">
                                                 <span class="truncate">{{ shortName(arena.name) }}</span>
                                             </a>
                                         </li>
                                     </ul>
                                 </li>
                                 <li *ngIf="ss.discussions && ss.discussions.length > 0">
-                                    <div class="text-xs font-semibold leading-6 text-gray-400">Saved Discussions</div>
+                                    <div class="text-xs font-semibold leading-6 text-gray-400 dark:text-gray-500">Saved
+                                        Discussions</div>
                                     <ul role="list" class="-mx-2 mt-2 space-y-1">
                                         <li *ngFor="let discussion of ss.discussions" class="flex items-center"
-                                            [ngClass]="{'bg-gray-50 text-orange-600': isDiscussionSelected(discussion.key)}">
+                                            [ngClass]="{'bg-gray-50 text-orange-600 dark:bg-gray-800': isDiscussionSelected(discussion.key)}">
                                             <!-- delete button -->
                                             <button (click)="deleteDiscussion(discussion)"
                                                 class="text-gray-400 hover:text-red-600 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
@@ -190,8 +203,8 @@
                                                 </svg>
                                             </button>
                                             <a (click)="selectDiscussion(discussion, true)"
-                                                [ngClass]="{'bg-gray-50 text-orange-600': isDiscussionSelected(discussion.key)}"
-                                                class="text-gray-700 hover:text-orange-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold cursor-pointer">
+                                                [ngClass]="{'bg-gray-50 text-orange-600 dark:bg-gray-800': isDiscussionSelected(discussion.key)}"
+                                                class="text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold cursor-pointer">
                                                 <span class="truncate">{{ shortName(discussion.name) }}</span>
                                             </a>
                                         </li>
@@ -199,10 +212,25 @@
                                 </li>
                             </ul>
                         </li>
-                        <li class="mt-auto">
-                            <a routerLink="/settings" routerLinkActive="bg-gray-50 text-orange-600"
+                        <li>
+                            <button (click)="toggleDarkMode()"
+                                routerLinkActive="bg-gray-50 text-orange-600 dark:bg-gray-800"
+                                class="group -mx-2 text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
+                                <svg *ngIf="!(darkMode$ | async)" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                                </svg>
+                                <svg *ngIf="darkMode$ | async" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                                </svg>
+                                {{ (darkMode$ | async) ? 'Light Mode' : 'Dark Mode' }}
+                            </button>
+                            <a routerLink="/settings" routerLinkActive="bg-gray-50 text-orange-600 dark:bg-gray-800"
                                 (click)="closeSidebar()"
-                                class="group -mx-2 text-gray-700 hover:text-orange-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
+                                class="group -mx-2 text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -216,7 +244,7 @@
                             <div class="flex -mx-2 text-xs leading-4 mt-2">
                                 <a href="https://asanchez.dev/site-notice/" rel="noopener nofollow" target="_blank"
                                     class="text-gray-700 hover:text-orange-600 p-1 font-semibold
-                            cursor-pointer">
+                        cursor-pointer">
                                     Imprint
                                 </a>
                                 <span class="text-gray-400 p-1 font-semibold">|</span>
@@ -225,9 +253,8 @@
                                     Privacy
                                 </a>
                                 <span class="text-gray-400 p-1 font-semibold">|</span>
-                                <span class="text-gray-400 p-1 font-semibold">|</span>
                                 <a href="https://github.com/antsanchez/prompto" rel="noopener nofollow" target="_blank"
-                                    class="text-gray-700 hover:text-orange-600 p-1 font-semibold cursor-pointer">
+                                    class="text-gray-700 dark:text-gray-200 hover:text-orange-600 p-1 font-semibold cursor-pointer">
                                     GitHub
                                 </a>
                                 <span class="text-gray-400 p-1 font-semibold">|</span>
@@ -246,7 +273,8 @@
 <!-- Static sidebar for desktop -->
 <div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
     <!-- Sidebar component, swap this element with another sidebar if you like -->
-    <div class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4">
+    <div
+        class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-6 pb-4">
         <div class="flex h-16 shrink-0 items-center mt-4">
             <svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 100" width="300" height="90"
                 class="p-2 mt-6 mb-2">
@@ -254,6 +282,10 @@
                 <style>
                     .s0 {
                         fill: #000000
+                    }
+
+                    :root.dark .s0 {
+                        fill: #ffffff;
                     }
                 </style>
                 <path id="Prompto" class="s0" aria-label="Prompto"
@@ -265,9 +297,9 @@
                 <li>
                     <ul role="list" class="-mx-2 space-y-1">
                         <li>
-                            <a routerLink="/" routerLinkActive="bg-gray-50 text-orange-600"
+                            <a routerLink="/" routerLinkActive="bg-gray-50 text-orange-600 dark:bg-gray-800"
                                 [routerLinkActiveOptions]="{exact: true}"
-                                class="text-gray-700 hover:text-orange-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
+                                class="text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                     stroke="currentColor" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -277,9 +309,10 @@
                             </a>
                         </li>
                         <li>
-                            <a routerLink="/conversation/" routerLinkActive="bg-gray-50 text-orange-600"
+                            <a routerLink="/conversation/"
+                                routerLinkActive="bg-gray-50 text-orange-600 dark:bg-gray-800"
                                 [routerLinkActiveOptions]="{exact: true}"
-                                class="text-gray-700 hover:text-orange-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
+                                class="text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -289,9 +322,9 @@
                             </a>
                         </li>
                         <li>
-                            <a routerLink="/notebook" routerLinkActive="bg-gray-50 text-orange-600"
+                            <a routerLink="/notebook" routerLinkActive="bg-gray-50 text-orange-600 dark:bg-gray-800"
                                 [routerLinkActiveOptions]="{exact: true}"
-                                class="text-gray-700 hover:text-orange-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
+                                class="text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -301,9 +334,9 @@
                             </a>
                         </li>
                         <li>
-                            <a routerLink="/templates" routerLinkActive="bg-gray-50 text-orange-600"
+                            <a routerLink="/templates" routerLinkActive="bg-gray-50 text-orange-600 dark:bg-gray-800"
                                 [routerLinkActiveOptions]="{exact: true}"
-                                class="text-gray-700 hover:text-orange-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
+                                class="text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -314,9 +347,9 @@
                             </a>
                         </li>
                         <li>
-                            <a routerLink="/arena/" routerLinkActive="bg-gray-50 text-orange-600"
+                            <a routerLink="/arena/" routerLinkActive="bg-gray-50 text-orange-600 dark:bg-gray-800"
                                 [routerLinkActiveOptions]="{exact: true}"
-                                class="text-gray-700 hover:text-orange-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
+                                class="text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -326,9 +359,9 @@
                             </a>
                         </li>
                         <li>
-                            <a routerLink="/discussion" routerLinkActive="bg-gray-50 text-orange-600"
+                            <a routerLink="/discussion" routerLinkActive="bg-gray-50 text-orange-600 dark:bg-gray-800"
                                 [routerLinkActiveOptions]="{exact: true}" (click)="closeSidebar()"
-                                class="text-gray-700 hover:text-orange-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
+                                class="text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -340,13 +373,13 @@
                     </ul>
                 </li>
                 <li *ngIf="ss.templates && ss.templates.length > 0">
-                    <div class="text-xs font-semibold leading-6 text-gray-400">Saved Templates</div>
+                    <div class="text-xs font-semibold leading-6 text-gray-400 dark:text-gray-500">Saved Templates</div>
                     <ul role="list" class="-mx-2 mt-2 space-y-1">
                         <li *ngFor="let template of ss.templates" class="flex items-center"
-                            [ngClass]="{'bg-gray-50 text-orange-600': isTemplateSelected(template.name)}">
+                            [ngClass]="{'bg-gray-50 text-orange-600 dark:bg-gray-800': isTemplateSelected(template.name)}">
                             <!-- delete button -->
                             <button (click)="deleteTemplate(template)"
-                                [ngClass]="{'bg-gray-50 text-orange-600': isTemplateSelected(template.name)}"
+                                [ngClass]="{'bg-gray-50 text-orange-600 dark:bg-gray-800': isTemplateSelected(template.name)}"
                                 class="text-gray-400 hover:text-red-600 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
@@ -355,21 +388,21 @@
                                 </svg>
                             </button>
                             <a (click)="selectTemplate(template)"
-                                [ngClass]="{'bg-gray-50 text-orange-600': isTemplateSelected(template.name)}"
-                                class="text-gray-700 hover:text-orange-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold cursor-pointer">
+                                [ngClass]="{'bg-gray-50 text-orange-600 dark:bg-gray-800': isTemplateSelected(template.name)}"
+                                class="text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold cursor-pointer">
                                 <span class="truncate">{{ shortName(template.name) }}</span>
                             </a>
                         </li>
                     </ul>
                 </li>
                 <li *ngIf="ss.chats && ss.chats.length > 0">
-                    <div class="text-xs font-semibold leading-6 text-gray-400">Chat History</div>
+                    <div class="text-xs font-semibold leading-6 text-gray-400 dark:text-gray-500">Chat History</div>
                     <ul role="list" class="-mx-2 mt-2 space-y-1">
                         <li *ngFor="let chat of ss.chats" class="flex items-center"
-                            [ngClass]="{'bg-gray-50 text-orange-600': isChatSelected(chat.key)}">
+                            [ngClass]="{'bg-gray-50 text-orange-600 dark:bg-gray-800': isChatSelected(chat.key)}">
                             <!-- delete button -->
                             <button (click)="deleteChat(chat)"
-                                [ngClass]="{'bg-gray-50 text-orange-600': isChatSelected(chat.key)}"
+                                [ngClass]="{'bg-gray-50 text-orange-600 dark:bg-gray-800': isChatSelected(chat.key)}"
                                 class="text-gray-400 hover:text-red-600 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
@@ -378,21 +411,21 @@
                                 </svg>
                             </button>
                             <a (click)="selectChat(chat)"
-                                [ngClass]="{'bg-gray-50 text-orange-600': isChatSelected(chat.key)}"
-                                class="text-gray-700 hover:text-orange-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold cursor-pointer">
+                                [ngClass]="{'bg-gray-50 text-orange-600 dark:bg-gray-800': isChatSelected(chat.key)}"
+                                class="text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold cursor-pointer">
                                 <span class="truncate">{{ shortName(chat.name) }}</span>
                             </a>
                         </li>
                     </ul>
                 </li>
                 <li *ngIf="ss.arenas && ss.arenas.length > 0">
-                    <div class="text-xs font-semibold leading-6 text-gray-400">Arena History</div>
+                    <div class="text-xs font-semibold leading-6 text-gray-400 dark:text-gray-500">Arena History</div>
                     <ul role="list" class="-mx-2 mt-2 space-y-1">
                         <li *ngFor="let arena of ss.arenas" class="flex items-center"
-                            [ngClass]="{'bg-gray-50 text-orange-600': isArenaSelected(arena.key)}">
+                            [ngClass]="{'bg-gray-50 text-orange-600 dark:bg-gray-800': isArenaSelected(arena.key)}">
                             <!-- delete button -->
                             <button (click)="deleteArena(arena)"
-                                [ngClass]="{'bg-gray-50 text-orange-600': isArenaSelected(arena.key)}"
+                                [ngClass]="{'bg-gray-50 text-orange-600 dark:bg-gray-800': isArenaSelected(arena.key)}"
                                 class="text-gray-400 hover:text-red-600 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
@@ -401,18 +434,19 @@
                                 </svg>
                             </button>
                             <a (click)="selectArena(arena)"
-                                [ngClass]="{'bg-gray-50 text-orange-600': isArenaSelected(arena.key)}"
-                                class="text-gray-700 hover:text-orange-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold cursor-pointer">
+                                [ngClass]="{'bg-gray-50 text-orange-600 dark:bg-gray-800': isArenaSelected(arena.key)}"
+                                class="text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold cursor-pointer">
                                 <span class="truncate">{{ shortName(arena.name) }}</span>
                             </a>
                         </li>
                     </ul>
                 </li>
                 <li *ngIf="ss.discussions && ss.discussions.length > 0">
-                    <div class="text-xs font-semibold leading-6 text-gray-400">Saved Discussions</div>
+                    <div class="text-xs font-semibold leading-6 text-gray-400 dark:text-gray-500">Saved Discussions
+                    </div>
                     <ul role="list" class="-mx-2 mt-2 space-y-1">
                         <li *ngFor="let discussion of ss.discussions" class="flex items-center"
-                            [ngClass]="{'bg-gray-50 text-orange-600': isDiscussionSelected(discussion.key)}">
+                            [ngClass]="{'bg-gray-50 text-orange-600 dark:bg-gray-800': isDiscussionSelected(discussion.key)}">
                             <!-- delete button -->
                             <button (click)="deleteDiscussion(discussion)"
                                 class="text-gray-400 hover:text-red-600 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
@@ -423,16 +457,32 @@
                                 </svg>
                             </button>
                             <a (click)="selectDiscussion(discussion)"
-                                [ngClass]="{'bg-gray-50 text-orange-600': isDiscussionSelected(discussion.key)}"
-                                class="text-gray-700 hover:text-orange-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold cursor-pointer">
+                                [ngClass]="{'bg-gray-50 text-orange-600 dark:bg-gray-800': isDiscussionSelected(discussion.key)}"
+                                class="text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold cursor-pointer">
                                 <span class="truncate">{{ shortName(discussion.name) }}</span>
                             </a>
                         </li>
                     </ul>
                 </li>
                 <li class="mt-auto">
-                    <a routerLink="/settings" routerLinkActive="bg-gray-50 text-orange-600"
-                        class="group -mx-2 text-gray-700 hover:text-orange-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
+
+                    <button (click)="toggleDarkMode()" routerLinkActive="bg-gray-50 text-orange-600 dark:bg-gray-800"
+                        class="group -mx-2 text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
+                        <svg *ngIf="!(darkMode$ | async)" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                        </svg>
+                        <svg *ngIf="darkMode$ | async" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                        </svg>
+                        {{ (darkMode$ | async) ? 'Light Mode' : 'Dark Mode' }}
+                    </button>
+
+                    <a routerLink="/settings" routerLinkActive="bg-gray-50 text-orange-600 dark:bg-gray-800"
+                        class="group -mx-2 text-gray-700 dark:text-gray-200 hover:text-orange-600 hover:bg-gray-50 dark:hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" class="w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -454,7 +504,7 @@
                         </a>
                         <span class="text-gray-400 p-1 font-semibold">|</span>
                         <a href="https://github.com/antsanchez/prompto" rel="noopener nofollow" target="_blank"
-                            class="text-gray-700 hover:text-orange-600 p-1 font-semibold cursor-pointer">
+                            class="text-gray-700 dark:text-gray-200 hover:text-orange-600 p-1 font-semibold cursor-pointer">
                             GitHub
                         </a>
                         <span class="text-gray-400 p-1 font-semibold">|</span>

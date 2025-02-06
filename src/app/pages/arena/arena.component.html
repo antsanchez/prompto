@@ -1,13 +1,14 @@
 <app-error *ngIf="error" [error]="error"></app-error>
 
 <!-- Chat messages -->
-<div class="lg:ml-72 fixed top-20 left-6 right-6 bottom-60 overflow-y-scroll">
+<div class="lg:ml-72 fixed top-20 left-6 right-6 bottom-60 overflow-y-scroll bg-white dark:bg-gray-900">
 
-    <div class="flex justify-center lg:hidden border-b">
+    <div class="flex justify-center lg:hidden border-b dark:border-gray-700">
         <button
-            class="px-4 py-2 mx-1 text-sm font-medium text-gray-600 bg-white rounded-t-lg hover:bg-gray-100 hover:text-gray-700 focus:outline-none"
+            class="px-4 py-2 mx-1 text-sm font-medium rounded-t-lg hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none"
             [class.bg-orange-500]="showColumn === 'first'" [class.text-white]="showColumn === 'first'"
-            [class.text-gray-600]="showColumn !== 'first'" [class.bg-white]="showColumn !== 'first'"
+            [class.text-gray-600]="showColumn !== 'first'" [class.dark:text-gray-200]="showColumn !== 'first'"
+            [class.bg-white]="showColumn !== 'first'" [class.dark:bg-gray-800]="showColumn !== 'first'"
             (click)="showColumn = 'first'">LLM 1</button>
         <button
             class="px-4 py-2 mx-1 text-sm font-medium text-gray-600 bg-white rounded-t-lg hover:bg-gray-100 hover:text-gray-700 focus:outline-none"
@@ -16,14 +17,15 @@
             (click)="showColumn = 'second'">LLM 2</button>
     </div>
 
-    <div class="flex divide-x">
+    <div class="flex divide-x dark:divide-gray-700">
         <div class="w-full lg:w-1/2 space-y-6 p-2 overflow-y-auto" *ngIf="showColumn === 'first' || isDesktop">
 
             <div class="sm:col-span-3">
-                <label for="provider" class="block text-sm font-medium leading-6 text-gray-900">LLM 1</label>
+                <label for="provider" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">LLM
+                    1</label>
                 <div class="mt-2">
                     <select id="provider" name="provider" (ngModelChange)="provider1Changed($event)"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-gray-600 dark:focus:ring-gray-400 sm:max-w-xl sm:text-sm sm:leading-6 dark:bg-gray-700"
                         [(ngModel)]="cs.arena.p1.provider">
                         <option *ngFor="let provider1 of ss.listProviders()" [value]="provider1">
                             {{provider1}}
@@ -42,7 +44,7 @@
 
             <div class="sm:col-span-3" *ngIf="models1Available()">
                 <select id="model1" name="model1" (ngModelChange)="onModel1Change($event)"
-                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-gray-600 dark:focus:ring-gray-400 sm:max-w-xl sm:text-sm sm:leading-6 dark:bg-gray-700"
                     [ngModel]="cs.arena.p1.model">
                     <option *ngFor="let m1model of models1" [value]="m1model">
                         {{m1model}}</option>
@@ -54,19 +56,19 @@
                     <div>
                         <div class="flex items-center space-x-2" *ngIf="msg.isUser">
                             <span
-                                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 group-hover:border-gray-600 group-hover:text-gray-600">
+                                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-300 border-gray-200 dark:border-gray-700">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                                 </svg>
                             </span>
-                            <h3 class="text-lg font-bold">You</h3>
-                            <span class="text-sm text-gray-500">{{ msg.date | date:"short" }}</span>
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">You</h3>
+                            <span class="text-sm text-gray-500 dark:text-gray-400">{{ msg.date | date:"short" }}</span>
                         </div>
                         <div class="flex items-center space-x-2" *ngIf="!msg.isUser">
                             <span
-                                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 group-hover:border-gray-600 group-hover:text-gray-600">
+                                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-300 border-gray-200 dark:border-gray-700">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -75,10 +77,10 @@
 
                             </span>
                             <h3 class="text-lg font-semibold">Bot</h3>
-                            <span class="text-sm text-gray-500">{{ msg.date | date:"short" }}</span>
+                            <span class="text-sm text-gray-500 dark:text-gray-400">{{ msg.date | date:"short" }}</span>
                         </div>
-                        <div class="text-gray-900 mt-1 mb-1 chat-message" [ngClass]="{'italic': msg.isUser}"
-                            [innerHTML]="helpers.presentMessage(msg.text)">
+                        <div class="text-gray-900 dark:text-gray-100 mt-1 mb-1 chat-message dark:bg-gray-800"
+                            [ngClass]="{'italic': msg.isUser}" [innerHTML]="helpers.presentMessage(msg.text)">
                         </div>
                     </div>
                 </div>
@@ -87,10 +89,11 @@
         <div class="w-full lg:w-1/2 space-y-6 p-2 overflow-y-auto" *ngIf="showColumn === 'second' || isDesktop">
 
             <div class="sm:col-span-3">
-                <label for="provider" class="block text-sm font-medium leading-6 text-gray-900">LLM 2</label>
+                <label for="provider" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">LLM
+                    2</label>
                 <div class="mt-2">
                     <select id="provider2" name="provider2" (ngModelChange)="provider2Changed($event)"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-gray-600 dark:focus:ring-gray-400 sm:max-w-xl sm:text-sm sm:leading-6 dark:bg-gray-700"
                         [(ngModel)]="cs.arena.p2.provider">
                         <option *ngFor="let provider2 of ss.listProviders()" [value]="provider2">{{provider2}}
                         </option>
@@ -106,7 +109,7 @@
 
             <div class="sm:col-span-3" *ngIf="models2Available()">
                 <select id="model2" name="model2" (ngModelChange)="onModel2Change($event)"
-                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-gray-600 dark:focus:ring-gray-400 sm:max-w-xl sm:text-sm sm:leading-6 dark:bg-gray-700"
                     [ngModel]="cs.arena.p2.model">
                     <option *ngFor="let m2model of models2" [value]="m2model">
                         {{m2model}}</option>
@@ -118,19 +121,19 @@
                     <div>
                         <div class="flex items-center space-x-2" *ngIf="msg.isUser">
                             <span
-                                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 group-hover:border-gray-600 group-hover:text-gray-600">
+                                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-300 border-gray-200 dark:border-gray-700">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                                 </svg>
                             </span>
-                            <h3 class="text-lg font-bold">You</h3>
-                            <span class="text-sm text-gray-500">{{ msg.date | date:"short" }}</span>
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">You</h3>
+                            <span class="text-sm text-gray-500 dark:text-gray-400">{{ msg.date | date:"short" }}</span>
                         </div>
                         <div class="flex items-center space-x-2" *ngIf="!msg.isUser">
                             <span
-                                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 group-hover:border-gray-600 group-hover:text-gray-600">
+                                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-300 border-gray-200 dark:border-gray-700">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -139,10 +142,10 @@
 
                             </span>
                             <h3 class="text-lg font-semibold">Bot</h3>
-                            <span class="text-sm text-gray-500">{{ msg.date | date:"short" }}</span>
+                            <span class="text-sm text-gray-500 dark:text-gray-400">{{ msg.date | date:"short" }}</span>
                         </div>
-                        <div class="text-gray-900 mt-1 mb-1 chat-message" [ngClass]="{'italic': msg.isUser}"
-                            [innerHTML]="helpers.presentMessage(msg.text)">
+                        <div class="text-gray-900 dark:text-gray-100 mt-1 mb-1 chat-message dark:bg-gray-800"
+                            [ngClass]="{'italic': msg.isUser}" [innerHTML]="helpers.presentMessage(msg.text)">
                         </div>
                     </div>
                 </div>
@@ -156,11 +159,11 @@
 <div class="lg:ml-72 fixed bottom-6 left-6 right-6">
     <form class="relative">
         <div
-            class="overflow-hidden rounded-lg border border-gray-300 shadow-sm focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+            class="overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500 bg-white dark:bg-gray-800">
             <label for="prompt" class="sr-only">Prompt</label>
             <textarea rows="2" name="prompt" id="prompt" [(ngModel)]="prompt" (keydown.enter)="onKeydown()"
                 [disabled]="loading"
-                class="block w-full resize-none border-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
+                class="block w-full resize-none border-0 text-gray-900 dark:text-gray-100 bg-transparent placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-0 sm:text-sm sm:leading-6"
                 placeholder="Write your prompt.."></textarea>
 
             <!-- Spacer element to match the height of the toolbar -->
@@ -178,7 +181,8 @@
         </div>
 
         <div class="absolute inset-x-px bottom-0">
-            <div class="flex items-center justify-between space-x-3 border-t border-gray-200 py-2">
+            <div
+                class="flex items-center justify-between space-x-3 border-t border-gray-200 dark:border-gray-700 py-2 bg-gray-50 dark:bg-gray-800">
                 <div class="flex">
                     <button type="button" (click)="newArena()"
                         class="inline-flex items-center rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600 ml-2">
