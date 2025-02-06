@@ -86,8 +86,9 @@ export class ConversationComponent implements OnDestroy {
   async chat() {
     this.loading = true;
     try {
-      await this.chatService.chat(this.prompt);
+      let prompt = this.prompt;
       this.prompt = "";
+      await this.chatService.chat(prompt);
       this.chatService.setConnected(true);
     } catch (error) {
       this.handleError('Error chatting:', error);

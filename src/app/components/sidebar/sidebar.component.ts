@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output, OnInit, OnDestroy } from '@angu
 import { ActivatedRoute, Router } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
 import { Keys, SettingsService, System } from '../../services/settings.service';
+import { ThemeService } from '../../services/theme.service';
 import { version } from '../../../../package.json';
 
 @Component({
@@ -14,6 +15,7 @@ import { version } from '../../../../package.json';
 export class SidebarComponent implements OnInit, OnDestroy {
 
   public version: string = version;
+  darkMode$ = this.themeService.darkMode$;
 
   @Input() sidebarOpen: boolean = true;
   @Output() sidebarOpenChange = new EventEmitter<boolean>();
@@ -21,7 +23,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     public activatedRoute: ActivatedRoute,
-    public ss: SettingsService
+    public ss: SettingsService,
+    private themeService: ThemeService
   ) { }
 
   ngOnDestroy(): void { }
@@ -119,5 +122,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
   // Checks if the app is on the /discussion route and if the discussion key matches the current key
   isDiscussionSelected(key: string) {
     return this.router.url.includes("/discussion") && this.ss.currentDiscussionKey === key;
+  }
+
+  toggleDarkMode(): void {
+    this.themeService.toggleDarkMode();
   }
 }

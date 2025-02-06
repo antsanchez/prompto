@@ -3,15 +3,15 @@
 <div>
     <form class="relative">
         <div
-            class="overflow-hidden rounded-lg border border-gray-300 shadow-sm focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+            class="overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
             <label for="prompt" class="sr-only">User Prompt</label>
             <textarea rows="4" name="prompt" id="prompt" [(ngModel)]="prompt"
-                class="block w-full border-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
+                class="block w-full border-0 text-gray-900 dark:text-gray-100 dark:bg-gray-800 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-0 sm:text-sm sm:leading-6"
                 placeholder="Write your prompt.."></textarea>
         </div>
 
         <div class="inset-x-px bottom-0">
-            <div class="flex items-center justify-between space-x-3 border-t border-gray-200 py-2">
+            <div class="flex items-center justify-between space-x-3 border-t border-gray-200 dark:border-gray-700 py-2">
                 <div class="flex">
 
                 </div>
@@ -40,6 +40,6 @@
 </div>
 
 <div class="mt-6">
-    <div [innerHTML]="helpers.presentMessage(output)" class="text-gray-900 chat-message"></div>
+    <div [innerHTML]="helpers.presentMessage(output)" class="text-gray-900 dark:text-gray-100 chat-message"></div>
     <div #scrollMe></div>
 </div>

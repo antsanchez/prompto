@@ -1,7 +1,7 @@
 <app-not-connected *ngIf="!ss.isConnected()"></app-not-connected>
 
-<h1 class="text-3xl font-bold mb-4 mt-4">Welcome to Prompto</h1>
-<p class="">
+<h1 class="text-3xl font-bold mb-4 mt-4 dark:text-white">Welcome to Prompto</h1>
+<p class="dark:text-gray-300">
     Prompto, a blend of 'Prompt' and the Italian word 'Pronto' (meaning ready and quick), is an open-source Angular
     application
     designed to provide a user-friendly interface for interacting with a variety of Language Models (LLMs) via
@@ -22,12 +22,12 @@
     </li>
 </ul>
 
-<p class="mt-2">
+<p class="mt-2 dark:text-gray-300">
     Prompto runs entirely in your browser as a Progressive Web Application (PWA). While the interface is serverless,
     your browser communicates directly with your chosen LLM provider through LangChain.js integrations.
 </p>
 
-<p class="mt-2">
+<p class="mt-2 dark:text-gray-300">
     For convenience and privacy, all <a routerLink="/settings"
         class="underline cursor-pointer text-blue-500">settings</a>,
     chat histories, templates, and configurations are stored in your browser's local storage. While this enables easy
@@ -37,7 +37,7 @@
     all stored data at any time from the settings page.
 </p>
 
-<p class="mt-2">
+<p class="mt-2 dark:text-gray-300">
     View the source code or contribute on <a href="https://github.com/antsanchez/prompto" target="_blank"
         rel="noopener noreferrer" class="underline cursor-pointer text-blue-500">GitHub</a>. This project is open-source
     under the MIT License.
