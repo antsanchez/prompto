@@ -1,11 +1,12 @@
 <div class="container mx-auto px-4">
+    <app-error *ngIf="error" [error]="error"></app-error>
     <app-not-connected *ngIf="!isConnected" class="mb-4"></app-not-connected>
 
     <!-- Only show form and discussion when connected -->
     <div *ngIf="isConnected">
         <!-- Form Section -->
         <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-bold">Create Discussion</h2>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">Create Discussion</h2>
             <a class="cursor-pointer text-blue-500" (click)="showInfo = true">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="w-5 h-5 inline">
@@ -88,18 +89,6 @@
                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                             </path>
                         </svg>
-                    </button>
-                    <button type="button" [disabled]="isLoading" (click)="continueDiscussion()"
-                        class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 transition-colors">
-                        Continue Discussion
-                    </button>
-                    <button type="button" (click)="saveDiscussion()"
-                        class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
-                        Save Discussion
-                    </button>
-                    <button type="button" [disabled]="isLoading" (click)="summarizeDiscussion()"
-                        class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 disabled:opacity-50 transition-colors">
-                        Summarize Discussion
                     </button>
                 </div>
             </form>
@@ -220,6 +209,20 @@
                 class="absolute -top-4 right-0 px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-sm hover:bg-gray-300 dark:hover:bg-gray-600 dark:text-gray-200 transition-colors">
                 {{ isFormCollapsed ? 'Show Form' : 'Hide Form' }}
             </button>
+
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold dark:text-gray-100">Discussion:</h2>
+                <div class="space-x-4">
+                    <button [disabled]="isLoading" (click)="continueDiscussion()"
+                        class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 transition-colors">
+                        Continue Discussion
+                    </button>
+                    <button [disabled]="isLoading" (click)="summarizeDiscussion()"
+                        class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 disabled:opacity-50 transition-colors">
+                        Summarize Discussion
+                    </button>
+                </div>
+            </div>
 
             <h2 class="text-xl font-bold mb-4 dark:text-gray-100">Discussion:</h2>
             <div class="space-y-4">
