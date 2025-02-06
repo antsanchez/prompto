@@ -1,13 +1,13 @@
 <app-error *ngIf="state.error" [error]="state.error"></app-error>
 <app-not-connected *ngIf="!ss.isConnected()"></app-not-connected>
 
-<h2 class="py-3 text-lg">LLM Settings</h2>
-<p class="text-gray-900">
+<h2 class="py-3 text-lg text-gray-900 dark:text-gray-100">LLM Settings</h2>
+<p class="text-gray-900 dark:text-gray-100">
     Prompto runs entirely within your web browser, ensuring a smooth and responsive experience. While Prompto itself
     doesn't require a server, the language models (LLMs) you interact with may be hosted on external servers. This means
     that your browser communicates directly with the chosen LLM.
 </p>
-<p class="text-gray-900 mt-2">
+<p class="text-gray-900 dark:text-gray-100 mt-2">
     For simplicity and user privacy, all settings and chat conversations are stored solely in your browser's local
     storage.
     This approach allows you to maintain your preferences and conversation history without the need for server storage,
@@ -16,13 +16,13 @@
 </p>
 
 <!-- Provider Tabs -->
-<div class="border-b border-gray-200 mt-6">
+<div class="border-b border-gray-200 dark:border-gray-700 mt-6">
     <nav class="-mb-px flex space-x-8" aria-label="Providers">
         <div *ngFor="let provider of ss.listProviders()" class="relative">
             <button
                 [class]="selectedTab === provider ? 
                 'border-orange-500 text-orange-600 border-b-2 py-4 px-1 text-sm font-medium' : 
-                'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 border-b-2 py-4 px-1 text-sm font-medium'"
+                'border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300 border-b-2 py-4 px-1 text-sm font-medium'"
                 (click)="selectTab(provider)">
                 {{provider}}
                 <span *ngIf="ss.getProvider() === provider"
@@ -44,19 +44,21 @@
             <div
                 class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500">
             </div>
-            <span class="ms-3 text-sm font-medium text-gray-900">Set as Default Provider</span>
+            <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-100">Set as Default Provider</span>
         </label>
-        <p class="text-sm text-gray-500 mt-1">When activated, this provider and its selected model will be used as the
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">When activated, this provider and its selected model
+            will be used as the
             default for new chats.</p>
     </div>
 
     <!-- Ollama Specific Settings -->
     <div *ngIf="selectedTab === providers.OLLAMA" class="space-y-6">
         <div class="sm:col-span-3">
-            <label for="url" class="block text-sm font-medium leading-6 text-gray-900">Ollama URL</label>
+            <label for="url" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">Ollama
+                URL</label>
             <div class="mt-2">
                 <input id="url" name="url" type="text" [(ngModel)]="options.apiUrl"
-                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6">
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-gray-100 dark:bg-gray-800 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6">
             </div>
         </div>
     </div>
@@ -64,12 +66,13 @@
     <!-- API Key for non-Ollama providers -->
     <div *ngIf="selectedTab !== providers.OLLAMA" class="space-y-6">
         <div class="sm:col-span-3">
-            <label for="apiKey" class="block text-sm font-medium leading-6 text-gray-900">{{selectedTab}} API
+            <label for="apiKey"
+                class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">{{selectedTab}} API
                 Key</label>
             <div class="mt-2">
                 <input id="apiKey" name="apiKey" type="text" [(ngModel)]="options.apiKey"
                     (ngModelChange)="addedApiKey($event)"
-                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6">
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-gray-100 dark:bg-gray-800 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6">
             </div>
         </div>
     </div>
@@ -77,10 +80,11 @@
     <!-- Common Settings -->
     <div class="space-y-6">
         <div class="sm:col-span-3">
-            <label for="model" class="block text-sm font-medium leading-6 text-gray-900">Model</label>
+            <label for="model"
+                class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">Model</label>
             <div class="mt-2">
                 <select id="model" name="model"
-                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-gray-100 dark:bg-gray-800 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6"
                     [(ngModel)]="options.model">
                     <option *ngFor="let model of options.availableModels" [value]="model">{{model}}</option>
                 </select>
@@ -88,11 +92,12 @@
         </div>
 
         <div class="sm:col-span-3">
-            <label for="temperature" class="block text-sm font-medium leading-6 text-gray-900">Temperature</label>
+            <label for="temperature"
+                class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">Temperature</label>
             <div class="mt-2">
                 <input id="temperature" name="temperature" type="number" step="0.1" min="0.0" max="1.0"
                     [(ngModel)]="options.temperature"
-                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-gray-100 dark:bg-gray-800 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6"
                     oninput="this.value = Math.min(Math.max(parseFloat(this.value), 0.0), 1.0).toFixed(1);">
             </div>
         </div>
@@ -113,9 +118,9 @@
 <!-- Delete Settings Section -->
 <div class="mt-6" id="delete">
     <!-- separator -->
-    <div class="border-t border-gray-200"></div>
+    <div class="border-t border-gray-200 dark:border-gray-700"></div>
 
-    <p class="text-gray-900 mt-6">
+    <p class="text-gray-900 dark:text-gray-100 mt-6">
         If you want to delete all settings, chat conversations and prompt templates, you can do so by clicking the
         button
         below. This action is irreversible and will remove all data stored in your browser's local storage.

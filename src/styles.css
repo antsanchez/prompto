@@ -11,92 +11,119 @@
     border-radius: 8px;
     margin-bottom: 10px;
     word-wrap: break-word;
-  }
-  
-  .chat-message a {
+}
+
+/* Add dark mode styles */
+.dark .chat-message {
+    background-color: #1f2937;
+}
+
+.dark .chat-message code {
+    background-color: #374151;
+    color: #e5e7eb;
+}
+
+.dark .chat-message a {
+    color: #60a5fa;
+}
+
+.chat-message a {
     color: #1a73e8;
     text-decoration: none;
-  }
-  
-  .chat-message a:hover {
+}
+
+.chat-message a:hover {
     text-decoration: underline;
-  }
-  
-  .chat-paragraph {
+}
+
+.chat-paragraph {
     margin: 0 0 10px;
-  }
-  
-  .chat-code {
+}
+
+.chat-code {
     background-color: #282c34;
     color: #abb2bf;
     padding: 10px;
     border-radius: 8px;
     overflow-x: auto;
-  }
-  
-  .chat-code code {
+}
+
+.chat-code code {
     display: block;
     white-space: pre-wrap;
-  }
-  
-  .hljs {
+}
+
+.hljs {
     display: block;
     overflow-x: auto;
     padding: 0.5em;
     color: #abb2bf;
     background: #282c34;
-  }
-  
-  .hljs-keyword,
-  .hljs-selector-tag,
-  .hljs-literal,
-  .hljs-strong,
-  .hljs-name {
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-strong,
+.hljs-name {
     color: #c678dd;
-  }
-  
-  .hljs-code {
+}
+
+.hljs-code {
     color: #61aeee;
-  }
-  
-  .hljs-class .hljs-title {
+}
+
+.hljs-class .hljs-title {
     color: #e06c75;
-  }
-  
-  .hljs-string,
-  .hljs-meta-string {
+}
+
+.hljs-string,
+.hljs-meta-string {
     color: #98c379;
-  }
-  
-  .hljs-regexp,
-  .hljs-link {
+}
+
+.hljs-regexp,
+.hljs-link {
     color: #d19a66;
-  }
-  
-  .hljs-title,
-  .hljs-symbol,
-  .hljs-bullet,
-  .hljs-number,
-  .hljs-section,
-  .hljs-meta,
-  .hljs-built_in,
-  .hljs-builtin-name,
-  .hljs-attr,
-  .hljs-attribute,
-  .hljs-variable,
-  .hljs-template-variable,
-  .hljs-type,
-  .hljs-selector-attr,
-  .hljs-selector-pseudo,
-  .hljs-addition {
+}
+
+.hljs-title,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-number,
+.hljs-section,
+.hljs-meta,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-attr,
+.hljs-attribute,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-type,
+.hljs-selector-attr,
+.hljs-selector-pseudo,
+.hljs-addition {
     color: #e06c75;
-  }
-  
-  .hljs-emphasis {
+}
+
+.hljs-emphasis {
     font-style: italic;
-  }
-  
-  .hljs-strong {
+}
+
+.hljs-strong {
     font-weight: bold;
-  }
-  
+}
+
+/* Dark mode specific styles */
+.dark body {
+  @apply bg-gray-900;
+}
+
+.dark .chat-paragraph {
+  @apply text-gray-300;
+}
+
+.dark .chat-code {
+  @apply bg-gray-800 text-gray-300;
+}
+
