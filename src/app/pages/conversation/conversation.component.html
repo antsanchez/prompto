@@ -37,6 +37,27 @@
       </div>
     </div>
   </div>
+
+  <!-- Loading indicator -->
+  <div *ngIf="waiting" class="flex items-start space-x-3 pt-2 pb-2">
+    <div>
+      <div class="flex items-center space-x-2">
+        <span
+          class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-300 border-gray-200 dark:border-gray-700">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+            stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 6.75v10.5a2.25 2.25 0 0 0 2.25 2.25Zm.75-12h9v9h-9v-9Z" />
+          </svg>
+        </span>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Bot</h3>
+      </div>
+      <div class="text-gray-900 dark:text-gray-100 mt-1 mb-1 chat-message dark:bg-gray-800">
+        <span class="loading-dots">Thinking</span>
+      </div>
+    </div>
+  </div>
+
   <div #scrollMe></div>
 </div>
 

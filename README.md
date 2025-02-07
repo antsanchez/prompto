@@ -1,6 +1,6 @@
-# Prompto
+# Prompto - Advanced Chat UI for Language Models
 
-Welcome to Prompto, an open-source Angular application designed to provide a user-friendly interface for interacting with a variety of Language Models (LLMs) via LangChain.js. Prompto, a blend of the word 'Prompt' and the Italian word 'Pronto' (meaning ready and quick), is aptly named as it allows for the quick and easy switching between different LLMs, directly from your browser.
+Welcome to Prompto, an open-source Angular chat interface designed to provide a user-friendly way of interacting with a variety of Large Language Models (LLMs) via LangChain.js. Prompto, a blend of the word 'Prompt' and the Italian word 'Pronto' (meaning ready and quick), offers a modern chat UI that allows for quick and easy switching between different AI chat models, directly from your browser.
 
 ## Technology Stack
 
@@ -12,6 +12,7 @@ Welcome to Prompto, an open-source Angular application designed to provide a use
 
 ## Features
 
+- **Modern Chat Interface**: Clean and intuitive chat UI similar to popular chat applications, with message threading and real-time responses.
 - **Multiple LLMs**: Effortlessly switch between a range of Large Language Models (LLMs) supported by LangChain Js.
 - **Temperature Settings**: Adjust the temperature to fine-tune the responses from your chosen LLM.
 - **Chatbot UI**: Engage with a chatbot interface that remembers the conversation context.

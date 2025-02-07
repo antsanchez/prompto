@@ -1,9 +1,9 @@
 <div class="container mx-auto px-4">
     <app-error *ngIf="error" [error]="error"></app-error>
-    <app-not-connected *ngIf="!isConnected" class="mb-4"></app-not-connected>
+    <app-not-connected *ngIf="!discussionService.isConnected()" class="mb-4"></app-not-connected>
 
     <!-- Only show form and discussion when connected -->
-    <div *ngIf="isConnected">
+    <div *ngIf="discussionService.isConnected()">
         <!-- Form Section -->
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">Create Discussion</h2>
@@ -229,7 +229,8 @@
                 <div *ngFor="let message of discussionService.currentDiscussion.messages"
                     class="p-4 border rounded dark:border-gray-700 bg-white dark:bg-gray-800">
                     <div class="font-bold dark:text-gray-100">{{message.agentName}}</div>
-                    <div class="whitespace-pre-wrap dark:text-gray-300">{{message.text}}</div>
+                    <div class="whitespace-pre-wrap dark:text-gray-300"
+                        [innerHTML]="helpers.presentMessage(message.text)"></div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">{{message.date | date:'medium'}}</div>
                 </div>
             </div>

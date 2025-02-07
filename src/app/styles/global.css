@@ -1,0 +1,17 @@
+.thinking-block {
+  margin: 10px 0;
+}
+
+.thinking-link {
+  color: #666;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.thinking-content {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  font-style: italic;
+}

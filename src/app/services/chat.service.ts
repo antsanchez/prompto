@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { LcService } from './lc.service';
 import { PromptTemplate } from "@langchain/core/prompts";
 import { Runnable } from '@langchain/core/runnables';
+import { Subject } from 'rxjs';
 
 type Arena = {
   name: string;
@@ -37,6 +38,7 @@ export class ChatService {
   public enterSubmit: boolean = false;
   public arena = {} as Arena;
   public arenaStarted = false;
+  public streamStarted = new Subject<void>();
 
   constructor(
     public lc: LcService,
@@ -174,7 +176,12 @@ export class ChatService {
     // Add bot message to chat history
     let messageNumber = this.history.messages.length;
     let stream = await chain.stream({ user_prompt: prompt, chat_history: chatHistory })
+    let firstChunk = true;
     for await (let chunk of stream) {
+      if (firstChunk) {
+        this.streamStarted.next();
+        firstChunk = false;
+      }
       if (this.history.messages.length > messageNumber) {
         this.history.messages[messageNumber].text += chunk?.content;
       } else {
