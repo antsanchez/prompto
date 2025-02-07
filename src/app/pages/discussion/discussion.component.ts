@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { NotConnectedComponent } from '../../components/not-connected/not-connected.component';
 import { ErrorComponent } from '../../components/error/error.component';
+import { HelpersService } from '../../services/helpers.service';
 
 @Component({
   selector: 'app-discussion',
@@ -47,6 +48,7 @@ export class DiscussionComponent implements OnInit {
     public discussionService: DiscussionService,
     private router: Router,
     private activatedRoute: ActivatedRoute,
+    public helpers: HelpersService
   ) {
     this.form = this.fb.group({
       title: [''],
@@ -56,6 +58,7 @@ export class DiscussionComponent implements OnInit {
       agentDescriptions: this.fb.array([])
     });
 
+    this.discussionService.checkConnection()
     this.updateAgentDescriptions();
     this.loadSavedDiscussions();
     this.subscribeToRouteParams();
@@ -63,9 +66,6 @@ export class DiscussionComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.discussionService.checkConnection().catch(() => {
-      this.discussionService.setConnected(false);
-    });
   }
 
   toggleForm() {
@@ -91,14 +91,6 @@ export class DiscussionComponent implements OnInit {
         this.handleError('Error loading chat from URL:', error);
       }
     });
-  }
-
-  private async handleNewDiscussion() {
-    try {
-      await this.discussionService.newDiscussion();
-    } catch (error) {
-      this.handleError('Error creating a new discussion:', error);
-    }
   }
 
   newDiscussion() {
@@ -164,7 +156,7 @@ export class DiscussionComponent implements OnInit {
         );
 
         const maxRounds = this.form.get('maxRounds')?.value || 3;
-        const newMessages = await this.discussionService.continueDiscussion(maxRounds);
+        await this.discussionService.continueDiscussion(maxRounds);
         this.isFormCollapsed = true;
         this.discussionService.setConnected(true);
         await this.saveDiscussion(); // Automatically save
@@ -249,9 +241,5 @@ export class DiscussionComponent implements OnInit {
 
     this.error = `${message} ${errorMessage}`;
     setTimeout(() => this.error = '', 5000); // Clear error after 5 seconds
-  }
-
-  get isConnected(): boolean {
-    return this.discussionService.isConnected;
   }
 }

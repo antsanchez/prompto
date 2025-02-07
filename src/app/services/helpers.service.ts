@@ -29,7 +29,7 @@ export class HelpersService {
 
     renderer.code = (code, infostring) => {
       const lang = (infostring || '').match(/\S*/)?.[0] || 'plaintext';
-      const highlighted = hljs.highlight(lang, code).value;
+      const highlighted = hljs.highlight(code, { language: lang }).value;
       return `<pre class="chat-code"><code class="hljs ${lang}">${highlighted}</code></pre>`;
     };
 

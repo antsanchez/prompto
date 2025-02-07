@@ -17,6 +17,7 @@ export class ConversationComponent implements OnDestroy {
   public loading: boolean = false;
   public prompt: string = "";
   public error: string = "";
+  public waiting: boolean = false;
   isDesktop: boolean = window.innerWidth > 1024;
   private destroy$ = new Subject<void>();
 
@@ -32,6 +33,12 @@ export class ConversationComponent implements OnDestroy {
     this.loadChatFromURL();
     this.subscribeToRouteParams();
     this.chatService.checkConnection();
+
+    this.chatService.streamStarted.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.waiting = false;
+    });
   }
 
   @HostListener('window:resize')
@@ -85,6 +92,7 @@ export class ConversationComponent implements OnDestroy {
 
   async chat() {
     this.loading = true;
+    this.waiting = true;
     try {
       let prompt = this.prompt;
       this.prompt = "";
@@ -95,6 +103,7 @@ export class ConversationComponent implements OnDestroy {
       this.chatService.setConnected(false);
     } finally {
       this.loading = false;
+      this.waiting = false;
     }
   }
 

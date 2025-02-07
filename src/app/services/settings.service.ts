@@ -272,6 +272,7 @@ export class SettingsService implements ISettingsService {
         this.setConnected(true);
       } catch (error) {
         this.setConnected(false);
+        console.error('Error checking connection:', error);
       }
     }
   }
