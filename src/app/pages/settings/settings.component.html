@@ -60,6 +60,41 @@
                 <input id="url" name="url" type="text" [(ngModel)]="options.apiUrl"
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-gray-100 dark:bg-gray-800 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:max-w-xl sm:text-sm sm:leading-6">
             </div>
+            <div
+                class="mt-4 p-4 rounded-md bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-amber-400 dark:text-amber-600" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-amber-800 dark:text-amber-200">CORS Configuration Required
+                        </h3>
+                        <div class="mt-2 text-sm text-amber-700 dark:text-amber-300">
+                            <p>You'll need to configure CORS in the Ollama server if either:</p>
+                            <ul class="list-disc list-inside mt-1 ml-2">
+                                <li>You're accessing Prompto from a website or PWA</li>
+                                <li>Ollama is running on a different server than localhost</li>
+                            </ul>
+                            <p class="mt-2">
+                                See the <a
+                                    href="https://medium.com/dcoderai/how-to-handle-cors-settings-in-ollama-a-comprehensive-guide-ee2a5a1beef0"
+                                    target="_blank"
+                                    class="font-medium underline text-amber-800 dark:text-amber-200 hover:text-amber-600 dark:hover:text-amber-400">CORS
+                                    configuration guide</a>
+                                or <a
+                                    href="https://github.com/ollama/ollama/blob/main/docs/faq.md#how-do-i-configure-ollama-server"
+                                    target="_blank"
+                                    class="font-medium underline text-amber-800 dark:text-amber-200 hover:text-amber-600 dark:hover:text-amber-400">official
+                                    documentation</a>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -78,7 +113,7 @@
     </div>
 
     <!-- Common Settings -->
-    <div class="space-y-6">
+    <div class="space-y-6 mt-3">
         <div class="sm:col-span-3">
             <label for="model"
                 class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">Model</label>
