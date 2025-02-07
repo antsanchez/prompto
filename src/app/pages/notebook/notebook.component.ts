@@ -25,7 +25,9 @@ export class NotebookComponent implements OnDestroy {
   constructor(
     public lc: LcService,
     public helpers: HelpersService
-  ) { }
+  ) {
+    this.lc.s.checkConnection();
+  }
 
   ngAfterViewChecked() {
     this.scrollToBottom();

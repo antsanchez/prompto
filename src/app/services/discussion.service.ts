@@ -36,20 +36,11 @@ export class DiscussionService {
     this.checkConnection();
   }
 
-  async checkConnection() {
-    try {
-      if (!this.lc.llm) {
-        this.lc.llm = await this.lc.createLLM(this.lc.s.getProvider());
-      }
-      this.setConnected(true);
-    } catch (error) {
-      console.error('Connection check failed:', error);
-      this.setConnected(false);
-      throw error;
-    }
+  checkConnection() {
+    this.lc.s.checkConnection();
   }
 
-  get isConnected(): boolean {
+  public isConnected(): boolean {
     return this.lc.s.isConnected();
   }
 
