@@ -27,9 +27,6 @@ export class AppComponent {
   ) {
     try {
       this.ss.loadSettings();
-      console.log('Settings loaded:', this.ss.settings);
-      console.log('Selected LLM:', this.ss.getProvider());
-      console.log('Selected model:', this.ss.getModel());
     } catch (error) {
       console.error('Error loading settings:', error);
     }
