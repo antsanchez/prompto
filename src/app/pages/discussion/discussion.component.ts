@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DiscussionService } from '../../services/discussion.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -20,7 +20,7 @@ import { HelpersService } from '../../services/helpers.service';
   templateUrl: './discussion.component.html',
   styleUrl: './discussion.component.css'
 })
-export class DiscussionComponent implements OnInit {
+export class DiscussionComponent implements OnDestroy {
   form: FormGroup;
   isLoading = false;
   messages: any[] = [];
@@ -58,15 +58,13 @@ export class DiscussionComponent implements OnInit {
       agentDescriptions: this.fb.array([])
     });
 
-    this.discussionService.checkConnection()
     this.updateAgentDescriptions();
     this.loadSavedDiscussions();
     this.subscribeToRouteParams();
     this.loadDiscussionFromURL();
+    this.discussionService.checkConnection();
   }
 
-  ngOnInit() {
-  }
 
   toggleForm() {
     this.isFormCollapsed = !this.isFormCollapsed;
@@ -177,7 +175,7 @@ export class DiscussionComponent implements OnInit {
       await this.discussionService.continueDiscussion(maxRounds);
       this.messages = this.discussionService.currentDiscussion.messages;
       this.discussionService.setConnected(true);
-      await this.saveDiscussion(); // Automatically save
+      await this.saveDiscussion();
     } catch (error) {
       this.handleError('Failed to continue discussion:', error);
       this.discussionService.setConnected(false);
@@ -192,7 +190,7 @@ export class DiscussionComponent implements OnInit {
     try {
       this.summary = await this.discussionService.summarizeDiscussion();
       this.discussionService.setConnected(true);
-      await this.saveDiscussion(); // Automatically save
+      await this.saveDiscussion();
     } catch (error) {
       this.handleError('Failed to summarize discussion:', error);
       this.discussionService.setConnected(false);
@@ -203,7 +201,11 @@ export class DiscussionComponent implements OnInit {
 
   private async saveDiscussion() {
     try {
-      await this.discussionService.saveDiscussion();
+      const key = await this.discussionService.saveDiscussion();
+      // Update URL with discussion key if not already there
+      if (key && !this.activatedRoute.snapshot.params['discussion']) {
+        this.router.navigate(['/discussion', key]);
+      }
     } catch (error) {
       console.error('Error saving discussion:', error);
     }

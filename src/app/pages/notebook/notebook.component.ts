@@ -3,14 +3,13 @@ import { LcService } from '../../services/lc.service';
 import { HelpersService } from '../../services/helpers.service';
 import { SharedModule } from '../../shared/shared.module';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-notebook',
   standalone: true,
   imports: [SharedModule],
   templateUrl: './notebook.component.html',
-  styleUrls: ['./notebook.component.css']  // Fixed: 'styleUrl' to 'styleUrls' and array usage
+  styleUrls: ['./notebook.component.css']
 })
 export class NotebookComponent implements OnDestroy {
   public loading: boolean = false;

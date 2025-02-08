@@ -58,7 +58,6 @@ export class AppComponent {
     if (this.router.url === '/arena') {
       return 'Arena';
     }
-
     let provider = this.ss.getProvider() || 'No LLM selected';
     let model = this.ss.getModel() || 'No model selected';
     return `${title} | ${provider} (${model}) | Temperature: ${this.ss.getTemperature()}`;

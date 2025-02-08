@@ -9,6 +9,7 @@ type Agent = {
 }
 
 type Discussion = {
+  key?: string;  // Add key property
   title: string;
   context: string;
   agents: Agent[];
@@ -76,7 +77,6 @@ export class DiscussionService {
       messages: []
     };
 
-    // Initialize LLM
     try {
       this.lc.llm = await this.lc.createLLM(this.lc.s.getProvider());
     } catch (error) {
@@ -229,20 +229,25 @@ export class DiscussionService {
   }
 
   saveDiscussion() {
-    const key = `discussion_${Date.now()}`;
-    localStorage.setItem(key, JSON.stringify(this.currentDiscussion));
-    // Update the settings service keys after saving
+    if (!this.currentDiscussion.key) {
+      this.currentDiscussion.key = `discussion_${Date.now()}`;
+    }
+
+    localStorage.setItem(this.currentDiscussion.key, JSON.stringify(this.currentDiscussion));
+
     if (this.lc.s) {
       this.lc.s.loadKeys();
     }
-    return key;
+    return this.currentDiscussion.key;
   }
 
   async loadDiscussion(key: string) {
     const saved = localStorage.getItem(key);
     if (saved) {
       this.currentDiscussion = JSON.parse(saved);
-      // Initialize LLM when loading a discussion
+      // Ensure the key is set
+      this.currentDiscussion.key = key;
+
       try {
         this.lc.llm = await this.lc.createLLM(this.lc.s.getProvider());
       } catch (error) {

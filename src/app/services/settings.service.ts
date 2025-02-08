@@ -498,7 +498,7 @@ export class SettingsService implements ISettingsService {
             let chatObj = JSON.parse(chat);
             this.chats.push({
               key: key,
-              name: chatObj.title || 'Untitled Chat'
+              name: chatObj.name || 'Untitled Chat'
             });
           }
         } catch (error) {
@@ -518,7 +518,7 @@ export class SettingsService implements ISettingsService {
             let arenaObj = JSON.parse(arena);
             this.arenas.push({
               key: key,
-              name: arenaObj.title || 'Untitled Arena'
+              name: arenaObj.name || 'Untitled Arena'
             });
           }
         } catch (error) {
