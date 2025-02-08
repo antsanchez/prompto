@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { marked } from 'marked';
 import { DomSanitizer } from '@angular/platform-browser';
-import hljs from 'highlight.js'; // Import highlight.js
+import hljs from 'highlight.js';
 
 @Injectable({
   providedIn: 'root'
@@ -28,8 +28,22 @@ export class HelpersService {
     };
 
     renderer.code = (code, infostring) => {
-      const lang = (infostring || '').match(/\S*/)?.[0] || 'plaintext';
-      const highlighted = hljs.highlight(code, { language: lang }).value;
+      let lang = (infostring || '').match(/\S*/)?.[0] || 'plaintext';
+
+      // Check if the language is supported by highlight.js
+      if (lang && !hljs.getLanguage(lang)) {
+        console.warn(`Language '${lang}' not found, falling back to plaintext`);
+        lang = 'plaintext';
+      }
+
+      let highlighted;
+      try {
+        highlighted = hljs.highlight(code, { language: lang }).value;
+      } catch (e) {
+        console.warn('Highlighting failed, falling back to escaped plain text');
+        highlighted = hljs.highlight(code, { language: 'plaintext' }).value;
+      }
+
       return `<pre class="chat-code"><code class="hljs ${lang}">${highlighted}</code></pre>`;
     };
 
