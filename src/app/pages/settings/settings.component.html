@@ -1,4 +1,3 @@
-<app-error *ngIf="state.error" [error]="state.error"></app-error>
 <app-not-connected *ngIf="!ss.isConnected()"></app-not-connected>
 
 <h2 class="py-3 text-lg text-gray-900 dark:text-gray-100">LLM Settings</h2>
@@ -17,7 +16,7 @@
 
 <!-- Provider Tabs -->
 <div class="border-b border-gray-200 dark:border-gray-700 mt-6">
-    <nav class="-mb-px flex space-x-8" aria-label="Providers">
+    <nav class="-mb-px flex flex-wrap gap-4 sm:gap-8" aria-label="Providers">
         <div *ngFor="let provider of ss.listProviders()" class="relative">
             <button
                 [class]="selectedTab === provider ? 
