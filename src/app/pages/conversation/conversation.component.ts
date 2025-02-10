@@ -14,6 +14,7 @@ import { takeUntil } from 'rxjs/operators';
   styleUrls: ['./conversation.component.css']
 })
 export class ConversationComponent implements OnDestroy {
+  protected Math = Math; // Add this line to make Math available in template
   public loading: boolean = false;
   public prompt: string = "";
   public error: string = "";

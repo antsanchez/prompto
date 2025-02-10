@@ -15,7 +15,7 @@ import { HelpersService } from '../../services/helpers.service';
   styleUrl: './arena.component.css'
 })
 export class ArenaComponent {
-
+  protected Math = Math; // Add this line
   public error: string = '';
   public loading: boolean = false;
   public prompt: string = "";
@@ -121,7 +121,7 @@ export class ArenaComponent {
   }
 
   async onKeydown() {
-    if (this.cs.enterSubmit) {
+    if (this.cs.enterSubmit && this.canSend()) {
       this.chatArena();
     }
   }
@@ -198,8 +198,16 @@ export class ArenaComponent {
     }
   }
 
-  canSend() {
-    return this.prompt !== '' && !this.loading && this.cs.arenaStarted;
+  modelsSelected(): boolean {
+    return !!(this.cs.arena.p1.model && this.cs.arena.p1.model.trim() !== '' &&
+      this.cs.arena.p2.model && this.cs.arena.p2.model.trim() !== '');
+  }
+
+  canSend(): boolean {
+    return !this.loading &&
+      !!this.prompt &&
+      this.prompt.trim() !== '' &&
+      this.modelsSelected();
   }
 
   private handleError(message: string, error: any): void {
