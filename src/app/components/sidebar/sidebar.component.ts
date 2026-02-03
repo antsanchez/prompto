@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
 import { Keys, SettingsService, System } from '../../services/settings.service';
 import { ThemeService } from '../../services/theme.service';
-import { version } from '../../../../package.json';
+import packageJson from '../../../../package.json';
 
 @Component({
   selector: 'app-sidebar',
@@ -14,7 +14,7 @@ import { version } from '../../../../package.json';
 })
 export class SidebarComponent implements OnInit, OnDestroy {
 
-  public version: string = version;
+  public version: string = packageJson.version;
   darkMode$ = this.themeService.darkMode$;
 
   @Input() sidebarOpen: boolean = true;

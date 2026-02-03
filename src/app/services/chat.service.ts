@@ -3,6 +3,10 @@ import { LcService } from './lc.service';
 import { PromptTemplate } from "@langchain/core/prompts";
 import { Runnable } from '@langchain/core/runnables';
 import { Subject } from 'rxjs';
+import { STORAGE_KEYS, DEFAULTS } from '../core/constants';
+import { StorageService } from './storage.service';
+import { FileAttachment, Message } from '../core/types';
+import { FileService } from './file.service';
 
 type Arena = {
   name: string;
@@ -22,26 +26,45 @@ type Chat = {
   messages: Message[];
 };
 
-type Message = {
-  text: string;
-  isUser: boolean;
-  date: Date;
-};
+function createEmptyChat(): Chat {
+  return {
+    name: '',
+    messages: []
+  };
+}
+
+function createEmptyPlayer(): Player {
+  return {
+    provider: '',
+    model: '',
+    llm: null as unknown as Runnable,
+    messages: []
+  };
+}
+
+function createEmptyArena(): Arena {
+  return {
+    name: '',
+    p1: createEmptyPlayer(),
+    p2: createEmptyPlayer()
+  };
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class ChatService {
 
-
-  public history: Chat = {} as Chat;
+  public history: Chat = createEmptyChat();
   public enterSubmit: boolean = false;
-  public arena = {} as Arena;
+  public arena: Arena = createEmptyArena();
   public arenaStarted = false;
   public streamStarted = new Subject<void>();
 
   constructor(
     public lc: LcService,
+    private storage: StorageService,
+    private fileService: FileService
   ) {
     this.lc.s.loadSettings();
     this.enterSubmit = this.lc.s.settings().enterSubmit;
@@ -49,7 +72,7 @@ export class ChatService {
 
 
   async newChat() {
-    this.history = {} as Chat;
+    this.history = createEmptyChat();
     this.lc.s.currentChatKey = "";
     this.lc.s.currentArenaKey = "";
 
@@ -99,8 +122,8 @@ export class ChatService {
 
   newArena() {
     this.arenaStarted = false;
-    this.arena.p1 = {} as Player;
-    this.arena.p2 = {} as Player;
+    this.arena.p1 = createEmptyPlayer();
+    this.arena.p2 = createEmptyPlayer();
   }
 
   isConnected() {
@@ -123,8 +146,8 @@ export class ChatService {
   // createChatName creates a chat name based on the first user prompt
   async createChatName(prompt: string, llm: Runnable) {
     let fullPrompt = PromptTemplate.fromTemplate(
-      `Try to guess the theme of this chat conversation based on the first user prompt and give it a brief, 
-      descriptive name using only letters, no longer than 50-60 characters (shorter is better). 
+      `Try to guess the theme of this chat conversation based on the first user prompt and give it a brief,
+      descriptive name using only letters, no longer than 50-60 characters (shorter is better).
       If you're unsure, repeat the user prompt. Answer only with the name of the chat theme. Keep it simple and clear, no more than a few words.
       Here is the user prompt: ${prompt}`
     );
@@ -148,34 +171,46 @@ export class ChatService {
   }
 
   // chat sends a prompt to the chatbot and adds the response to the chat history
-  async chat(prompt: string) {
+  async chat(prompt: string, attachments?: FileAttachment[]) {
     if (this.history.messages === undefined) {
       this.history.name = "";
       this.history.messages = [];
     }
 
-    // Prepare chat history for the chatbot before adding the prompt
-    const chatHistory = this.prepareChatHistory(this.history.messages);
+    // Build text that includes attachment placeholders for storage
+    let displayText = prompt;
+    if (attachments?.length) {
+      const placeholders = attachments.map(att => this.fileService.getAttachmentPlaceholder(att));
+      displayText = prompt + (prompt ? '\n' : '') + placeholders.join('\n');
+    }
 
-    // Add user message to chat
+    // Add user message to chat (attachments are ephemeral, only placeholder text is stored)
     this.history.messages.push({
-      text: prompt,
+      text: displayText,
       isUser: true,
       date: new Date()
     });
 
     // If this is the first message, create a chat name
-    if (this.history.messages.length === 1) {
+    if (this.history.messages.length === 1 && this.lc.llm) {
       let answer = await this.createChatName(prompt, this.lc.llm);
       // Remove any content between <> brackets
       this.history.name = answer?.content.replace(/<[^>]*>/g, "");
     }
 
-    let chain = this.createChatChain(this.lc.llm);
+    if (!this.lc.llm) {
+      throw new Error('LLM not initialized');
+    }
+
+    // Use streamWithMessages for multimodal support
+    const langchainMessages = this.prepareMessages(this.history.messages, prompt, attachments);
+    let stream = await this.lc.streamWithMessages(
+      langchainMessages,
+      'You are a nice chatbot having a conversation with a human.'
+    );
 
     // Add bot message to chat history
     let messageNumber = this.history.messages.length;
-    let stream = await chain.stream({ user_prompt: prompt, chat_history: chatHistory })
     let firstChunk = true;
     for await (let chunk of stream) {
       if (firstChunk) {
@@ -185,7 +220,6 @@ export class ChatService {
       if (this.history.messages.length > messageNumber) {
         this.history.messages[messageNumber].text += chunk?.content;
       } else {
-        // replace "\n\n" with "<br>"
         this.history.messages.push({
           text: chunk?.content,
           isUser: false,
@@ -197,7 +231,35 @@ export class ChatService {
     this.saveChat();
   }
 
-  async chatArena(prompt: string) {
+  // prepareMessages converts chat history to LangChain message format
+  // The current message with attachments is passed separately to include multimodal content
+  private prepareMessages(
+    messages: Message[],
+    currentPrompt: string,
+    currentAttachments?: FileAttachment[]
+  ): Array<{ role: 'human' | 'ai'; text: string; attachments?: FileAttachment[] }> {
+    const result: Array<{ role: 'human' | 'ai'; text: string; attachments?: FileAttachment[] }> = [];
+
+    // Add all previous messages (excluding the last user message which we just added)
+    for (let i = 0; i < messages.length - 1; i++) {
+      const msg = messages[i];
+      result.push({
+        role: msg.isUser ? 'human' : 'ai',
+        text: msg.text
+      });
+    }
+
+    // Add the current message with attachments
+    result.push({
+      role: 'human',
+      text: currentPrompt,
+      attachments: currentAttachments
+    });
+
+    return result;
+  }
+
+  async chatArena(prompt: string, attachments?: FileAttachment[]) {
     if (this.arena.p1.messages === undefined) {
       this.arena.p1.messages = [];
     }
@@ -206,40 +268,50 @@ export class ChatService {
       this.arena.p2.messages = [];
     }
 
-    // Prepare chat history for the chatbot before adding the prompt
-    const chatHistory1 = this.prepareChatHistory(this.arena.p1.messages);
-    const chatHistory2 = this.prepareChatHistory(this.arena.p2.messages);
+    // Build text that includes attachment placeholders for storage
+    let displayText = prompt;
+    if (attachments?.length) {
+      const placeholders = attachments.map(att => this.fileService.getAttachmentPlaceholder(att));
+      displayText = prompt + (prompt ? '\n' : '') + placeholders.join('\n');
+    }
 
     // Add user message to chat
     this.arena.p1.messages.push({
-      text: prompt,
+      text: displayText,
       isUser: true,
       date: new Date()
     });
 
     this.arena.p2.messages.push({
-      text: prompt,
+      text: displayText,
       isUser: true,
       date: new Date()
     });
 
     // If this is the first message, create a chat name
     if (this.arena.p1.messages.length === 1) {
-      let answer = await this.createChatName(prompt, this.arena.p1.llm || this.arena.p2.llm || this.lc.llm);
-      this.arena.name = answer?.content
+      const llmForName = this.arena.p1.llm || this.arena.p2.llm || this.lc.llm;
+      if (llmForName) {
+        let answer = await this.createChatName(prompt, llmForName);
+        this.arena.name = answer?.content;
+      }
     }
 
-    let chain1 = this.createChatChain(this.arena.p1.llm);
-    let chain2 = this.createChatChain(this.arena.p2.llm);
+    // Prepare messages for both players with multimodal support
+    const messages1 = this.prepareMessages(this.arena.p1.messages, prompt, attachments);
+    const messages2 = this.prepareMessages(this.arena.p2.messages, prompt, attachments);
 
-    // Add bot message to chat history
+    const systemPrompt = 'You are a nice chatbot having a conversation with a human.';
+
+    // Stream responses from both LLMs in parallel
     let messageNumber1 = this.arena.p1.messages.length;
-    let promise1 = chain1.stream({ user_prompt: prompt, chat_history: chatHistory1 }).then(async (stream1) => {
+    let promise1 = this.arena.p1.llm.stream(
+      await this.buildLangchainMessages(messages1, systemPrompt)
+    ).then(async (stream1) => {
       for await (let chunk of stream1) {
         if (this.arena.p1.messages.length > messageNumber1) {
           this.arena.p1.messages[messageNumber1].text += chunk?.content;
         } else {
-          // replace "\n\n" with "<br>"
           this.arena.p1.messages.push({
             text: chunk?.content,
             isUser: false,
@@ -250,12 +322,13 @@ export class ChatService {
     });
 
     let messageNumber2 = this.arena.p2.messages.length;
-    let promise2 = chain2.stream({ user_prompt: prompt, chat_history: chatHistory2 }).then(async (stream2) => {
+    let promise2 = this.arena.p2.llm.stream(
+      await this.buildLangchainMessages(messages2, systemPrompt)
+    ).then(async (stream2) => {
       for await (let chunk of stream2) {
         if (this.arena.p2.messages.length > messageNumber2) {
           this.arena.p2.messages[messageNumber2].text += chunk?.content;
         } else {
-          // replace "\n\n" with "<br>"
           this.arena.p2.messages.push({
             text: chunk?.content,
             isUser: false,
@@ -269,6 +342,48 @@ export class ChatService {
     this.saveArena();
   }
 
+  // buildLangchainMessages converts our message format to LangChain messages
+  private async buildLangchainMessages(
+    messages: Array<{ role: 'human' | 'ai'; text: string; attachments?: FileAttachment[] }>,
+    systemPrompt?: string
+  ) {
+    const { HumanMessage, AIMessage, SystemMessage } = await import('@langchain/core/messages');
+    const langchainMessages: any[] = [];
+
+    if (systemPrompt) {
+      langchainMessages.push(new SystemMessage(systemPrompt));
+    }
+
+    for (const msg of messages) {
+      if (msg.role === 'ai') {
+        langchainMessages.push(new AIMessage(msg.text));
+        continue;
+      }
+
+      if (!msg.attachments?.length) {
+        langchainMessages.push(new HumanMessage(msg.text));
+        continue;
+      }
+
+      // Build multimodal content
+      const content: any[] = [];
+      if (msg.text) {
+        content.push({ type: 'text', text: msg.text });
+      }
+
+      for (const att of msg.attachments) {
+        content.push({
+          type: 'image_url',
+          image_url: { url: `data:${att.mimeType};base64,${att.data}` }
+        });
+      }
+
+      langchainMessages.push(new HumanMessage({ content }));
+    }
+
+    return langchainMessages;
+  }
+
 
   // saveChat saves chat to local storage, with the key "chat_" + chatName
   saveChat() {
@@ -277,10 +392,10 @@ export class ChatService {
     }
 
     if (this.lc.s.currentChatKey === "") {
-      this.lc.s.currentChatKey = "chat_" + Date.now().toString();
+      this.lc.s.currentChatKey = STORAGE_KEYS.CHAT + Date.now().toString();
     }
 
-    localStorage.setItem(this.lc.s.currentChatKey, JSON.stringify(this.history));
+    this.storage.setItem(this.lc.s.currentChatKey, this.history);
 
     // if the chat is not already in the list of chats, add it
     if (!this.lc.s.chats.find((chat) => chat.key === this.lc.s.currentChatKey)) {
@@ -298,10 +413,10 @@ export class ChatService {
     }
 
     if (this.lc.s.currentArenaKey === "") {
-      this.lc.s.currentArenaKey = "arena_" + Date.now().toString();
+      this.lc.s.currentArenaKey = STORAGE_KEYS.ARENA + Date.now().toString();
     }
 
-    localStorage.setItem(this.lc.s.currentArenaKey, JSON.stringify(this.arena));
+    this.storage.setItem(this.lc.s.currentArenaKey, this.arena);
 
     // if the chat is not already in the list of chats, add it
     if (!this.lc.s.arenas.find((arena) => arena.key === this.lc.s.currentArenaKey)) {
@@ -314,19 +429,19 @@ export class ChatService {
 
   // loadChat loads chat from local storage
   loadChat(key: string) {
-    let chat = localStorage.getItem(key);
+    const chat = this.storage.getItem<Chat>(key);
     if (chat) {
       this.lc.s.currentChatKey = key;
-      this.history = JSON.parse(chat) as Chat;
+      this.history = chat;
     }
   }
 
   // loadArena loads the arena chat from local storage
   loadArena(key: string) {
-    let arena = localStorage.getItem(key);
+    const arena = this.storage.getItem<Arena>(key);
     if (arena) {
       this.lc.s.currentArenaKey = key;
-      this.arena = JSON.parse(arena) as Arena;
+      this.arena = arena;
     }
   }
 
@@ -347,23 +462,15 @@ export class ChatService {
   }
 
   loadDiscussion(key: string) {
-    const saved = localStorage.getItem(key);
-    if (saved) {
-      return JSON.parse(saved);
-    }
-    return null;
+    return this.storage.getItem(key);
   }
 
   getSavedDiscussions() {
-    const keys = Object.keys(localStorage).filter(key => key.startsWith('discussion_'));
-    return keys.map(key => ({
-      key,
-      name: JSON.parse(localStorage.getItem(key) || '{}').title || 'Untitled Discussion'
-    }));
+    return this.storage.loadDiscussions();
   }
 
   deleteDiscussion(key: string) {
-    localStorage.removeItem(key);
+    this.storage.removeItem(key);
   }
 
 }

@@ -4,7 +4,7 @@ Welcome to Prompto, an open-source Angular chat interface designed to provide a 
 
 ## Technology Stack
 
-- **Frontend**: Angular ^17
+- **Frontend**: Angular ^18
 - **UI Framework**: TailwindCSS
 - **Markdown Processing**: Marked with syntax highlighting via highlight.js
 - **LLM Integration**: LangChain.js

@@ -2,6 +2,36 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { lastValueFrom } from 'rxjs';
 import { signal } from '@angular/core';
+import { StorageService } from './storage.service';
+import { STORAGE_KEYS, API_ENDPOINTS, DEFAULTS } from '../core/constants';
+
+interface OllamaModelsResponse {
+  models?: { name: string }[];
+}
+
+interface OpenAIModelsResponse {
+  data?: { id: string }[];
+}
+
+interface AnthropicModelsResponse {
+  models?: { id: string }[];
+}
+
+interface MistralModelsResponse {
+  data?: { id: string }[];
+}
+
+interface CohereModelsResponse {
+  models?: { name: string }[];
+}
+
+interface GoogleModelsResponse {
+  models?: { name: string; supportedGenerationMethods?: string[] }[];
+}
+
+interface XaiModelsResponse {
+  data?: { id: string }[];
+}
 
 export enum Provider {
   OLLAMA = 'Ollama',
@@ -9,7 +39,8 @@ export enum Provider {
   ANTHROPIC = 'Anthropic',
   MISTRAL = 'Mistral',
   COHERE = 'Cohere',
-  GOOGLE = 'Google'
+  GOOGLE = 'Google',
+  XAI = 'xAI'
 }
 
 export interface ISettingsService {
@@ -65,8 +96,6 @@ export type Options = {
   availableModels: string[];
 };
 
-const DEFAULT_TEMPERATURE = 0.7;
-
 const DEFAULT_SETTINGS: Settings = {
   provider: Provider.OLLAMA,
   enterSubmit: false,
@@ -76,23 +105,23 @@ const DEFAULT_SETTINGS: Settings = {
       model: 'llama3',
       apiKey: '',
       apiUrl: 'http://localhost:11434',
-      temperature: DEFAULT_TEMPERATURE,
+      temperature: DEFAULTS.TEMPERATURE,
       availableModels: []
     },
     [Provider.OPENAI]: {
       provider: Provider.OPENAI,
-      model: 'gpt-4.5-turbo',
+      model: 'gpt-4-turbo',
       apiKey: '',
       apiUrl: '',
-      temperature: DEFAULT_TEMPERATURE,
+      temperature: DEFAULTS.TEMPERATURE,
       availableModels: []
     },
     [Provider.ANTHROPIC]: {
       provider: Provider.ANTHROPIC,
-      model: 'claude-3-5-sonnet-20240620',
+      model: 'claude-3-5-sonnet-20241022',
       apiKey: '',
       apiUrl: '',
-      temperature: DEFAULT_TEMPERATURE,
+      temperature: DEFAULTS.TEMPERATURE,
       availableModels: []
     },
     [Provider.MISTRAL]: {
@@ -100,7 +129,7 @@ const DEFAULT_SETTINGS: Settings = {
       model: '',
       apiKey: '',
       apiUrl: '',
-      temperature: DEFAULT_TEMPERATURE,
+      temperature: DEFAULTS.TEMPERATURE,
       availableModels: []
     },
     [Provider.COHERE]: {
@@ -108,7 +137,7 @@ const DEFAULT_SETTINGS: Settings = {
       model: '',
       apiKey: '',
       apiUrl: '',
-      temperature: DEFAULT_TEMPERATURE,
+      temperature: DEFAULTS.TEMPERATURE,
       availableModels: []
     },
     [Provider.GOOGLE]: {
@@ -116,7 +145,15 @@ const DEFAULT_SETTINGS: Settings = {
       model: '',
       apiKey: '',
       apiUrl: '',
-      temperature: DEFAULT_TEMPERATURE,
+      temperature: DEFAULTS.TEMPERATURE,
+      availableModels: []
+    },
+    [Provider.XAI]: {
+      provider: Provider.XAI,
+      model: 'grok-3-fast',
+      apiKey: '',
+      apiUrl: '',
+      temperature: DEFAULTS.TEMPERATURE,
       availableModels: []
     },
   }
@@ -126,27 +163,29 @@ const DEFAULT_SETTINGS: Settings = {
   providedIn: 'root'
 })
 export class SettingsService implements ISettingsService {
-  // Change from private to public and rename
-  public readonly settings = signal<Settings>({} as Settings);
+  public readonly settings = signal<Settings>(DEFAULT_SETTINGS);
   public readonly savedDiscussionsSignal = signal<number>(0);
   public readonly savedDiscussions$ = this.savedDiscussionsSignal.asReadonly();
 
   private connectionChecked: boolean = false;
   private connected: boolean = false;
 
-  public chats: Keys[] = [] as Keys[];
+  public chats: Keys[] = [];
   public currentChatKey: string = "";
 
-  public arenas: Keys[] = [] as Keys[];
+  public arenas: Keys[] = [];
   public currentArenaKey: string = "";
 
-  public discussions: Keys[] = [] as Keys[];
+  public discussions: Keys[] = [];
   public currentDiscussionKey: string = "";
 
-  public templates: System[] = [] as System[];
+  public templates: System[] = [];
   public currentTemplateName: string = "";
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private storage: StorageService
+  ) { }
 
   private handleError(error: unknown, message: string): never {
     if (error instanceof Error) {
@@ -156,9 +195,9 @@ export class SettingsService implements ISettingsService {
   }
 
   public loadSettings(): void {
-    let settings = localStorage.getItem('settings');
+    const settings = this.storage.getItem<Settings>(STORAGE_KEYS.SETTINGS);
     if (settings) {
-      this.settings.set(JSON.parse(settings) as Settings);
+      this.settings.set(settings);
     }
 
     if (Object.keys(this.settings()).length === 0) {
@@ -185,7 +224,7 @@ export class SettingsService implements ISettingsService {
   }
 
   public saveSettings(): void {
-    localStorage.setItem('settings', JSON.stringify(this.settings()));
+    this.storage.setItem(STORAGE_KEYS.SETTINGS, this.settings());
   }
 
   public setOptions(options: Options): void {
@@ -226,12 +265,12 @@ export class SettingsService implements ISettingsService {
   }
 
   public clearAndResetOptions(): void {
-    localStorage.removeItem('settings');
+    this.storage.removeItem(STORAGE_KEYS.SETTINGS);
     this.setDefaultSettings();
   }
 
   public getTemperature(): number {
-    return this.settings().options[this.getProvider()]?.temperature || DEFAULT_TEMPERATURE;
+    return this.settings().options[this.getProvider()]?.temperature || DEFAULTS.TEMPERATURE;
   }
 
   public listProviders(): Provider[] {
@@ -290,7 +329,7 @@ export class SettingsService implements ISettingsService {
   async getModelsFromOllama(): Promise<void> {
     const url = this.settings().options[Provider.OLLAMA].apiUrl + '/api/tags';
     try {
-      const data: any = await lastValueFrom(this.http.get(url));
+      const data = await lastValueFrom(this.http.get<OllamaModelsResponse>(url));
       const currentSettings = this.settings();
       this.settings.set({
         ...currentSettings,
@@ -298,7 +337,7 @@ export class SettingsService implements ISettingsService {
           ...currentSettings.options,
           [Provider.OLLAMA]: {
             ...currentSettings.options[Provider.OLLAMA],
-            availableModels: data?.models?.map((model: any) => model.name) || []
+            availableModels: data?.models?.map(model => model.name) || []
           }
         }
       });
@@ -312,12 +351,11 @@ export class SettingsService implements ISettingsService {
       return;
     }
     try {
-      const url = 'https://api.openai.com/v1/engines';
-      const data = await lastValueFrom(this.http.get(url, {
+      const data = await lastValueFrom(this.http.get<OpenAIModelsResponse>(API_ENDPOINTS.OPENAI, {
         headers: {
           'Authorization': `Bearer ${this.settings().options[Provider.OPENAI].apiKey}`
         }
-      })) as any;
+      }));
       const currentSettings = this.settings();
       this.settings.set({
         ...currentSettings,
@@ -325,7 +363,7 @@ export class SettingsService implements ISettingsService {
           ...currentSettings.options,
           [Provider.OPENAI]: {
             ...currentSettings.options[Provider.OPENAI],
-            availableModels: data?.data?.map((model: any) => model.id) || []
+            availableModels: data?.data?.map(model => model.id) || []
           }
         }
       });
@@ -340,13 +378,12 @@ export class SettingsService implements ISettingsService {
     }
 
     try {
-      const url = 'https://api.anthropic.com/v1/models';
-      const data = await lastValueFrom(this.http.get(url, {
+      const data = await lastValueFrom(this.http.get<AnthropicModelsResponse>(API_ENDPOINTS.ANTHROPIC, {
         headers: {
           'x-api-key': `${this.settings().options[Provider.ANTHROPIC].apiKey}`,
           'anthropic-version': '2023-06-01'
         }
-      })) as any;
+      }));
 
       const currentSettings = this.settings();
       this.settings.set({
@@ -355,7 +392,7 @@ export class SettingsService implements ISettingsService {
           ...currentSettings.options,
           [Provider.ANTHROPIC]: {
             ...currentSettings.options[Provider.ANTHROPIC],
-            availableModels: data?.models?.map((model: any) => model.id) || []
+            availableModels: data?.models?.map(model => model.id) || []
           }
         }
       });
@@ -369,12 +406,11 @@ export class SettingsService implements ISettingsService {
       return;
     }
     try {
-      const url = 'https://api.mistralai.com/v1/models';
-      const data = await lastValueFrom(this.http.get(url, {
+      const data = await lastValueFrom(this.http.get<MistralModelsResponse>(API_ENDPOINTS.MISTRAL, {
         headers: {
           'Authorization': `Bearer ${this.settings().options[Provider.MISTRAL].apiKey}`
         }
-      })) as any;
+      }));
       const currentSettings = this.settings();
       this.settings.set({
         ...currentSettings,
@@ -382,7 +418,7 @@ export class SettingsService implements ISettingsService {
           ...currentSettings.options,
           [Provider.MISTRAL]: {
             ...currentSettings.options[Provider.MISTRAL],
-            availableModels: data?.data?.map((model: any) => model.id) || []
+            availableModels: data?.data?.map(model => model.id) || []
           }
         }
       });
@@ -397,13 +433,12 @@ export class SettingsService implements ISettingsService {
     }
 
     try {
-      const url = 'https://api.cohere.ai/v1/models';
-      const data = await lastValueFrom(this.http.get(url, {
+      const data = await lastValueFrom(this.http.get<CohereModelsResponse>(API_ENDPOINTS.COHERE, {
         headers: {
           'accept': 'application/json',
           'Authorization': `Bearer ${this.settings().options[Provider.COHERE].apiKey}`
         }
-      })) as any;
+      }));
       const currentSettings = this.settings();
       this.settings.set({
         ...currentSettings,
@@ -411,7 +446,7 @@ export class SettingsService implements ISettingsService {
           ...currentSettings.options,
           [Provider.COHERE]: {
             ...currentSettings.options[Provider.COHERE],
-            availableModels: data?.models?.map((model: any) => model.name) || []
+            availableModels: data?.models?.map(model => model.name) || []
           }
         }
       });
@@ -426,8 +461,24 @@ export class SettingsService implements ISettingsService {
     }
 
     try {
-      const url = 'https://generativelanguage.googleapis.com/v1/models';
-      const data = await lastValueFrom(this.http.get(`${url}?key=${this.settings().options[Provider.GOOGLE].apiKey}`)) as any;
+      const apiKey = this.settings().options[Provider.GOOGLE].apiKey;
+      const v1Url = `${API_ENDPOINTS.GOOGLE_V1}?key=${apiKey}`;
+      const v1betaUrl = `${API_ENDPOINTS.GOOGLE_V1BETA}?key=${apiKey}`;
+
+      // Fetch from both v1 (stable) and v1beta (preview) endpoints
+      const [v1Data, v1betaData] = await Promise.all([
+        lastValueFrom(this.http.get<GoogleModelsResponse>(v1Url)).catch(() => ({ models: [] })),
+        lastValueFrom(this.http.get<GoogleModelsResponse>(v1betaUrl)).catch(() => ({ models: [] }))
+      ]);
+
+      const filterModels = (data: GoogleModelsResponse) =>
+        data?.models?.filter(model => model?.supportedGenerationMethods?.includes('generateContent')).map(model => model.name) || [];
+
+      const v1Models = filterModels(v1Data);
+      const v1betaModels = filterModels(v1betaData);
+
+      // Combine and deduplicate models
+      const allModels = [...new Set([...v1Models, ...v1betaModels])];
 
       const currentSettings = this.settings();
       this.settings.set({
@@ -436,12 +487,39 @@ export class SettingsService implements ISettingsService {
           ...currentSettings.options,
           [Provider.GOOGLE]: {
             ...currentSettings.options[Provider.GOOGLE],
-            availableModels: data?.models?.filter((model: any) => model?.supportedGenerationMethods?.includes('generateContent')).map((model: any) => model.name) || []
+            availableModels: allModels
           }
         }
       });
     } catch (e) {
       this.handleError(e, 'Error getting Google models');
+    }
+  }
+
+  async getModelsFromXAI(): Promise<void> {
+    if (!this.settings().options[Provider.XAI].apiKey) {
+      return;
+    }
+
+    try {
+      const data = await lastValueFrom(this.http.get<XaiModelsResponse>(API_ENDPOINTS.XAI, {
+        headers: {
+          'Authorization': `Bearer ${this.settings().options[Provider.XAI].apiKey}`
+        }
+      }));
+      const currentSettings = this.settings();
+      this.settings.set({
+        ...currentSettings,
+        options: {
+          ...currentSettings.options,
+          [Provider.XAI]: {
+            ...currentSettings.options[Provider.XAI],
+            availableModels: data?.data?.map(model => model.id) || []
+          }
+        }
+      });
+    } catch (e) {
+      this.handleError(e, 'Error getting xAI models');
     }
   }
 
@@ -466,6 +544,9 @@ export class SettingsService implements ISettingsService {
         case Provider.GOOGLE:
           await this.getModelsFromGoogle();
           break;
+        case Provider.XAI:
+          await this.getModelsFromXAI();
+          break;
         default:
           throw new Error(`Unsupported provider: ${provider}`);
       }
@@ -475,90 +556,21 @@ export class SettingsService implements ISettingsService {
   }
 
   loadKeys(): void {
-    this.chats = [] as Keys[];
-    this.loadChatsFromStorage();
-
-    this.arenas = [] as Keys[];
-    this.loadArenasFromStorage();
-
-    this.discussions = [] as Keys[];
-    this.loadDiscussionsFromStorage();
+    this.chats = this.storage.loadChats();
+    this.arenas = this.storage.loadArenas();
+    this.discussions = this.storage.loadDiscussions();
 
     // Update the signal by incrementing its value
     this.savedDiscussionsSignal.set(this.savedDiscussionsSignal() + 1);
   }
 
-  private loadChatsFromStorage(): void {
-    for (let i = 0; i < localStorage.length; i++) {
-      let key = localStorage.key(i);
-      if (key && key.startsWith("chat_")) {
-        try {
-          let chat = localStorage.getItem(key);
-          if (chat) {
-            let chatObj = JSON.parse(chat);
-            this.chats.push({
-              key: key,
-              name: chatObj.name || 'Untitled Chat'
-            });
-          }
-        } catch (error) {
-          console.error('Error loading chat:', error);
-        }
-      }
-    }
-  }
-
-  private loadArenasFromStorage(): void {
-    for (let i = 0; i < localStorage.length; i++) {
-      let key = localStorage.key(i);
-      if (key && key.startsWith("arena_")) {
-        try {
-          let arena = localStorage.getItem(key);
-          if (arena) {
-            let arenaObj = JSON.parse(arena);
-            this.arenas.push({
-              key: key,
-              name: arenaObj.name || 'Untitled Arena'
-            });
-          }
-        } catch (error) {
-          console.error('Error loading arena:', error);
-        }
-      }
-    }
-  }
-
-  private loadDiscussionsFromStorage(): void {
-    for (let i = 0; i < localStorage.length; i++) {
-      let key = localStorage.key(i);
-      if (key && key.startsWith("discussion_")) {
-        try {
-          let discussion = localStorage.getItem(key);
-          if (discussion) {
-            let discussionObj = JSON.parse(discussion);
-            this.discussions.push({
-              key: key,
-              name: discussionObj.title || 'Untitled Discussion'
-            });
-          }
-        } catch (error) {
-          console.error('Error loading discussion:', error);
-        }
-      }
-    }
-  }
-
   public loadTemplates(): void {
-    let tmpl = localStorage.getItem('templates');
-    if (tmpl === null) {
-      this.templates = [] as System[];
-    } else {
-      this.templates = JSON.parse(tmpl);
-    }
+    const templates = this.storage.getItem<System[]>(STORAGE_KEYS.TEMPLATES);
+    this.templates = templates || [];
   }
 
   public deleteArena(key: string): void {
-    localStorage.removeItem(key);
+    this.storage.removeItem(key);
     this.arenas = this.arenas.filter((arena) => arena.key !== key);
     if (this.currentArenaKey === key) {
       this.currentArenaKey = "";
@@ -566,7 +578,7 @@ export class SettingsService implements ISettingsService {
   }
 
   public deleteChat(key: string): void {
-    localStorage.removeItem(key);
+    this.storage.removeItem(key);
     this.chats = this.chats.filter((chat) => chat.key !== key);
     if (this.currentChatKey === key) {
       this.currentChatKey = "";
@@ -576,11 +588,11 @@ export class SettingsService implements ISettingsService {
   public deleteTemplate(name: string): void {
     this.loadTemplates();
     this.templates = this.templates.filter((template) => template.name !== name);
-    localStorage.setItem('templates', JSON.stringify(this.templates));
+    this.storage.setItem(STORAGE_KEYS.TEMPLATES, this.templates);
   }
 
   public deleteDiscussion(key: string): void {
-    localStorage.removeItem(key);
+    this.storage.removeItem(key);
     this.discussions = this.discussions.filter((discussion) => discussion.key !== key);
     if (this.currentDiscussionKey === key) {
       this.currentDiscussionKey = "";
@@ -588,33 +600,18 @@ export class SettingsService implements ISettingsService {
   }
 
   public deleteAll(): void {
-    for (let i = 0; i < localStorage.length; i++) {
-      let key = localStorage.key(i);
-      if (key && key.startsWith("chat_")) {
-        localStorage.removeItem(key);
-      }
-    }
+    this.storage.removeItemsWithPrefix(STORAGE_KEYS.CHAT);
     this.currentChatKey = "";
-    this.chats = [] as Keys[];
+    this.chats = [];
 
-    for (let i = 0; i < localStorage.length; i++) {
-      let key = localStorage.key(i);
-      if (key && key.startsWith("arena_")) {
-        localStorage.removeItem(key);
-      }
-    }
+    this.storage.removeItemsWithPrefix(STORAGE_KEYS.ARENA);
     this.currentArenaKey = "";
-    this.arenas = [] as Keys[];
+    this.arenas = [];
 
-    localStorage.removeItem('templates');
-    this.templates = [] as System[];
+    this.storage.removeItem(STORAGE_KEYS.TEMPLATES);
+    this.templates = [];
 
-    for (let i = 0; i < localStorage.length; i++) {
-      let key = localStorage.key(i);
-      if (key && key.startsWith("discussion_")) {
-        localStorage.removeItem(key);
-      }
-    }
+    this.storage.removeItemsWithPrefix(STORAGE_KEYS.DISCUSSION);
 
     this.clearAndResetOptions();
   }
