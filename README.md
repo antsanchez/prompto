@@ -10,14 +10,26 @@ Welcome to Prompto, an open-source Angular chat interface designed to provide a 
 - **LLM Integration**: LangChain.js
 - **PWA Support**: Service Worker
 
+## Supported LLM Providers
+
+- OpenAI (GPT-4, GPT-3.5, etc.)
+- Anthropic (Claude)
+- Google Gemini
+- Mistral AI
+- Cohere
+- xAI (Grok)
+- Ollama (local models)
+
 ## Features
 
 - **Modern Chat Interface**: Clean and intuitive chat UI similar to popular chat applications, with message threading and real-time responses.
-- **Multiple LLMs**: Effortlessly switch between a range of Large Language Models (LLMs) supported by LangChain Js.
+- **Multiple LLMs**: Effortlessly switch between a range of Large Language Models (LLMs) supported by LangChain.js.
+- **Dark Mode**: Toggle between light and dark themes for comfortable viewing in any environment.
 - **Temperature Settings**: Adjust the temperature to fine-tune the responses from your chosen LLM.
 - **Chatbot UI**: Engage with a chatbot interface that remembers the conversation context.
 - **Notebook**: Utilize a notebook feature to send prompts to the LLM and receive responses without prior context or memory.
 - **Templates**: Create, save, and reuse prompts for specific use cases. Incorporate a "contextual" prompt alongside your saved template for dynamic interaction.
+- **File Attachments**: Attach images and PDF files to your conversations (supported by compatible models).
 - **Arena**: Engage in a conversation with multiple LLMs simultaneously, comparing their responses side by side.
 - **Discussion**: Create dynamic conversations between multiple AI personas to explore topics from different perspectives.
 
