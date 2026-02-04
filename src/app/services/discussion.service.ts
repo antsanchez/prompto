@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { LcService } from './lc.service';
 import { PromptTemplate } from "@langchain/core/prompts";
+import { STORAGE_KEYS, DEFAULTS } from '../core/constants';
+import { StorageService } from './storage.service';
 
 type Agent = {
   name: string;
@@ -9,13 +11,13 @@ type Agent = {
 }
 
 type Discussion = {
-  key?: string;  // Add key property
+  key?: string;
   title: string;
   context: string;
   agents: Agent[];
   currentAgentIndex: number;
   messages: Message[];
-  summary?: string;  // Add summary field
+  summary?: string;
 }
 
 type Message = {
@@ -25,14 +27,25 @@ type Message = {
   date: Date;
 }
 
+function createEmptyDiscussion(): Discussion {
+  return {
+    title: '',
+    context: '',
+    agents: [],
+    currentAgentIndex: 0,
+    messages: []
+  };
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class DiscussionService {
-  public currentDiscussion: Discussion = {} as Discussion;
+  public currentDiscussion: Discussion = createEmptyDiscussion();
 
   constructor(
-    public lc: LcService
+    public lc: LcService,
+    private storage: StorageService
   ) {
     this.checkConnection();
   }
@@ -53,13 +66,7 @@ export class DiscussionService {
 
   // Create a blank discussion
   async newDiscussion() {
-    this.currentDiscussion = {
-      title: '',
-      context: '',
-      agents: [],
-      currentAgentIndex: 0,
-      messages: []
-    };
+    this.currentDiscussion = createEmptyDiscussion();
   }
 
   async createDiscussion(title: string, context: string, agentData: { name: string, description: string }[]) {
@@ -95,7 +102,7 @@ export class DiscussionService {
       .join('\n\n');
 
     return PromptTemplate.fromTemplate(
-      `You are ${agent.name} in an ongoing group discussion. 
+      `You are ${agent.name} in an ongoing group discussion.
 
       YOUR CORE IDENTITY AND PERSPECTIVE:
       ${agent.description}
@@ -116,7 +123,7 @@ export class DiscussionService {
       Stay in character as ${agent.name}, but speak naturally without continually mentioning your role or characteristics explicitly. React to what others have said and build upon their points while adding your unique insights.
       Feel free to ask questions, share anecdotes, or provide examples to illustrate your points.
       If you have nothing else to add, you can say "I have nothing to add".
-      
+
       ${agent.name}'s next contribution:`
     );
   }
@@ -141,6 +148,10 @@ export class DiscussionService {
   }
 
   async getNextAgentResponse(): Promise<Message> {
+    if (!this.lc.llm) {
+      throw new Error('LLM not initialized');
+    }
+
     const currentAgent = this.currentDiscussion.agents[this.currentDiscussion.currentAgentIndex];
     const prompt = this.createAgentPrompt(currentAgent);
     const chain = prompt.pipe(this.lc.llm);
@@ -230,10 +241,10 @@ export class DiscussionService {
 
   saveDiscussion() {
     if (!this.currentDiscussion.key) {
-      this.currentDiscussion.key = `discussion_${Date.now()}`;
+      this.currentDiscussion.key = STORAGE_KEYS.DISCUSSION + Date.now().toString();
     }
 
-    localStorage.setItem(this.currentDiscussion.key, JSON.stringify(this.currentDiscussion));
+    this.storage.setItem(this.currentDiscussion.key, this.currentDiscussion);
 
     if (this.lc.s) {
       this.lc.s.loadKeys();
@@ -242,9 +253,9 @@ export class DiscussionService {
   }
 
   async loadDiscussion(key: string) {
-    const saved = localStorage.getItem(key);
+    const saved = this.storage.getItem<Discussion>(key);
     if (saved) {
-      this.currentDiscussion = JSON.parse(saved);
+      this.currentDiscussion = saved;
       // Ensure the key is set
       this.currentDiscussion.key = key;
 
@@ -258,18 +269,11 @@ export class DiscussionService {
   }
 
   getSavedDiscussions() {
-    const keys = Object.keys(localStorage).filter(key => key.startsWith('discussion_'));
-    return keys.map(key => {
-      const discussion = JSON.parse(localStorage.getItem(key) || '{}');
-      return {
-        key,
-        name: discussion.title || 'Untitled Discussion'
-      };
-    });
+    return this.storage.loadDiscussions();
   }
 
   deleteDiscussion(key: string) {
-    localStorage.removeItem(key);
+    this.storage.removeItem(key);
     // Simply update the settings service keys
     if (this.lc.s) {
       this.lc.s.loadKeys();

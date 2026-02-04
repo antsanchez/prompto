@@ -1,6 +1,7 @@
 import { Component, OnDestroy } from '@angular/core';
 import { HelpersService } from '../../services/helpers.service';
 import { TemplatesService } from '../../services/templates.service';
+import { ErrorService } from '../../services/error.service';
 import { ActivatedRoute } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
 import { Subject } from 'rxjs';
@@ -25,7 +26,8 @@ export class TemplateComponent implements OnDestroy {
   constructor(
     public helpers: HelpersService,
     public templateService: TemplatesService,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
+    private errorService: ErrorService
   ) {
     this.initTemplate();
     this.subscribeToRouteParams();
@@ -36,7 +38,7 @@ export class TemplateComponent implements OnDestroy {
       await this.templateService.new();
       this.templateService.setConnected(true);
     } catch (error) {
-      this.errorHandling('Error creating a new template:', error);
+      this.handleError('Error creating a new template:', error);
       this.templateService.setConnected(false);
     }
   }
@@ -51,7 +53,7 @@ export class TemplateComponent implements OnDestroy {
           this.templateService.new();
         }
       },
-      error: (error) => this.errorHandling('Error loading template from URL:', error)
+      error: (error) => this.handleError('Error loading template from URL:', error)
     });
   }
 
@@ -61,7 +63,7 @@ export class TemplateComponent implements OnDestroy {
     try {
       await this.templateService.stream();
     } catch (error) {
-      this.errorHandling('Error streaming the template:', error);
+      this.handleError('Error streaming the template:', error);
     } finally {
       this.loading = false;
     }
@@ -72,7 +74,7 @@ export class TemplateComponent implements OnDestroy {
     try {
       this.templateService.save();
     } catch (error) {
-      this.errorHandling('Error saving the template:', error);
+      this.handleError('Error saving the template:', error);
     } finally {
       this.loadingSave = false;
       this.openSave = false;
@@ -84,8 +86,7 @@ export class TemplateComponent implements OnDestroy {
     this.destroy$.complete();
   }
 
-  private errorHandling(message: string, error: any): void {
-    console.error(message, error);
-    this.error = 'There was an error with your request. Please check your connection and settings and try again.';
+  private handleError(message: string, error: unknown): void {
+    this.error = this.errorService.handleError(message, error);
   }
 }

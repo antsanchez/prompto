@@ -1,11 +1,15 @@
 import { Component, ElementRef, ViewChild, HostListener, OnDestroy } from '@angular/core';
 import { ChatService } from '../../services/chat.service';
 import { SettingsService } from '../../services/settings.service';
+import { ErrorService } from '../../services/error.service';
+import { FileService } from '../../services/file.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { HelpersService } from '../../services/helpers.service';
+import { UI, ERROR_MESSAGES, FILE_LIMITS } from '../../core/constants';
+import { FileAttachment } from '../../core/types';
 
 @Component({
   selector: 'app-arena',
@@ -27,7 +31,11 @@ export class ArenaComponent {
   private destroy$ = new Subject<void>();
 
   showColumn: 'first' | 'second' = 'first';
-  isDesktop: boolean = window.innerWidth > 1024;
+  isDesktop: boolean = window.innerWidth > UI.DESKTOP_BREAKPOINT;
+
+  // File upload
+  pendingAttachments: FileAttachment[] = [];
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   @ViewChild('scrollMe') private myScrollContainer!: ElementRef;
 
@@ -37,6 +45,8 @@ export class ArenaComponent {
     public helpers: HelpersService,
     private router: Router,
     private activatedRoute: ActivatedRoute,
+    private errorService: ErrorService,
+    public fileService: FileService
   ) {
 
     this.cs.newArena();
@@ -44,7 +54,7 @@ export class ArenaComponent {
     try {
       this.loadArenaFromURL();
     } catch (error) {
-      this.error = 'There was an error loading the arena from the URL. Please try again.'
+      this.error = ERROR_MESSAGES.ARENA_LOAD;
       console.error('Error loading arena from URL:', error);
     }
 
@@ -52,7 +62,7 @@ export class ArenaComponent {
       this.cs.startArena();
     } catch (error) {
       if (this.cs.arenaShouldBeStarted()) {
-        this.error = 'There was an error starting the arena. Please try again.';
+        this.error = ERROR_MESSAGES.ARENA_START;
         console.error('Error starting arena:', error);
       }
     }
@@ -62,7 +72,7 @@ export class ArenaComponent {
 
   @HostListener('window:resize')
   onResize() {
-    this.isDesktop = window.innerWidth > 1024;
+    this.isDesktop = window.innerWidth > UI.DESKTOP_BREAKPOINT;
   }
 
   ngAfterViewChecked() {
@@ -76,14 +86,14 @@ export class ArenaComponent {
   private subscribeToRouteParams() {
     this.activatedRoute.paramMap.pipe(takeUntil(this.destroy$)).subscribe({
       next: (params) => {
-        const arenaKey = params.get('chat');
+        const arenaKey = params.get('arena');
         if (arenaKey) {
           this.cs.loadArena(arenaKey);
         } else {
           this.cs.newArena();
         }
       },
-      error: (error) => this.handleError('Error loading chat from URL:', error)
+      error: (error) => this.handleError('Error loading arena from URL:', error)
     });
   }
 
@@ -92,26 +102,58 @@ export class ArenaComponent {
       try {
         this.cs.startArena();
       } catch (error) {
-        this.error = 'There was an error starting the arena. Please try again.';
+        this.error = ERROR_MESSAGES.ARENA_START;
         console.error('Error starting arena:', error);
         return;
       }
     }
 
-    if (this.prompt === '') {
+    if (this.prompt === '' && this.pendingAttachments.length === 0) {
       return;
     }
 
     this.loading = true;
     let prompt = this.prompt;
+    let attachments = [...this.pendingAttachments];
     this.prompt = "";
-    this.cs.chatArena(prompt).then(() => {
+    this.pendingAttachments = [];
+    this.cs.chatArena(prompt, attachments.length > 0 ? attachments : undefined).then(() => {
       this.loading = false;
     }, (error) => {
-      this.error = 'There was an error chatting in the arena. Please try again.';
+      this.error = ERROR_MESSAGES.ARENA_CHAT;
       console.error('Error chatting in arena:', error);
       this.loading = false;
     });
+  }
+
+  triggerFileInput() {
+    this.fileInput.nativeElement.click();
+  }
+
+  async onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    for (const file of Array.from(input.files)) {
+      if (this.pendingAttachments.length >= FILE_LIMITS.MAX_ATTACHMENTS) {
+        this.error = ERROR_MESSAGES.MAX_ATTACHMENTS_REACHED;
+        break;
+      }
+
+      try {
+        const attachment = await this.fileService.processFile(file);
+        this.pendingAttachments.push(attachment);
+      } catch (error) {
+        this.handleError('Error processing file:', error);
+      }
+    }
+
+    // Reset input so same file can be selected again
+    input.value = '';
+  }
+
+  removeAttachment(index: number) {
+    this.pendingAttachments.splice(index, 1);
   }
 
   newArena() {
@@ -137,7 +179,7 @@ export class ArenaComponent {
       this.models1 = await this.getModels(provider);
       this.loadingModels1 = false;
     } catch (error) {
-      this.error = 'There was an error getting the models. Please make sure all settings are correct and try again.'
+      this.error = ERROR_MESSAGES.MODELS_FETCH;
       console.error('Error getting models:', error);
       this.loadingModels1 = false;
     }
@@ -149,7 +191,7 @@ export class ArenaComponent {
       this.models2 = await this.getModels(provider);
       this.loadingModels2 = false;
     } catch (error) {
-      this.error = 'There was an error getting the models. Please make sure all settings are correct and try again.'
+      this.error = ERROR_MESSAGES.MODELS_FETCH;
       console.error('Error getting models:', error);
       this.loadingModels2 = false;
     }
@@ -182,7 +224,7 @@ export class ArenaComponent {
   }
 
   async loadArenaFromURL() {
-    let arenaKey = this.activatedRoute.snapshot.paramMap.get('chat') || '';
+    let arenaKey = this.activatedRoute.snapshot.paramMap.get('arena') || '';
     if (arenaKey) {
       try {
         this.cs.loadArena(arenaKey);
@@ -192,7 +234,7 @@ export class ArenaComponent {
         this.cs.arena.p2.model = this.cs.arena.p2.model || '';
         this.cs.startArena();
       } catch (error) {
-        this.error = 'There was an error loading the arena from the URL. Please try again.'
+        this.error = ERROR_MESSAGES.ARENA_LOAD;
         console.error('Error loading arena from URL:', error);
       }
     }
@@ -205,14 +247,12 @@ export class ArenaComponent {
 
   canSend(): boolean {
     return !this.loading &&
-      !!this.prompt &&
-      this.prompt.trim() !== '' &&
+      (!!this.prompt.trim() || this.pendingAttachments.length > 0) &&
       this.modelsSelected();
   }
 
-  private handleError(message: string, error: any): void {
-    console.error(message, error);
-    this.error = 'There was an error with your request. Please check your connection and settings and try again.';
+  private handleError(message: string, error: unknown): void {
+    this.error = this.errorService.handleError(message, error);
   }
 
   ngOnDestroy(): void {

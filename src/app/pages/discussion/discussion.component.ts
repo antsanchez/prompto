@@ -2,11 +2,13 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DiscussionService } from '../../services/discussion.service';
+import { ErrorService } from '../../services/error.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { NotConnectedComponent } from '../../components/not-connected/not-connected.component';
 import { ErrorComponent } from '../../components/error/error.component';
 import { HelpersService } from '../../services/helpers.service';
+import { ERROR_MESSAGES } from '../../core/constants';
 
 @Component({
   selector: 'app-discussion',
@@ -48,7 +50,8 @@ export class DiscussionComponent implements OnDestroy {
     public discussionService: DiscussionService,
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    public helpers: HelpersService
+    public helpers: HelpersService,
+    private errorService: ErrorService
   ) {
     this.form = this.fb.group({
       title: [''],
@@ -86,7 +89,7 @@ export class DiscussionComponent implements OnDestroy {
         }
       },
       error: (error) => {
-        this.handleError('Error loading chat from URL:', error);
+        this.handleError('Error loading discussion from URL:', error);
       }
     });
   }
@@ -103,7 +106,7 @@ export class DiscussionComponent implements OnDestroy {
         await this.loadDiscussion(key);
       }
     } catch (error) {
-      this.handleError('Error loading chat from URL:', error);
+      this.handleError('Error loading discussion from URL:', error);
     }
   }
 
@@ -231,16 +234,8 @@ export class DiscussionComponent implements OnDestroy {
     this.loadSavedDiscussions();
   }
 
-  private handleError(message: string, error: any) {
-    console.error(message, error);
-    let errorMessage = 'An unexpected error occurred.';
-
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    } else if (typeof error === 'string') {
-      errorMessage = error;
-    }
-
+  private handleError(message: string, error: unknown) {
+    const errorMessage = this.errorService.handleError(message, error);
     this.error = `${message} ${errorMessage}`;
     setTimeout(() => this.error = '', 5000); // Clear error after 5 seconds
   }

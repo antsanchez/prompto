@@ -2,9 +2,13 @@ import { Component, ElementRef, ViewChild, OnDestroy, HostListener } from '@angu
 import { ActivatedRoute, Router } from '@angular/router';
 import { ChatService } from '../../services/chat.service';
 import { HelpersService } from '../../services/helpers.service';
+import { ErrorService } from '../../services/error.service';
+import { FileService } from '../../services/file.service';
 import { SharedModule } from '../../shared/shared.module';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { UI, FILE_LIMITS, ERROR_MESSAGES } from '../../core/constants';
+import { FileAttachment } from '../../core/types';
 
 @Component({
   selector: 'app-conversation',
@@ -19,8 +23,12 @@ export class ConversationComponent implements OnDestroy {
   public prompt: string = "";
   public error: string = "";
   public waiting: boolean = false;
-  isDesktop: boolean = window.innerWidth > 1024;
+  isDesktop: boolean = window.innerWidth > UI.DESKTOP_BREAKPOINT;
   private destroy$ = new Subject<void>();
+
+  // File upload
+  pendingAttachments: FileAttachment[] = [];
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   @ViewChild('scrollMe') private myScrollContainer!: ElementRef;
 
@@ -28,7 +36,9 @@ export class ConversationComponent implements OnDestroy {
     public chatService: ChatService,
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    public helpers: HelpersService
+    public helpers: HelpersService,
+    private errorService: ErrorService,
+    public fileService: FileService
   ) {
     this.handleNewChat();
     this.loadChatFromURL();
@@ -44,7 +54,7 @@ export class ConversationComponent implements OnDestroy {
 
   @HostListener('window:resize')
   onResize() {
-    this.isDesktop = window.innerWidth > 1024;
+    this.isDesktop = window.innerWidth > UI.DESKTOP_BREAKPOINT;
   }
 
   ngAfterViewChecked() {
@@ -96,8 +106,10 @@ export class ConversationComponent implements OnDestroy {
     this.waiting = true;
     try {
       let prompt = this.prompt;
+      let attachments = [...this.pendingAttachments];
       this.prompt = "";
-      await this.chatService.chat(prompt);
+      this.pendingAttachments = [];
+      await this.chatService.chat(prompt, attachments.length > 0 ? attachments : undefined);
       this.chatService.setConnected(true);
     } catch (error) {
       this.handleError('Error chatting:', error);
@@ -106,6 +118,40 @@ export class ConversationComponent implements OnDestroy {
       this.loading = false;
       this.waiting = false;
     }
+  }
+
+  triggerFileInput() {
+    this.fileInput.nativeElement.click();
+  }
+
+  async onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    for (const file of Array.from(input.files)) {
+      if (this.pendingAttachments.length >= FILE_LIMITS.MAX_ATTACHMENTS) {
+        this.error = ERROR_MESSAGES.MAX_ATTACHMENTS_REACHED;
+        break;
+      }
+
+      try {
+        const attachment = await this.fileService.processFile(file);
+        this.pendingAttachments.push(attachment);
+      } catch (error) {
+        this.handleError('Error processing file:', error);
+      }
+    }
+
+    // Reset input so same file can be selected again
+    input.value = '';
+  }
+
+  removeAttachment(index: number) {
+    this.pendingAttachments.splice(index, 1);
+  }
+
+  canSend(): boolean {
+    return !this.loading && (!!this.prompt.trim() || this.pendingAttachments.length > 0);
   }
 
   async onKeydown() {
@@ -124,8 +170,7 @@ export class ConversationComponent implements OnDestroy {
     this.destroy$.complete();
   }
 
-  private handleError(message: string, error: any) {
-    console.error(message, error);
-    this.error = 'There was an error with your request. Please check your connection and settings and try again.';
+  private handleError(message: string, error: unknown) {
+    this.error = this.errorService.handleError(message, error);
   }
 }

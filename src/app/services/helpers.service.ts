@@ -19,32 +19,34 @@ export class HelpersService {
     // Custom renderer to add CSS classes for styling
     const renderer = new marked.Renderer();
 
-    renderer.link = (href, title, text) => {
+    renderer.link = ({ href, tokens }: { href: string; title?: string | null; tokens: unknown[] }) => {
+      const text = this.parseInlineTokens(tokens);
       return `<a href="${href}" target="_blank" rel="noopener noreferrer">${text}</a>`;
     };
 
-    renderer.paragraph = (text) => {
+    renderer.paragraph = ({ tokens }: { tokens: unknown[] }) => {
+      const text = this.parseInlineTokens(tokens);
       return `<p class="chat-paragraph">${text}</p>`;
     };
 
-    renderer.code = (code, infostring) => {
-      let lang = (infostring || '').match(/\S*/)?.[0] || 'plaintext';
+    renderer.code = ({ text, lang }: { text: string; lang?: string; escaped?: boolean }) => {
+      let language = (lang || '').match(/\S*/)?.[0] || 'plaintext';
 
       // Check if the language is supported by highlight.js
-      if (lang && !hljs.getLanguage(lang)) {
-        console.warn(`Language '${lang}' not found, falling back to plaintext`);
-        lang = 'plaintext';
+      if (language && !hljs.getLanguage(language)) {
+        console.warn(`Language '${language}' not found, falling back to plaintext`);
+        language = 'plaintext';
       }
 
       let highlighted;
       try {
-        highlighted = hljs.highlight(code, { language: lang }).value;
+        highlighted = hljs.highlight(text, { language }).value;
       } catch (e) {
         console.warn('Highlighting failed, falling back to escaped plain text');
-        highlighted = hljs.highlight(code, { language: 'plaintext' }).value;
+        highlighted = hljs.highlight(text, { language: 'plaintext' }).value;
       }
 
-      return `<pre class="chat-code"><code class="hljs ${lang}">${highlighted}</code></pre>`;
+      return `<pre class="chat-code"><code class="hljs ${language}">${highlighted}</code></pre>`;
     };
 
     // Use the custom renderer
@@ -52,5 +54,9 @@ export class HelpersService {
 
     // Sanitize and return the HTML
     return this.sanitizer.bypassSecurityTrustHtml(parsedHtml as string);
+  }
+
+  private parseInlineTokens(tokens: unknown[]): string {
+    return (tokens as Array<{ raw?: string }>).map(t => t.raw || '').join('');
   }
 }

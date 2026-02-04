@@ -1,8 +1,12 @@
 import { Component, ElementRef, ViewChild, OnDestroy } from '@angular/core';
 import { LcService } from '../../services/lc.service';
 import { HelpersService } from '../../services/helpers.service';
+import { ErrorService } from '../../services/error.service';
+import { FileService } from '../../services/file.service';
 import { SharedModule } from '../../shared/shared.module';
 import { Subject } from 'rxjs';
+import { FileAttachment } from '../../core/types';
+import { FILE_LIMITS, ERROR_MESSAGES } from '../../core/constants';
 
 @Component({
   selector: 'app-notebook',
@@ -19,11 +23,17 @@ export class NotebookComponent implements OnDestroy {
 
   private destroy$ = new Subject<void>();
 
+  // File upload
+  pendingAttachments: FileAttachment[] = [];
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+
   @ViewChild('scrollMe') private myScrollContainer!: ElementRef;
 
   constructor(
     public lc: LcService,
-    public helpers: HelpersService
+    public helpers: HelpersService,
+    private errorService: ErrorService,
+    public fileService: FileService
   ) {
     this.lc.s.checkConnection();
   }
@@ -61,6 +71,7 @@ export class NotebookComponent implements OnDestroy {
     this.output = "";
     this.error = "";
     this.loading = false;
+    this.pendingAttachments = [];
   }
 
   scrollToBottom(): void {
@@ -71,7 +82,17 @@ export class NotebookComponent implements OnDestroy {
     this.loading = true;
     this.output = "";
     try {
-      const stream = await this.lc.stream(this.prompt);
+      const attachments = [...this.pendingAttachments];
+      this.pendingAttachments = [];
+
+      // Use streamWithMessages for multimodal support
+      const messages = [{
+        role: 'human' as const,
+        text: this.prompt,
+        attachments: attachments.length > 0 ? attachments : undefined
+      }];
+
+      const stream = await this.lc.streamWithMessages(messages);
       for await (let chunk of stream) {
         this.output += chunk?.content;
       }
@@ -83,13 +104,46 @@ export class NotebookComponent implements OnDestroy {
     }
   }
 
+  triggerFileInput() {
+    this.fileInput.nativeElement.click();
+  }
+
+  async onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    for (const file of Array.from(input.files)) {
+      if (this.pendingAttachments.length >= FILE_LIMITS.MAX_ATTACHMENTS) {
+        this.error = ERROR_MESSAGES.MAX_ATTACHMENTS_REACHED;
+        break;
+      }
+
+      try {
+        const attachment = await this.fileService.processFile(file);
+        this.pendingAttachments.push(attachment);
+      } catch (error) {
+        this.handleError('Error processing file:', error);
+      }
+    }
+
+    // Reset input so same file can be selected again
+    input.value = '';
+  }
+
+  removeAttachment(index: number) {
+    this.pendingAttachments.splice(index, 1);
+  }
+
+  canSend(): boolean {
+    return !this.loading && (!!this.prompt.trim() || this.pendingAttachments.length > 0);
+  }
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  private handleError(message: string, error: any): void {
-    console.error(message, error);
-    this.error = 'There was an error with your request. Please check your connection and settings and try again.';
+  private handleError(message: string, error: unknown): void {
+    this.error = this.errorService.handleError(message, error);
   }
 }
