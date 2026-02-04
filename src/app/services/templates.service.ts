@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { LcService } from './lc.service';
 import { System } from './settings.service';
+import { STORAGE_KEYS } from '../core/constants';
+import { StorageService } from './storage.service';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +14,9 @@ export class TemplatesService {
   public output: string = '';
 
   constructor(
-    public lc: LcService) { }
+    public lc: LcService,
+    private storage: StorageService
+  ) { }
 
   new() {
     this.lc.s.currentTemplateName = '';
@@ -50,18 +54,18 @@ export class TemplatesService {
     let existing = this.lc.s.templates.find((template: System) => template.name === this.lc.s.currentTemplateName) as System;
     if (existing) {
       existing.system = this.system;
-      localStorage.setItem('templates', JSON.stringify(this.lc.s.templates));
+      this.storage.setItem(STORAGE_KEYS.TEMPLATES, this.lc.s.templates);
       return;
     }
 
     this.lc.s.templates.push({ name: this.lc.s.currentTemplateName, system: this.system });
-    localStorage.setItem('templates', JSON.stringify(this.lc.s.templates));
+    this.storage.setItem(STORAGE_KEYS.TEMPLATES, this.lc.s.templates);
   }
 
   // deleteAll removes all templates from local storage
   deleteAll() {
-    localStorage.removeItem('templates');
-    this.lc.s.templates = [] as System[];
+    this.storage.removeItem(STORAGE_KEYS.TEMPLATES);
+    this.lc.s.templates = [];
   }
 
   async stream() {
@@ -81,4 +85,4 @@ export class TemplatesService {
       this.system = template.system;
     }
   }
-} 
+}
