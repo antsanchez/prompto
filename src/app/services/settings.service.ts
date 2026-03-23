@@ -5,34 +5,6 @@ import { signal } from '@angular/core';
 import { StorageService } from './storage.service';
 import { STORAGE_KEYS, API_ENDPOINTS, DEFAULTS } from '../core/constants';
 
-interface OllamaModelsResponse {
-  models?: { name: string }[];
-}
-
-interface OpenAIModelsResponse {
-  data?: { id: string }[];
-}
-
-interface AnthropicModelsResponse {
-  models?: { id: string }[];
-}
-
-interface MistralModelsResponse {
-  data?: { id: string }[];
-}
-
-interface CohereModelsResponse {
-  models?: { name: string }[];
-}
-
-interface GoogleModelsResponse {
-  models?: { name: string; supportedGenerationMethods?: string[] }[];
-}
-
-interface XaiModelsResponse {
-  data?: { id: string }[];
-}
-
 export enum Provider {
   OLLAMA = 'Ollama',
   OPENAI = 'OpenAI',
@@ -96,13 +68,76 @@ export type Options = {
   availableModels: string[];
 };
 
+interface ModelsResponse {
+  models?: { id?: string; name?: string; supportedGenerationMethods?: string[] }[];
+  data?: { id: string }[];
+}
+
+interface ModelFetchConfig {
+  getUrl: (options: Options) => string | string[];
+  getHeaders: (options: Options) => Record<string, string>;
+  extractModels: (data: ModelsResponse) => string[];
+  requiresApiKey: boolean;
+}
+
+const MODEL_FETCH_CONFIGS: Record<Provider, ModelFetchConfig> = {
+  [Provider.OLLAMA]: {
+    getUrl: (opts) => `${opts.apiUrl}/api/tags`,
+    getHeaders: () => ({}),
+    extractModels: (data) => data?.models?.map(m => m.name!) || [],
+    requiresApiKey: false,
+  },
+  [Provider.OPENAI]: {
+    getUrl: () => API_ENDPOINTS.OPENAI,
+    getHeaders: (opts) => ({ 'Authorization': `Bearer ${opts.apiKey}` }),
+    extractModels: (data) => data?.data?.map(m => m.id) || [],
+    requiresApiKey: true,
+  },
+  [Provider.ANTHROPIC]: {
+    getUrl: () => API_ENDPOINTS.ANTHROPIC,
+    getHeaders: (opts) => ({ 'x-api-key': opts.apiKey, 'anthropic-version': '2023-06-01' }),
+    extractModels: (data) => data?.models?.map(m => m.id!) || [],
+    requiresApiKey: true,
+  },
+  [Provider.MISTRAL]: {
+    getUrl: () => API_ENDPOINTS.MISTRAL,
+    getHeaders: (opts) => ({ 'Authorization': `Bearer ${opts.apiKey}` }),
+    extractModels: (data) => data?.data?.map(m => m.id) || [],
+    requiresApiKey: true,
+  },
+  [Provider.COHERE]: {
+    getUrl: () => API_ENDPOINTS.COHERE,
+    getHeaders: (opts) => ({ 'accept': 'application/json', 'Authorization': `Bearer ${opts.apiKey}` }),
+    extractModels: (data) => data?.models?.map(m => m.name!) || [],
+    requiresApiKey: true,
+  },
+  [Provider.GOOGLE]: {
+    getUrl: (opts) => [
+      `${API_ENDPOINTS.GOOGLE_V1}?key=${opts.apiKey}`,
+      `${API_ENDPOINTS.GOOGLE_V1BETA}?key=${opts.apiKey}`
+    ],
+    getHeaders: () => ({}),
+    extractModels: (data) =>
+      data?.models
+        ?.filter(m => m?.supportedGenerationMethods?.includes('generateContent'))
+        .map(m => m.name!) || [],
+    requiresApiKey: true,
+  },
+  [Provider.XAI]: {
+    getUrl: () => API_ENDPOINTS.XAI,
+    getHeaders: (opts) => ({ 'Authorization': `Bearer ${opts.apiKey}` }),
+    extractModels: (data) => data?.data?.map(m => m.id) || [],
+    requiresApiKey: true,
+  },
+};
+
 const DEFAULT_SETTINGS: Settings = {
   provider: Provider.OLLAMA,
   enterSubmit: false,
   options: {
     [Provider.OLLAMA]: {
       provider: Provider.OLLAMA,
-      model: 'llama3',
+      model: 'llama4',
       apiKey: '',
       apiUrl: 'http://localhost:11434',
       temperature: DEFAULTS.TEMPERATURE,
@@ -110,7 +145,7 @@ const DEFAULT_SETTINGS: Settings = {
     },
     [Provider.OPENAI]: {
       provider: Provider.OPENAI,
-      model: 'gpt-4-turbo',
+      model: 'gpt-5.4',
       apiKey: '',
       apiUrl: '',
       temperature: DEFAULTS.TEMPERATURE,
@@ -118,7 +153,7 @@ const DEFAULT_SETTINGS: Settings = {
     },
     [Provider.ANTHROPIC]: {
       provider: Provider.ANTHROPIC,
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-sonnet-4-6-20260217',
       apiKey: '',
       apiUrl: '',
       temperature: DEFAULTS.TEMPERATURE,
@@ -150,7 +185,7 @@ const DEFAULT_SETTINGS: Settings = {
     },
     [Provider.XAI]: {
       provider: Provider.XAI,
-      model: 'grok-3-fast',
+      model: 'grok-4',
       apiKey: '',
       apiUrl: '',
       temperature: DEFAULTS.TEMPERATURE,
@@ -326,232 +361,50 @@ export class SettingsService implements ISettingsService {
     return true;
   }
 
-  async getModelsFromOllama(): Promise<void> {
-    const url = this.settings().options[Provider.OLLAMA].apiUrl + '/api/tags';
-    try {
-      const data = await lastValueFrom(this.http.get<OllamaModelsResponse>(url));
-      const currentSettings = this.settings();
-      this.settings.set({
-        ...currentSettings,
-        options: {
-          ...currentSettings.options,
-          [Provider.OLLAMA]: {
-            ...currentSettings.options[Provider.OLLAMA],
-            availableModels: data?.models?.map(model => model.name) || []
-          }
-        }
-      });
-    } catch (e) {
-      this.handleError(e, 'Error getting Ollama models');
+  public async getModels(provider: Provider): Promise<void> {
+    const config = MODEL_FETCH_CONFIGS[provider];
+    if (!config) {
+      throw new Error(`Unsupported provider: ${provider}`);
     }
-  }
 
-  async getModelsFromOpenAI(): Promise<void> {
-    if (!this.settings().options[Provider.OPENAI].apiKey) {
-      return;
-    }
-    try {
-      const data = await lastValueFrom(this.http.get<OpenAIModelsResponse>(API_ENDPOINTS.OPENAI, {
-        headers: {
-          'Authorization': `Bearer ${this.settings().options[Provider.OPENAI].apiKey}`
-        }
-      }));
-      const currentSettings = this.settings();
-      this.settings.set({
-        ...currentSettings,
-        options: {
-          ...currentSettings.options,
-          [Provider.OPENAI]: {
-            ...currentSettings.options[Provider.OPENAI],
-            availableModels: data?.data?.map(model => model.id) || []
-          }
-        }
-      });
-    } catch (e) {
-      this.handleError(e, 'Error getting OpenAI models');
-    }
-  }
+    const options = this.settings().options[provider];
 
-  async getModelsFromAnthropic(): Promise<void> {
-    if (!this.settings().options[Provider.ANTHROPIC].apiKey) {
+    if (config.requiresApiKey && !options.apiKey) {
       return;
     }
 
     try {
-      const data = await lastValueFrom(this.http.get<AnthropicModelsResponse>(API_ENDPOINTS.ANTHROPIC, {
-        headers: {
-          'x-api-key': `${this.settings().options[Provider.ANTHROPIC].apiKey}`,
-          'anthropic-version': '2023-06-01'
-        }
-      }));
+      const urls = config.getUrl(options);
+      const headers = config.getHeaders(options);
+      let allModels: string[];
+
+      if (Array.isArray(urls)) {
+        // Multiple endpoints (e.g. Google v1 + v1beta) — fetch in parallel, deduplicate
+        const results = await Promise.all(
+          urls.map(url =>
+            lastValueFrom(this.http.get<ModelsResponse>(url, { headers }))
+              .catch(() => ({ models: [], data: [] } as ModelsResponse))
+          )
+        );
+        allModels = [...new Set(results.flatMap(data => config.extractModels(data)))];
+      } else {
+        const data = await lastValueFrom(this.http.get<ModelsResponse>(urls, { headers }));
+        allModels = config.extractModels(data);
+      }
 
       const currentSettings = this.settings();
       this.settings.set({
         ...currentSettings,
         options: {
           ...currentSettings.options,
-          [Provider.ANTHROPIC]: {
-            ...currentSettings.options[Provider.ANTHROPIC],
-            availableModels: data?.models?.map(model => model.id) || []
-          }
-        }
-      });
-    } catch (e) {
-      this.handleError(e, 'Error getting Anthropic models');
-    }
-  }
-
-  async getModelsFromMistral(): Promise<void> {
-    if (!this.settings().options[Provider.MISTRAL].apiKey) {
-      return;
-    }
-    try {
-      const data = await lastValueFrom(this.http.get<MistralModelsResponse>(API_ENDPOINTS.MISTRAL, {
-        headers: {
-          'Authorization': `Bearer ${this.settings().options[Provider.MISTRAL].apiKey}`
-        }
-      }));
-      const currentSettings = this.settings();
-      this.settings.set({
-        ...currentSettings,
-        options: {
-          ...currentSettings.options,
-          [Provider.MISTRAL]: {
-            ...currentSettings.options[Provider.MISTRAL],
-            availableModels: data?.data?.map(model => model.id) || []
-          }
-        }
-      });
-    } catch (e) {
-      this.handleError(e, 'Error getting Mistral models');
-    }
-  }
-
-  async getModelsFromCohere(): Promise<void> {
-    if (!this.settings().options[Provider.COHERE].apiKey) {
-      return;
-    }
-
-    try {
-      const data = await lastValueFrom(this.http.get<CohereModelsResponse>(API_ENDPOINTS.COHERE, {
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${this.settings().options[Provider.COHERE].apiKey}`
-        }
-      }));
-      const currentSettings = this.settings();
-      this.settings.set({
-        ...currentSettings,
-        options: {
-          ...currentSettings.options,
-          [Provider.COHERE]: {
-            ...currentSettings.options[Provider.COHERE],
-            availableModels: data?.models?.map(model => model.name) || []
-          }
-        }
-      });
-    } catch (e) {
-      this.handleError(e, 'Error getting Cohere models');
-    }
-  }
-
-  async getModelsFromGoogle(): Promise<void> {
-    if (!this.settings().options[Provider.GOOGLE].apiKey) {
-      return;
-    }
-
-    try {
-      const apiKey = this.settings().options[Provider.GOOGLE].apiKey;
-      const v1Url = `${API_ENDPOINTS.GOOGLE_V1}?key=${apiKey}`;
-      const v1betaUrl = `${API_ENDPOINTS.GOOGLE_V1BETA}?key=${apiKey}`;
-
-      // Fetch from both v1 (stable) and v1beta (preview) endpoints
-      const [v1Data, v1betaData] = await Promise.all([
-        lastValueFrom(this.http.get<GoogleModelsResponse>(v1Url)).catch(() => ({ models: [] })),
-        lastValueFrom(this.http.get<GoogleModelsResponse>(v1betaUrl)).catch(() => ({ models: [] }))
-      ]);
-
-      const filterModels = (data: GoogleModelsResponse) =>
-        data?.models?.filter(model => model?.supportedGenerationMethods?.includes('generateContent')).map(model => model.name) || [];
-
-      const v1Models = filterModels(v1Data);
-      const v1betaModels = filterModels(v1betaData);
-
-      // Combine and deduplicate models
-      const allModels = [...new Set([...v1Models, ...v1betaModels])];
-
-      const currentSettings = this.settings();
-      this.settings.set({
-        ...currentSettings,
-        options: {
-          ...currentSettings.options,
-          [Provider.GOOGLE]: {
-            ...currentSettings.options[Provider.GOOGLE],
+          [provider]: {
+            ...currentSettings.options[provider],
             availableModels: allModels
           }
         }
       });
     } catch (e) {
-      this.handleError(e, 'Error getting Google models');
-    }
-  }
-
-  async getModelsFromXAI(): Promise<void> {
-    if (!this.settings().options[Provider.XAI].apiKey) {
-      return;
-    }
-
-    try {
-      const data = await lastValueFrom(this.http.get<XaiModelsResponse>(API_ENDPOINTS.XAI, {
-        headers: {
-          'Authorization': `Bearer ${this.settings().options[Provider.XAI].apiKey}`
-        }
-      }));
-      const currentSettings = this.settings();
-      this.settings.set({
-        ...currentSettings,
-        options: {
-          ...currentSettings.options,
-          [Provider.XAI]: {
-            ...currentSettings.options[Provider.XAI],
-            availableModels: data?.data?.map(model => model.id) || []
-          }
-        }
-      });
-    } catch (e) {
-      this.handleError(e, 'Error getting xAI models');
-    }
-  }
-
-  public async getModels(provider: Provider): Promise<void> {
-    try {
-      switch (provider) {
-        case Provider.OLLAMA:
-          await this.getModelsFromOllama();
-          break;
-        case Provider.OPENAI:
-          await this.getModelsFromOpenAI();
-          break;
-        case Provider.ANTHROPIC:
-          await this.getModelsFromAnthropic();
-          break;
-        case Provider.MISTRAL:
-          await this.getModelsFromMistral();
-          break;
-        case Provider.COHERE:
-          await this.getModelsFromCohere();
-          break;
-        case Provider.GOOGLE:
-          await this.getModelsFromGoogle();
-          break;
-        case Provider.XAI:
-          await this.getModelsFromXAI();
-          break;
-        default:
-          throw new Error(`Unsupported provider: ${provider}`);
-      }
-    } catch (error) {
-      this.handleError(error, `Failed to get models for ${provider}`);
+      this.handleError(e, `Error getting ${provider} models`);
     }
   }
 

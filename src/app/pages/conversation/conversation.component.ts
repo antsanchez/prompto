@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, OnDestroy, HostListener } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnDestroy, HostListener, AfterViewChecked } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ChatService } from '../../services/chat.service';
 import { HelpersService } from '../../services/helpers.service';
@@ -11,20 +11,20 @@ import { UI, FILE_LIMITS, ERROR_MESSAGES } from '../../core/constants';
 import { FileAttachment } from '../../core/types';
 
 @Component({
-  selector: 'app-conversation',
-  standalone: true,
-  imports: [SharedModule],
-  templateUrl: './conversation.component.html',
-  styleUrls: ['./conversation.component.css']
+    selector: 'app-conversation',
+    imports: [SharedModule],
+    templateUrl: './conversation.component.html',
+    styleUrls: ['./conversation.component.css']
 })
-export class ConversationComponent implements OnDestroy {
-  protected Math = Math; // Add this line to make Math available in template
+export class ConversationComponent implements OnDestroy, AfterViewChecked {
+  protected Math = Math;
   public loading: boolean = false;
   public prompt: string = "";
   public error: string = "";
   public waiting: boolean = false;
   isDesktop: boolean = window.innerWidth > UI.DESKTOP_BREAKPOINT;
   private destroy$ = new Subject<void>();
+  private shouldScroll = false;
 
   // File upload
   pendingAttachments: FileAttachment[] = [];
@@ -49,6 +49,7 @@ export class ConversationComponent implements OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe(() => {
       this.waiting = false;
+      this.shouldScroll = true;
     });
   }
 
@@ -58,11 +59,10 @@ export class ConversationComponent implements OnDestroy {
   }
 
   ngAfterViewChecked() {
-    this.scrollToBottom();
-  }
-
-  scrollToBottom(): void {
-    this.myScrollContainer.nativeElement.scrollIntoView({ behavior: 'smooth' });
+    if (this.shouldScroll) {
+      this.shouldScroll = false;
+      this.myScrollContainer.nativeElement.scrollIntoView({ behavior: 'smooth' });
+    }
   }
 
   private subscribeToRouteParams() {
@@ -104,6 +104,7 @@ export class ConversationComponent implements OnDestroy {
   async chat() {
     this.loading = true;
     this.waiting = true;
+    this.shouldScroll = true;
     try {
       let prompt = this.prompt;
       let attachments = [...this.pendingAttachments];

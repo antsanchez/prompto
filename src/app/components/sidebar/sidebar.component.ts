@@ -6,11 +6,10 @@ import { ThemeService } from '../../services/theme.service';
 import packageJson from '../../../../package.json';
 
 @Component({
-  selector: 'app-sidebar',
-  standalone: true,
-  imports: [SharedModule],
-  templateUrl: './sidebar.component.html',
-  styleUrl: './sidebar.component.css'
+    selector: 'app-sidebar',
+    imports: [SharedModule],
+    templateUrl: './sidebar.component.html',
+    styleUrl: './sidebar.component.css'
 })
 export class SidebarComponent implements OnInit, OnDestroy {
 

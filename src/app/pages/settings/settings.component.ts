@@ -9,11 +9,10 @@ interface State {
 }
 
 @Component({
-  selector: 'app-settings',
-  standalone: true,
-  imports: [SharedModule],
-  templateUrl: './settings.component.html',
-  styleUrl: './settings.component.css'
+    selector: 'app-settings',
+    imports: [SharedModule],
+    templateUrl: './settings.component.html',
+    styleUrl: './settings.component.css'
 })
 export class SettingsComponent implements OnInit {
   public state: State = {

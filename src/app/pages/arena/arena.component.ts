@@ -1,6 +1,6 @@
-import { Component, ElementRef, ViewChild, HostListener, OnDestroy } from '@angular/core';
+import { Component, ElementRef, ViewChild, HostListener, OnDestroy, AfterViewChecked } from '@angular/core';
 import { ChatService } from '../../services/chat.service';
-import { SettingsService } from '../../services/settings.service';
+import { Provider, SettingsService } from '../../services/settings.service';
 import { ErrorService } from '../../services/error.service';
 import { FileService } from '../../services/file.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,17 +12,17 @@ import { UI, ERROR_MESSAGES, FILE_LIMITS } from '../../core/constants';
 import { FileAttachment } from '../../core/types';
 
 @Component({
-  selector: 'app-arena',
-  standalone: true,
-  imports: [SharedModule],
-  templateUrl: './arena.component.html',
-  styleUrl: './arena.component.css'
+    selector: 'app-arena',
+    imports: [SharedModule],
+    templateUrl: './arena.component.html',
+    styleUrl: './arena.component.css'
 })
-export class ArenaComponent {
-  protected Math = Math; // Add this line
+export class ArenaComponent implements OnDestroy, AfterViewChecked {
+  protected Math = Math;
   public error: string = '';
   public loading: boolean = false;
   public prompt: string = "";
+  private shouldScroll = false;
 
   public models1: string[] = [];
   public models2: string[] = [];
@@ -76,11 +76,10 @@ export class ArenaComponent {
   }
 
   ngAfterViewChecked() {
-    this.scrollToBottom();
-  }
-
-  scrollToBottom(): void {
-    this.myScrollContainer.nativeElement.scrollIntoView();
+    if (this.shouldScroll) {
+      this.shouldScroll = false;
+      this.myScrollContainer.nativeElement.scrollIntoView({ behavior: 'smooth' });
+    }
   }
 
   private subscribeToRouteParams() {
@@ -100,7 +99,7 @@ export class ArenaComponent {
   async chatArena() {
     if (!this.cs.arenaStarted) {
       try {
-        this.cs.startArena();
+        await this.cs.startArena();
       } catch (error) {
         this.error = ERROR_MESSAGES.ARENA_START;
         console.error('Error starting arena:', error);
@@ -113,17 +112,19 @@ export class ArenaComponent {
     }
 
     this.loading = true;
-    let prompt = this.prompt;
-    let attachments = [...this.pendingAttachments];
+    this.shouldScroll = true;
+    const prompt = this.prompt;
+    const attachments = [...this.pendingAttachments];
     this.prompt = "";
     this.pendingAttachments = [];
-    this.cs.chatArena(prompt, attachments.length > 0 ? attachments : undefined).then(() => {
-      this.loading = false;
-    }, (error) => {
+    try {
+      await this.cs.chatArena(prompt, attachments.length > 0 ? attachments : undefined);
+    } catch (error) {
       this.error = ERROR_MESSAGES.ARENA_CHAT;
       console.error('Error chatting in arena:', error);
+    } finally {
       this.loading = false;
-    });
+    }
   }
 
   triggerFileInput() {
@@ -168,31 +169,31 @@ export class ArenaComponent {
     }
   }
 
-  async getModels(provider: any): Promise<string[]> {
+  async getModels(provider: Provider): Promise<string[]> {
     await this.ss.getModels(provider);
     return this.ss.getAvailableModels(provider);
   }
 
-  async provider1Changed(provider: any) {
+  async provider1Changed(provider: Provider) {
     this.loadingModels1 = true;
     try {
       this.models1 = await this.getModels(provider);
-      this.loadingModels1 = false;
     } catch (error) {
       this.error = ERROR_MESSAGES.MODELS_FETCH;
       console.error('Error getting models:', error);
+    } finally {
       this.loadingModels1 = false;
     }
   }
 
-  async provider2Changed(provider: any) {
+  async provider2Changed(provider: Provider) {
     this.loadingModels2 = true;
     try {
       this.models2 = await this.getModels(provider);
-      this.loadingModels2 = false;
     } catch (error) {
       this.error = ERROR_MESSAGES.MODELS_FETCH;
       console.error('Error getting models:', error);
+    } finally {
       this.loadingModels2 = false;
     }
   }
@@ -228,8 +229,8 @@ export class ArenaComponent {
     if (arenaKey) {
       try {
         this.cs.loadArena(arenaKey);
-        this.provider1Changed(this.cs.arena.p1.provider || '');
-        this.provider2Changed(this.cs.arena.p2.provider || '');
+        this.provider1Changed(this.cs.arena.p1.provider as Provider);
+        this.provider2Changed(this.cs.arena.p2.provider as Provider);
         this.cs.arena.p1.model = this.cs.arena.p1.model || '';
         this.cs.arena.p2.model = this.cs.arena.p2.model || '';
         this.cs.startArena();
