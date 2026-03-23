@@ -1,4 +1,5 @@
-<div class="relative z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true" *ngIf="errorMsg">
+@if (errorMsg) {
+<div class="relative z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
 
     <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
@@ -7,7 +8,7 @@
                 class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
                 <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
                     <button type="button"
-                        class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                         <span class="sr-only">Close</span>
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
                             aria-hidden="true">
@@ -17,7 +18,7 @@
                 </div>
                 <div class="sm:flex sm:items-start">
                     <div
-                        class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                        class="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
                         <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -34,9 +35,11 @@
                 </div>
                 <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                     <button type="button"
-                        class="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
+                        class="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 sm:ml-3 sm:w-auto"
                         (click)="close()">OK</button>
                 </div>
             </div>
         </div>
     </div>
+</div>
+}

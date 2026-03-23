@@ -7,20 +7,21 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { NotConnectedComponent } from '../../components/not-connected/not-connected.component';
 import { ErrorComponent } from '../../components/error/error.component';
+import { MessageDisplayComponent } from '../../components/message-display/message-display.component';
 import { HelpersService } from '../../services/helpers.service';
 import { ERROR_MESSAGES } from '../../core/constants';
 
 @Component({
-  selector: 'app-discussion',
-  standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    NotConnectedComponent,
-    ErrorComponent
-  ],
-  templateUrl: './discussion.component.html',
-  styleUrl: './discussion.component.css'
+    selector: 'app-discussion',
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        NotConnectedComponent,
+        ErrorComponent,
+        MessageDisplayComponent
+    ],
+    templateUrl: './discussion.component.html',
+    styleUrl: './discussion.component.css'
 })
 export class DiscussionComponent implements OnDestroy {
   form: FormGroup;

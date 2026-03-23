@@ -3,7 +3,7 @@ import { LcService } from './lc.service';
 import { PromptTemplate } from "@langchain/core/prompts";
 import { Runnable } from '@langchain/core/runnables';
 import { Subject } from 'rxjs';
-import { STORAGE_KEYS, DEFAULTS } from '../core/constants';
+import { STORAGE_KEYS } from '../core/constants';
 import { StorageService } from './storage.service';
 import { FileAttachment, Message } from '../core/types';
 import { FileService } from './file.service';
@@ -304,84 +304,28 @@ export class ChatService {
     const systemPrompt = 'You are a nice chatbot having a conversation with a human.';
 
     // Stream responses from both LLMs in parallel
-    let messageNumber1 = this.arena.p1.messages.length;
-    let promise1 = this.arena.p1.llm.stream(
-      await this.buildLangchainMessages(messages1, systemPrompt)
-    ).then(async (stream1) => {
-      for await (let chunk of stream1) {
-        if (this.arena.p1.messages.length > messageNumber1) {
-          this.arena.p1.messages[messageNumber1].text += chunk?.content;
+    const streamPlayer = async (player: Player, msgs: typeof messages1) => {
+      const langchainMessages = this.lc.buildMessages(msgs, systemPrompt);
+      const messageNumber = player.messages.length;
+      const stream = await player.llm.stream(langchainMessages);
+      for await (const chunk of stream) {
+        if (player.messages.length > messageNumber) {
+          player.messages[messageNumber].text += chunk?.content;
         } else {
-          this.arena.p1.messages.push({
+          player.messages.push({
             text: chunk?.content,
             isUser: false,
             date: new Date()
           });
         }
       }
-    });
+    };
 
-    let messageNumber2 = this.arena.p2.messages.length;
-    let promise2 = this.arena.p2.llm.stream(
-      await this.buildLangchainMessages(messages2, systemPrompt)
-    ).then(async (stream2) => {
-      for await (let chunk of stream2) {
-        if (this.arena.p2.messages.length > messageNumber2) {
-          this.arena.p2.messages[messageNumber2].text += chunk?.content;
-        } else {
-          this.arena.p2.messages.push({
-            text: chunk?.content,
-            isUser: false,
-            date: new Date()
-          });
-        }
-      }
-    });
-
-    await Promise.all([promise1, promise2]);
+    await Promise.all([
+      streamPlayer(this.arena.p1, messages1),
+      streamPlayer(this.arena.p2, messages2)
+    ]);
     this.saveArena();
-  }
-
-  // buildLangchainMessages converts our message format to LangChain messages
-  private async buildLangchainMessages(
-    messages: Array<{ role: 'human' | 'ai'; text: string; attachments?: FileAttachment[] }>,
-    systemPrompt?: string
-  ) {
-    const { HumanMessage, AIMessage, SystemMessage } = await import('@langchain/core/messages');
-    const langchainMessages: any[] = [];
-
-    if (systemPrompt) {
-      langchainMessages.push(new SystemMessage(systemPrompt));
-    }
-
-    for (const msg of messages) {
-      if (msg.role === 'ai') {
-        langchainMessages.push(new AIMessage(msg.text));
-        continue;
-      }
-
-      if (!msg.attachments?.length) {
-        langchainMessages.push(new HumanMessage(msg.text));
-        continue;
-      }
-
-      // Build multimodal content
-      const content: any[] = [];
-      if (msg.text) {
-        content.push({ type: 'text', text: msg.text });
-      }
-
-      for (const att of msg.attachments) {
-        content.push({
-          type: 'image_url',
-          image_url: { url: `data:${att.mimeType};base64,${att.data}` }
-        });
-      }
-
-      langchainMessages.push(new HumanMessage({ content }));
-    }
-
-    return langchainMessages;
   }
 
 
@@ -443,34 +387,6 @@ export class ChatService {
       this.lc.s.currentArenaKey = key;
       this.arena = arena;
     }
-  }
-
-  // prepareChatHistory prepares the chat history for the chatbot
-  prepareChatHistory(messages: Message[]): string {
-    let chatHistory = "";
-    for (let message of messages) {
-      if (message.isUser) {
-        chatHistory += "Human: " + message.text + "\n\n";
-      } else {
-        chatHistory += "AI: " + message.text + "\n\n";
-      }
-    }
-    if (chatHistory === "") {
-      return "No chat history";
-    }
-    return chatHistory;
-  }
-
-  loadDiscussion(key: string) {
-    return this.storage.getItem(key);
-  }
-
-  getSavedDiscussions() {
-    return this.storage.loadDiscussions();
-  }
-
-  deleteDiscussion(key: string) {
-    this.storage.removeItem(key);
   }
 
 }

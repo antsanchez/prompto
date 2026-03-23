@@ -15,7 +15,7 @@ export const UI = {
 
 // API Endpoints
 export const API_ENDPOINTS = {
-  OPENAI: 'https://api.openai.com/v1/engines',
+  OPENAI: 'https://api.openai.com/v1/models',
   ANTHROPIC: 'https://api.anthropic.com/v1/models',
   MISTRAL: 'https://api.mistralai.com/v1/models',
   COHERE: 'https://api.cohere.ai/v1/models',

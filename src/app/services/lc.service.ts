@@ -8,12 +8,55 @@ import { FileAttachment } from '../core/types';
 
 type LLMConstructor = new (...args: any[]) => Runnable;
 
+interface ProviderConfig {
+  importFn: () => Promise<Record<string, any>>;
+  className: string;
+  requiresApiKey: boolean;
+}
+
+const PROVIDER_REGISTRY: Record<Provider, ProviderConfig> = {
+  [Provider.OLLAMA]: {
+    importFn: () => import('@langchain/ollama'),
+    className: 'ChatOllama',
+    requiresApiKey: false,
+  },
+  [Provider.OPENAI]: {
+    importFn: () => import('@langchain/openai'),
+    className: 'ChatOpenAI',
+    requiresApiKey: true,
+  },
+  [Provider.ANTHROPIC]: {
+    importFn: () => import('@langchain/anthropic'),
+    className: 'ChatAnthropic',
+    requiresApiKey: true,
+  },
+  [Provider.MISTRAL]: {
+    importFn: () => import('@langchain/mistralai'),
+    className: 'ChatMistralAI',
+    requiresApiKey: true,
+  },
+  [Provider.COHERE]: {
+    importFn: () => import('@langchain/cohere'),
+    className: 'ChatCohere',
+    requiresApiKey: true,
+  },
+  [Provider.GOOGLE]: {
+    importFn: () => import('@langchain/google-genai'),
+    className: 'ChatGoogleGenerativeAI',
+    requiresApiKey: true,
+  },
+  [Provider.XAI]: {
+    importFn: () => import('@langchain/xai'),
+    className: 'ChatXAI',
+    requiresApiKey: true,
+  },
+};
+
 @Injectable({
   providedIn: 'root'
 })
 export class LcService {
 
-  // Settings are saved into the local storage
   private cache: Map<Provider, LLMConstructor> = new Map();
 
   public llm: Runnable | null = null;
@@ -22,100 +65,35 @@ export class LcService {
     this.s.setDefaultSettings();
   }
 
-  // createLLM creates the LLM based on the provider
   async createLLM(provider: string, model: string = '') {
-    if (model === '' || !model) {
-      model = this.s.settings().options[provider as Provider].model;
+    const p = provider as Provider;
+    const config = PROVIDER_REGISTRY[p];
+    if (!config) {
+      throw new Error('Unsupported provider');
     }
 
-    // Check if the class is already cached
-    const cachedClass = this.cache.get(provider as Provider);
-    if (cachedClass) {
-      return new cachedClass({
-        apiKey: this.s.settings().options[provider as Provider].apiKey,
-        model: model,
-        temperature: this.s.settings().options[provider as Provider].temperature,
-        baseUrl: this.s.settings().options[provider as Provider].apiUrl,
-      });
+    const options = this.s.settings().options[p];
+    if (!model) {
+      model = options.model;
     }
 
-    switch (provider) {
-      case Provider.OPENAI:
-        if (!this.s.settings().options[Provider.OPENAI].apiKey) {
-          throw new Error(ERROR_MESSAGES.NO_API_KEY);
-        }
-        const { ChatOpenAI } = await import('@langchain/openai');
-        this.cache.set(Provider.OPENAI, ChatOpenAI);
-        return new ChatOpenAI({
-          apiKey: this.s.settings().options[Provider.OPENAI].apiKey,
-          model: model,
-          temperature: this.s.settings().options[Provider.OPENAI].temperature,
-        });
-      case Provider.OLLAMA:
-        const { ChatOllama } = await import('@langchain/ollama');
-        this.cache.set(Provider.OLLAMA, ChatOllama);
-        return new ChatOllama({
-          baseUrl: this.s.settings().options[Provider.OLLAMA].apiUrl,
-          model: model,
-          temperature: this.s.settings().options[Provider.OLLAMA].temperature,
-        });
-      case Provider.ANTHROPIC:
-        if (!this.s.settings().options[Provider.ANTHROPIC].apiKey) {
-          throw new Error(ERROR_MESSAGES.NO_API_KEY);
-        }
-        const { ChatAnthropic } = await import('@langchain/anthropic');
-        this.cache.set(Provider.ANTHROPIC, ChatAnthropic);
-        return new ChatAnthropic({
-          apiKey: this.s.settings().options[Provider.ANTHROPIC].apiKey,
-          model: model,
-          temperature: this.s.settings().options[Provider.ANTHROPIC].temperature,
-        });
-      case Provider.MISTRAL:
-        if (!this.s.settings().options[Provider.MISTRAL].apiKey) {
-          throw new Error(ERROR_MESSAGES.NO_API_KEY);
-        }
-        const { ChatMistralAI } = await import('@langchain/mistralai');
-        this.cache.set(Provider.MISTRAL, ChatMistralAI);
-        return new ChatMistralAI({
-          apiKey: this.s.settings().options[Provider.MISTRAL].apiKey,
-          model: model,
-          temperature: this.s.settings().options[Provider.MISTRAL].temperature,
-        });
-      case Provider.COHERE:
-        if (!this.s.settings().options[Provider.COHERE].apiKey) {
-          throw new Error(ERROR_MESSAGES.NO_API_KEY);
-        }
-        const { ChatCohere } = await import('@langchain/cohere');
-        this.cache.set(Provider.COHERE, ChatCohere);
-        return new ChatCohere({
-          apiKey: this.s.settings().options[Provider.COHERE].apiKey,
-          model: model,
-          temperature: this.s.settings().options[Provider.COHERE].temperature,
-        });
-      case Provider.GOOGLE:
-        if (!this.s.settings().options[Provider.GOOGLE].apiKey) {
-          throw new Error(ERROR_MESSAGES.NO_API_KEY);
-        }
-        const { ChatGoogleGenerativeAI } = await import('@langchain/google-genai');
-        this.cache.set(Provider.GOOGLE, ChatGoogleGenerativeAI);
-        return new ChatGoogleGenerativeAI({
-          apiKey: this.s.settings().options[Provider.GOOGLE].apiKey,
-          model: model,
-          temperature: this.s.settings().options[Provider.GOOGLE].temperature,
-        });
-      case Provider.XAI:
-        if (!this.s.settings().options[Provider.XAI].apiKey) {
-          throw new Error(ERROR_MESSAGES.NO_API_KEY);
-        }
-        const { ChatXAI } = await import('@langchain/xai');
-        this.cache.set(Provider.XAI, ChatXAI);
-        return new ChatXAI({
-          apiKey: this.s.settings().options[Provider.XAI].apiKey,
-          model: model,
-          temperature: this.s.settings().options[Provider.XAI].temperature,
-        });
+    if (config.requiresApiKey && !options.apiKey) {
+      throw new Error(ERROR_MESSAGES.NO_API_KEY);
     }
-    throw new Error('Unsupported provider');
+
+    let Constructor = this.cache.get(p);
+    if (!Constructor) {
+      const module = await config.importFn();
+      Constructor = (module as Record<string, any>)[config.className] as LLMConstructor;
+      this.cache.set(p, Constructor);
+    }
+
+    return new Constructor({
+      apiKey: options.apiKey,
+      model,
+      temperature: options.temperature,
+      baseUrl: options.apiUrl,
+    });
   }
 
   // invoke sends a prompt to the chatbot and returns the response
@@ -144,31 +122,24 @@ export class LcService {
     return chain.stream({ system: system, prompt: prompt });
   }
 
-  // streamWithMessages streams a conversation with proper LangChain message objects
+  // buildMessages converts our message format to LangChain message objects
   // Supports multimodal content (images and PDFs) in human messages
-  streamWithMessages(
+  buildMessages(
     messages: Array<{ role: 'human' | 'ai'; text: string; attachments?: FileAttachment[] }>,
     systemPrompt?: string
-  ) {
-    if (!this.llm) {
-      throw new Error('LLM not initialized');
-    }
-
+  ): (HumanMessage | AIMessage | SystemMessage)[] {
     const langchainMessages: (HumanMessage | AIMessage | SystemMessage)[] = [];
 
-    // Add system message if provided
     if (systemPrompt) {
       langchainMessages.push(new SystemMessage(systemPrompt));
     }
 
-    // Convert messages to LangChain message objects
     for (const msg of messages) {
       if (msg.role === 'ai') {
         langchainMessages.push(new AIMessage(msg.text));
         continue;
       }
 
-      // Human message - may have attachments
       if (!msg.attachments?.length) {
         langchainMessages.push(new HumanMessage(msg.text));
         continue;
@@ -177,33 +148,32 @@ export class LcService {
       // Build multimodal content array
       const content: any[] = [];
 
-      // Add text content first if present
       if (msg.text) {
         content.push({ type: 'text', text: msg.text });
       }
 
-      // Add attachments
       for (const att of msg.attachments) {
-        if (att.type === 'image') {
-          content.push({
-            type: 'image_url',
-            image_url: { url: `data:${att.mimeType};base64,${att.data}` }
-          });
-        } else if (att.type === 'pdf') {
-          // PDF handling varies by provider, use document type for Anthropic
-          // or convert to text description for others
-          content.push({
-            type: 'image_url',
-            image_url: {
-              url: `data:${att.mimeType};base64,${att.data}`
-            }
-          });
-        }
+        content.push({
+          type: 'image_url',
+          image_url: { url: `data:${att.mimeType};base64,${att.data}` }
+        });
       }
 
       langchainMessages.push(new HumanMessage({ content }));
     }
 
-    return this.llm.stream(langchainMessages);
+    return langchainMessages;
+  }
+
+  // streamWithMessages streams a conversation with proper LangChain message objects
+  streamWithMessages(
+    messages: Array<{ role: 'human' | 'ai'; text: string; attachments?: FileAttachment[] }>,
+    systemPrompt?: string
+  ) {
+    if (!this.llm) {
+      throw new Error('LLM not initialized');
+    }
+
+    return this.llm.stream(this.buildMessages(messages, systemPrompt));
   }
 }

@@ -8,11 +8,10 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 @Component({
-  selector: 'app-template',
-  standalone: true,
-  imports: [SharedModule],
-  templateUrl: './template.component.html',
-  styleUrls: ['./template.component.css']  // Note: Fixed 'styleUrl' to 'styleUrls' for array usage
+    selector: 'app-template',
+    imports: [SharedModule],
+    templateUrl: './template.component.html',
+    styleUrls: ['./template.component.css'] // Note: Fixed 'styleUrl' to 'styleUrls' for array usage
 })
 export class TemplateComponent implements OnDestroy {
 

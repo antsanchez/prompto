@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ErrorComponent } from '../components/error/error.component';
 import { NotConnectedComponent } from '../components/not-connected/not-connected.component';
+import { MessageDisplayComponent } from '../components/message-display/message-display.component';
 
 @NgModule({
     declarations: [
@@ -13,14 +14,16 @@ import { NotConnectedComponent } from '../components/not-connected/not-connected
         FormsModule,
         RouterModule,
         ErrorComponent,
-        NotConnectedComponent
+        NotConnectedComponent,
+        MessageDisplayComponent
     ],
     exports: [
         CommonModule,
         FormsModule,
         RouterModule,
         ErrorComponent,
-        NotConnectedComponent
+        NotConnectedComponent,
+        MessageDisplayComponent
     ]
 })
 export class SharedModule { }

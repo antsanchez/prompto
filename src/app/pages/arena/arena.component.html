@@ -1,269 +1,310 @@
-<app-error *ngIf="error" [error]="error"></app-error>
+@if (error) {
+  <app-error [error]="error"></app-error>
+}
 
 <!-- Chat messages -->
 <div class="lg:ml-72 fixed top-20 left-6 right-6 bottom-60 overflow-y-scroll bg-white dark:bg-gray-900">
 
-    <div class="flex justify-center lg:hidden border-b dark:border-gray-700">
-        <button
-            class="px-4 py-2 mx-1 text-sm font-medium rounded-t-lg hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none"
-            [class.bg-orange-500]="showColumn === 'first'" [class.text-white]="showColumn === 'first'"
-            [class.text-gray-600]="showColumn !== 'first'" [class.dark:text-gray-200]="showColumn !== 'first'"
-            [class.bg-white]="showColumn !== 'first'" [class.dark:bg-gray-800]="showColumn !== 'first'"
-            (click)="showColumn = 'first'">LLM 1</button>
-        <button
-            class="px-4 py-2 mx-1 text-sm font-medium text-gray-600 bg-white rounded-t-lg hover:bg-gray-100 hover:text-gray-700 focus:outline-none"
-            [class.bg-orange-500]="showColumn === 'second'" [class.text-white]="showColumn === 'second'"
-            [class.text-gray-600]="showColumn !== 'second'" [class.bg-white]="showColumn !== 'second'"
-            (click)="showColumn = 'second'">LLM 2</button>
-    </div>
+  <div class="flex justify-center lg:hidden border-b dark:border-gray-700">
+    <button
+      class="px-4 py-2 mx-1 text-sm font-medium rounded-t-lg hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-hidden"
+      [class.bg-orange-500]="showColumn === 'first'" [class.text-white]="showColumn === 'first'"
+      [class.text-gray-600]="showColumn !== 'first'" [class.dark:text-gray-200]="showColumn !== 'first'"
+      [class.bg-white]="showColumn !== 'first'" [class.dark:bg-gray-800]="showColumn !== 'first'"
+    (click)="showColumn = 'first'">LLM 1</button>
+    <button
+      class="px-4 py-2 mx-1 text-sm font-medium text-gray-600 bg-white rounded-t-lg hover:bg-gray-100 hover:text-gray-700 focus:outline-hidden"
+      [class.bg-orange-500]="showColumn === 'second'" [class.text-white]="showColumn === 'second'"
+      [class.text-gray-600]="showColumn !== 'second'" [class.bg-white]="showColumn !== 'second'"
+    (click)="showColumn = 'second'">LLM 2</button>
+  </div>
 
-    <div class="flex divide-x dark:divide-gray-700">
-        <div class="w-full lg:w-1/2 space-y-6 p-2 overflow-y-auto" *ngIf="showColumn === 'first' || isDesktop">
-
-            <div class="sm:col-span-3">
-                <label for="provider" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">LLM
-                    1</label>
-                <div class="mt-2">
-                    <select id="provider" name="provider" (ngModelChange)="provider1Changed($event)"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-gray-600 dark:focus:ring-gray-400 sm:max-w-xl sm:text-sm sm:leading-6 dark:bg-gray-700"
-                        [(ngModel)]="cs.arena.p1.provider">
-                        <option *ngFor="let provider1 of ss.listProviders()" [value]="provider1">
-                            {{provider1}}
-                        </option>
-                    </select>
-                    <p class="text-sm text-red-500 mt-1 sm:max-w-xl" *ngIf="models1Error()">
-                        There was an error loading the models. Please, check your <a routerLink="/settings"
-                            class="underline">settings</a>
-                        for the selected provider.
-                    </p>
-                    <p class="text-sm text-blue-500 mt-1 sm:max-w-xl" *ngIf="loadingModels1">
-                        Loading models...
-                    </p>
-                </div>
-            </div>
-
-            <div class="sm:col-span-3" *ngIf="models1Available()">
-                <select id="model1" name="model1" (ngModelChange)="onModel1Change($event)"
-                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-gray-600 dark:focus:ring-gray-400 sm:max-w-xl sm:text-sm sm:leading-6 dark:bg-gray-700"
-                    [ngModel]="cs.arena.p1.model">
-                    <option *ngFor="let m1model of models1" [value]="m1model">
-                        {{m1model}}</option>
-                </select>
-            </div>
-
-            <div class="space-y-6" *ngFor="let msg of cs.arena.p1.messages">
-                <div class="flex items-start space-x-3 pt-2 pb-2">
-                    <div>
-                        <div class="flex items-center space-x-2" *ngIf="msg.isUser">
-                            <span
-                                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-300 border-gray-200 dark:border-gray-700">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                                </svg>
-                            </span>
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">You</h3>
-                            <span class="text-sm text-gray-500 dark:text-gray-400">{{ msg.date | date:"short" }}</span>
-                        </div>
-                        <div class="flex items-center space-x-2" *ngIf="!msg.isUser">
-                            <span
-                                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-300 border-gray-200 dark:border-gray-700">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 6.75v10.5a2.25 2.25 0 0 0 2.25 2.25Zm.75-12h9v9h-9v-9Z" />
-                                </svg>
-
-                            </span>
-                            <h3 class="text-lg font-semibold">Bot</h3>
-                            <span class="text-sm text-gray-500 dark:text-gray-400">{{ msg.date | date:"short" }}</span>
-                        </div>
-                        <div class="text-gray-900 dark:text-gray-100 mt-1 mb-1 chat-message dark:bg-gray-800"
-                            [ngClass]="{'italic': msg.isUser}" [innerHTML]="helpers.presentMessage(msg.text)">
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <div class="flex divide-x dark:divide-gray-700">
+    @if (showColumn === 'first' || isDesktop) {
+      <div class="w-full lg:w-1/2 space-y-6 p-2 overflow-y-auto">
+        <div class="sm:col-span-3">
+          <label for="provider" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">LLM
+          1</label>
+          <div class="mt-2">
+            <select id="provider" name="provider" (ngModelChange)="provider1Changed($event)"
+              class="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-gray-100 shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-gray-600 dark:focus:ring-gray-400 sm:max-w-xl sm:text-sm sm:leading-6 dark:bg-gray-700"
+              [(ngModel)]="cs.arena.p1.provider">
+              @for (provider1 of ss.listProviders(); track provider1) {
+                <option [value]="provider1">
+                  {{provider1}}
+                </option>
+              }
+            </select>
+            @if (models1Error()) {
+              <p class="text-sm text-red-500 mt-1 sm:max-w-xl">
+                There was an error loading the models. Please, check your <a routerLink="/settings"
+              class="underline">settings</a>
+              for the selected provider.
+            </p>
+          }
+          @if (loadingModels1) {
+            <p class="text-sm text-blue-500 mt-1 sm:max-w-xl">
+              Loading models...
+            </p>
+          }
         </div>
-        <div class="w-full lg:w-1/2 space-y-6 p-2 overflow-y-auto" *ngIf="showColumn === 'second' || isDesktop">
-
-            <div class="sm:col-span-3">
-                <label for="provider" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">LLM
-                    2</label>
-                <div class="mt-2">
-                    <select id="provider2" name="provider2" (ngModelChange)="provider2Changed($event)"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-gray-600 dark:focus:ring-gray-400 sm:max-w-xl sm:text-sm sm:leading-6 dark:bg-gray-700"
-                        [(ngModel)]="cs.arena.p2.provider">
-                        <option *ngFor="let provider2 of ss.listProviders()" [value]="provider2">{{provider2}}
-                        </option>
-                    </select>
-                    <p class="text-sm text-red-500 mt-1 sm:max-w-xl" *ngIf="models2Error()">
-                        There was an error loading the models. Please, check your settings for the selected provider.
-                    </p>
-                    <p class="text-sm text-blue-500 mt-1 sm:max-w-xl" *ngIf="loadingModels2">
-                        Loading models...
-                    </p>
-                </div>
-            </div>
-
-            <div class="sm:col-span-3" *ngIf="models2Available()">
-                <select id="model2" name="model2" (ngModelChange)="onModel2Change($event)"
-                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-gray-600 dark:focus:ring-gray-400 sm:max-w-xl sm:text-sm sm:leading-6 dark:bg-gray-700"
-                    [ngModel]="cs.arena.p2.model">
-                    <option *ngFor="let m2model of models2" [value]="m2model">
-                        {{m2model}}</option>
-                </select>
-            </div>
-
-            <div class="space-y-6" *ngFor="let msg of cs.arena.p2.messages">
-                <div class="flex items-start space-x-3 pt-2 pb-2">
-                    <div>
-                        <div class="flex items-center space-x-2" *ngIf="msg.isUser">
-                            <span
-                                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-300 border-gray-200 dark:border-gray-700">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                                </svg>
-                            </span>
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">You</h3>
-                            <span class="text-sm text-gray-500 dark:text-gray-400">{{ msg.date | date:"short" }}</span>
-                        </div>
-                        <div class="flex items-center space-x-2" *ngIf="!msg.isUser">
-                            <span
-                                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-300 border-gray-200 dark:border-gray-700">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 6.75v10.5a2.25 2.25 0 0 0 2.25 2.25Zm.75-12h9v9h-9v-9Z" />
-                                </svg>
-
-                            </span>
-                            <h3 class="text-lg font-semibold">Bot</h3>
-                            <span class="text-sm text-gray-500 dark:text-gray-400">{{ msg.date | date:"short" }}</span>
-                        </div>
-                        <div class="text-gray-900 dark:text-gray-100 mt-1 mb-1 chat-message dark:bg-gray-800"
-                            [ngClass]="{'italic': msg.isUser}" [innerHTML]="helpers.presentMessage(msg.text)">
-                        </div>
-                    </div>
-                </div>
-            </div>
+      </div>
+      @if (models1Available()) {
+        <div class="sm:col-span-3">
+          <select id="model1" name="model1" (ngModelChange)="onModel1Change($event)"
+            class="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-gray-100 shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-gray-600 dark:focus:ring-gray-400 sm:max-w-xl sm:text-sm sm:leading-6 dark:bg-gray-700"
+            [ngModel]="cs.arena.p1.model">
+            @for (m1model of models1; track m1model) {
+              <option [value]="m1model">
+              {{m1model}}</option>
+            }
+          </select>
         </div>
+      }
+      @for (msg of cs.arena.p1.messages; track msg) {
+        <div class="space-y-6">
+          <div class="flex items-start space-x-3 pt-2 pb-2">
+            <div>
+              @if (msg.isUser) {
+                <div class="flex items-center space-x-2">
+                  <span
+                    class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-300 border-gray-200 dark:border-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                      stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                    </svg>
+                  </span>
+                  <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">You</h3>
+                  <span class="text-sm text-gray-500 dark:text-gray-400">{{ msg.date | date:"short" }}</span>
+                </div>
+              }
+              @if (!msg.isUser) {
+                <div class="flex items-center space-x-2">
+                  <span
+                    class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-300 border-gray-200 dark:border-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                      stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 6.75v10.5a2.25 2.25 0 0 0 2.25 2.25Zm.75-12h9v9h-9v-9Z" />
+                    </svg>
+                  </span>
+                  <h3 class="text-lg font-semibold">Bot</h3>
+                  <span class="text-sm text-gray-500 dark:text-gray-400">{{ msg.date | date:"short" }}</span>
+                </div>
+              }
+              <div class="mt-1 mb-1" [ngClass]="{'italic': msg.isUser}">
+                <app-message-display [message]="msg.text" [cssClass]="'dark:bg-gray-800'"></app-message-display>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
     </div>
-    <div #scrollMe></div>
+  }
+  @if (showColumn === 'second' || isDesktop) {
+    <div class="w-full lg:w-1/2 space-y-6 p-2 overflow-y-auto">
+      <div class="sm:col-span-3">
+        <label for="provider" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">LLM
+        2</label>
+        <div class="mt-2">
+          <select id="provider2" name="provider2" (ngModelChange)="provider2Changed($event)"
+            class="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-gray-100 shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-gray-600 dark:focus:ring-gray-400 sm:max-w-xl sm:text-sm sm:leading-6 dark:bg-gray-700"
+            [(ngModel)]="cs.arena.p2.provider">
+            @for (provider2 of ss.listProviders(); track provider2) {
+              <option [value]="provider2">{{provider2}}
+              </option>
+            }
+          </select>
+          @if (models2Error()) {
+            <p class="text-sm text-red-500 mt-1 sm:max-w-xl">
+              There was an error loading the models. Please, check your settings for the selected provider.
+            </p>
+          }
+          @if (loadingModels2) {
+            <p class="text-sm text-blue-500 mt-1 sm:max-w-xl">
+              Loading models...
+            </p>
+          }
+        </div>
+      </div>
+      @if (models2Available()) {
+        <div class="sm:col-span-3">
+          <select id="model2" name="model2" (ngModelChange)="onModel2Change($event)"
+            class="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-gray-100 shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-gray-600 dark:focus:ring-gray-400 sm:max-w-xl sm:text-sm sm:leading-6 dark:bg-gray-700"
+            [ngModel]="cs.arena.p2.model">
+            @for (m2model of models2; track m2model) {
+              <option [value]="m2model">
+              {{m2model}}</option>
+            }
+          </select>
+        </div>
+      }
+      @for (msg of cs.arena.p2.messages; track msg) {
+        <div class="space-y-6">
+          <div class="flex items-start space-x-3 pt-2 pb-2">
+            <div>
+              @if (msg.isUser) {
+                <div class="flex items-center space-x-2">
+                  <span
+                    class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-300 border-gray-200 dark:border-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                      stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                    </svg>
+                  </span>
+                  <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">You</h3>
+                  <span class="text-sm text-gray-500 dark:text-gray-400">{{ msg.date | date:"short" }}</span>
+                </div>
+              }
+              @if (!msg.isUser) {
+                <div class="flex items-center space-x-2">
+                  <span
+                    class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-300 border-gray-200 dark:border-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                      stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 6.75v10.5a2.25 2.25 0 0 0 2.25 2.25Zm.75-12h9v9h-9v-9Z" />
+                    </svg>
+                  </span>
+                  <h3 class="text-lg font-semibold">Bot</h3>
+                  <span class="text-sm text-gray-500 dark:text-gray-400">{{ msg.date | date:"short" }}</span>
+                </div>
+              }
+              <div class="mt-1 mb-1" [ngClass]="{'italic': msg.isUser}">
+                <app-message-display [message]="msg.text" [cssClass]="'dark:bg-gray-800'"></app-message-display>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+<div #scrollMe></div>
 </div>
 
 <!-- Chat Input -->
 <div class="lg:ml-72 fixed bottom-6 left-6 right-6">
-    <!-- Message when models aren't selected -->
-    <div *ngIf="!modelsSelected()"
-        class="text-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm">
-        <p class="text-gray-600 dark:text-gray-300">Please select models for both LLMs to start chatting</p>
+  <!-- Message when models aren't selected -->
+  @if (!modelsSelected()) {
+    <div
+      class="text-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600 shadow-xs">
+      <p class="text-gray-600 dark:text-gray-300">Please select models for both LLMs to start chatting</p>
     </div>
+  }
 
-    <!-- Hidden file input -->
-    <input type="file" #fileInput class="hidden" [accept]="fileService.getAcceptedTypes()" multiple
-        (change)="onFileSelected($event)">
+  <!-- Hidden file input -->
+  <input type="file" #fileInput class="hidden" [accept]="fileService.getAcceptedTypes()" multiple
+    (change)="onFileSelected($event)">
 
-    <!-- Chat form -->
-    <form class="relative" *ngIf="modelsSelected()">
-        <div
-            class="overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500 bg-white dark:bg-gray-800 pb-[60px]">
-
-            <!-- Attachment preview area -->
-            <div *ngIf="pendingAttachments.length > 0"
-                class="flex flex-wrap gap-2 p-2 border-b border-gray-200 dark:border-gray-700">
-                <div *ngFor="let attachment of pendingAttachments; let i = index"
-                    class="relative group flex items-center gap-2 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md">
-                    <!-- Thumbnail for images -->
-                    <img *ngIf="attachment.type === 'image' && attachment.thumbnail" [src]="attachment.thumbnail"
-                        class="w-10 h-10 object-cover rounded" [alt]="attachment.name">
-                    <!-- PDF icon -->
-                    <svg *ngIf="attachment.type === 'pdf'" xmlns="http://www.w3.org/2000/svg" fill="none"
-                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-red-500">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                    </svg>
-                    <div class="flex flex-col">
-                        <span class="text-xs text-gray-700 dark:text-gray-300 truncate max-w-[100px]">{{ attachment.name
-                            }}</span>
-                        <span class="text-xs text-gray-500 dark:text-gray-400">{{
-                            fileService.formatFileSize(attachment.size) }}</span>
-                    </div>
-                    <!-- Remove button -->
-                    <button type="button" (click)="removeAttachment(i)"
-                        class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                            stroke="currentColor" class="w-3 h-3">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+  <!-- Chat form -->
+  @if (modelsSelected()) {
+    <form class="relative">
+      <div
+        class="overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600 shadow-xs focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500 bg-white dark:bg-gray-800 pb-[60px]">
+        <!-- Attachment preview area -->
+        @if (pendingAttachments.length > 0) {
+          <div
+            class="flex flex-wrap gap-2 p-2 border-b border-gray-200 dark:border-gray-700">
+            @for (attachment of pendingAttachments; track attachment; let i = $index) {
+              <div
+                class="relative group flex items-center gap-2 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md">
+                <!-- Thumbnail for images -->
+                @if (attachment.type === 'image' && attachment.thumbnail) {
+                  <img [src]="attachment.thumbnail"
+                    class="w-10 h-10 object-cover rounded-sm" [alt]="attachment.name">
+                }
+                <!-- PDF icon -->
+                @if (attachment.type === 'pdf') {
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-red-500">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                  </svg>
+                }
+                <div class="flex flex-col">
+                  <span class="text-xs text-gray-700 dark:text-gray-300 truncate max-w-[100px]">{{ attachment.name
+                  }}</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400">{{
+                  fileService.formatFileSize(attachment.size) }}</span>
                 </div>
+                <!-- Remove button -->
+                <button type="button" (click)="removeAttachment(i)"
+                  class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                    stroke="currentColor" class="w-3 h-3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+        }
+        <label for="prompt" class="sr-only">Prompt</label>
+        <textarea rows="3" name="prompt" id="prompt" [(ngModel)]="prompt" (keydown.enter)="onKeydown()"
+          [disabled]="loading"
+          class="block w-full resize-y max-h-[120px] border-0 px-3 py-3 text-gray-900 dark:text-gray-100 bg-transparent placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-0 sm:text-sm sm:leading-6"
+          placeholder="Write your prompt.." #autosize
+        (input)="autosize.style.height = ''; autosize.style.height = Math.min(autosize.scrollHeight, 120) + 'px'"></textarea>
+        <div class="absolute inset-x-0 bottom-0 w-full">
+          <div
+            class="flex items-center justify-between space-x-3 border-t border-gray-200 dark:border-gray-700 px-2 py-2 bg-gray-50 dark:bg-gray-800">
+            <div class="flex">
+              <!-- File upload button -->
+              <button type="button" (click)="triggerFileInput()" [disabled]="loading"
+                class="inline-flex items-center rounded-md bg-gray-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-gray-400 focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 ml-2"
+                title="Attach files (images, PDFs)">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                  stroke="currentColor" class="w-5 h-5">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" />
+                </svg>
+              </button>
+              <button type="button" (click)="newArena()"
+                class="inline-flex items-center rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-gray-500 focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600 ml-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                  stroke="currentColor" class="mr-2 w-5 h-5">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+                New
+              </button>
             </div>
-
-            <label for="prompt" class="sr-only">Prompt</label>
-            <textarea rows="3" name="prompt" id="prompt" [(ngModel)]="prompt" (keydown.enter)="onKeydown()"
-                [disabled]="loading"
-                class="block w-full resize-y max-h-[120px] border-0 px-3 py-3 text-gray-900 dark:text-gray-100 bg-transparent placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-0 sm:text-sm sm:leading-6"
-                placeholder="Write your prompt.." #autosize
-                (input)="autosize.style.height = ''; autosize.style.height = Math.min(autosize.scrollHeight, 120) + 'px'"></textarea>
-
-            <div class="absolute inset-x-0 bottom-0 w-full">
-                <div
-                    class="flex items-center justify-between space-x-3 border-t border-gray-200 dark:border-gray-700 px-2 py-2 bg-gray-50 dark:bg-gray-800">
-                    <div class="flex">
-                        <!-- File upload button -->
-                        <button type="button" (click)="triggerFileInput()" [disabled]="loading"
-                            class="inline-flex items-center rounded-md bg-gray-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 ml-2"
-                            title="Attach files (images, PDFs)">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" />
-                            </svg>
-                        </button>
-                        <button type="button" (click)="newArena()"
-                            class="inline-flex items-center rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600 ml-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="mr-2 w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                            </svg>
-                            New
-                        </button>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <button type="button" (click)="cs.changeEnterSubmit()"
-                            class="mr-2 inline-flex items-center rounded-md bg-gray-400 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600">
-                            {{ cs.enterSubmit ? 'Disable Enter' : 'Enable Enter' }}
-                        </button>
-
-
-                        <button type="submit" (click)="chatArena()" [disabled]="!canSend()"
-                            class="inline-flex items-center rounded-md bg-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 mr-2"
-                            [ngClass]="{'opacity-50 cursor-not-allowed': !canSend()}"
-                            [title]="!modelsSelected() ? 'Please select models for both LLMs first' : ''">
-                            Send
-                            <svg *ngIf="!loading" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="ml-2 w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
-                            </svg>
-                            <svg *ngIf="loading" class="animate-spin ml-2 w-5 h-5" xmlns="http://www.w3.org/2000/svg"
-                                fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                    stroke-width="4">
-                                </circle>
-                                <path class="opacity-75" fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                </path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
+            <div class="shrink-0">
+              <button type="button" (click)="cs.changeEnterSubmit()"
+                class="mr-2 inline-flex items-center rounded-md bg-gray-400 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-gray-500 focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600">
+                {{ cs.enterSubmit ? 'Disable Enter' : 'Enable Enter' }}
+              </button>
+              <button type="submit" (click)="chatArena()" [disabled]="!canSend()"
+                class="inline-flex items-center rounded-md bg-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-orange-500 focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 mr-2"
+                [ngClass]="{'opacity-50 cursor-not-allowed': !canSend()}"
+                [title]="!modelsSelected() ? 'Please select models for both LLMs first' : ''">
+                Send
+                @if (!loading) {
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke-width="1.5" stroke="currentColor" class="ml-2 w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+                  </svg>
+                }
+                @if (loading) {
+                  <svg class="animate-spin ml-2 w-5 h-5" xmlns="http://www.w3.org/2000/svg"
+                    fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                      stroke-width="4">
+                    </circle>
+                    <path class="opacity-75" fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                  </svg>
+                }
+              </button>
             </div>
+          </div>
         </div>
+      </div>
     </form>
+  }
 </div>

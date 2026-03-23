@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, OnDestroy } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnDestroy, AfterViewChecked } from '@angular/core';
 import { LcService } from '../../services/lc.service';
 import { HelpersService } from '../../services/helpers.service';
 import { ErrorService } from '../../services/error.service';
@@ -9,19 +9,19 @@ import { FileAttachment } from '../../core/types';
 import { FILE_LIMITS, ERROR_MESSAGES } from '../../core/constants';
 
 @Component({
-  selector: 'app-notebook',
-  standalone: true,
-  imports: [SharedModule],
-  templateUrl: './notebook.component.html',
-  styleUrls: ['./notebook.component.css']
+    selector: 'app-notebook',
+    imports: [SharedModule],
+    templateUrl: './notebook.component.html',
+    styleUrls: ['./notebook.component.css']
 })
-export class NotebookComponent implements OnDestroy {
+export class NotebookComponent implements OnDestroy, AfterViewChecked {
   public loading: boolean = false;
   public prompt: string = "";
   public output: string = "";
   public error: string = "";
 
   private destroy$ = new Subject<void>();
+  private shouldScroll = false;
 
   // File upload
   pendingAttachments: FileAttachment[] = [];
@@ -39,7 +39,10 @@ export class NotebookComponent implements OnDestroy {
   }
 
   ngAfterViewChecked() {
-    this.scrollToBottom();
+    if (this.shouldScroll) {
+      this.shouldScroll = false;
+      this.myScrollContainer.nativeElement.scrollIntoView({ behavior: 'smooth' });
+    }
   }
 
   new() {
@@ -74,13 +77,10 @@ export class NotebookComponent implements OnDestroy {
     this.pendingAttachments = [];
   }
 
-  scrollToBottom(): void {
-    this.myScrollContainer.nativeElement.scrollIntoView({ behavior: 'smooth' });
-  }
-
   async invoke() {
     this.loading = true;
     this.output = "";
+    this.shouldScroll = true;
     try {
       const attachments = [...this.pendingAttachments];
       this.pendingAttachments = [];
