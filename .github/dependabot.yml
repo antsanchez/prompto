@@ -1,0 +1,42 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      angular:
+        patterns:
+          - "@angular/*"
+          - "@angular-devkit/*"
+      langchain:
+        patterns:
+          - langchain
+          - "@langchain/*"
+          - langsmith
+          - cohere-ai
+      tailwind:
+        patterns:
+          - tailwindcss
+          - "@tailwindcss/*"
+          - postcss
+    ignore:
+      # Transitive CLI / LangSmith server packages that do not ship in the PWA.
+      # Security fixes for these come in through the grouped Angular / LangChain bumps.
+      - dependency-name: hono
+      - dependency-name: "@hono/node-server"
+      - dependency-name: express
+      - dependency-name: express-rate-limit
+      - dependency-name: body-parser
+      - dependency-name: webpack
+      - dependency-name: webpack-dev-server
+      - dependency-name: vite
+      - dependency-name: ip-address
+      - dependency-name: convict
+      - dependency-name: serialize-javascript
+      - dependency-name: flatted
+      - dependency-name: minimatch
+      - dependency-name: follow-redirects
+      - dependency-name: qs
+      - dependency-name: lodash

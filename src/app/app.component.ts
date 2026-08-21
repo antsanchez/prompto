@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { NavigationEnd, RouterOutlet } from '@angular/router';
 import { Router, ActivatedRoute } from '@angular/router';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
@@ -12,6 +12,7 @@ import { SettingsService } from './services/settings.service';
         RouterOutlet,
     ],
     templateUrl: './app.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './app.component.css'
 })
 export class AppComponent {

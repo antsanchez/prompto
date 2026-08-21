@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { SharedModule } from '../../shared/shared.module';
 import { SettingsService } from '../../services/settings.service';
 
@@ -6,6 +6,7 @@ import { SettingsService } from '../../services/settings.service';
     selector: 'app-home',
     imports: [SharedModule],
     templateUrl: './home.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './home.component.css'
 })
 export class HomeComponent {

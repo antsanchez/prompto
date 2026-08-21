@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, OnDestroy, HostListener, AfterViewChecked } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnDestroy, HostListener, AfterViewChecked, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ChatService } from '../../services/chat.service';
 import { HelpersService } from '../../services/helpers.service';
@@ -14,6 +14,7 @@ import { FileAttachment } from '../../core/types';
     selector: 'app-conversation',
     imports: [SharedModule],
     templateUrl: './conversation.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrls: ['./conversation.component.css']
 })
 export class ConversationComponent implements OnDestroy, AfterViewChecked {

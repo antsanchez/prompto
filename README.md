@@ -4,7 +4,8 @@ Welcome to Prompto, an open-source Angular chat interface designed to provide a 
 
 ## Technology Stack
 
-- **Frontend**: Angular ^18
+- **Frontend**: Angular 22
+- **Runtime**: Node.js 22.22.3+ (or 24.15+ / 26+)
 - **UI Framework**: TailwindCSS
 - **Markdown Processing**: Marked with syntax highlighting via highlight.js
 - **LLM Integration**: LangChain.js
@@ -44,6 +45,8 @@ You can view a live example of Prompto by visiting the following link: [Prompto]
 The application can be installed as a PWA on your device.
 
 ## Installation
+
+Requires Node.js 22.22.3+ (or 24.15+ / 26+). The Angular 22 CLI will refuse to run on Node 24.14 and earlier.
 
 1. Clone the repository to your local machine
 2. Navigate to the project directory
