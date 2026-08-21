@@ -1,10 +1,11 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HelpersService } from '../../services/helpers.service';
 
 @Component({
     selector: 'app-message-display',
     imports: [CommonModule],
+    changeDetection: ChangeDetectionStrategy.Eager,
     templateUrl: './message-display.component.html'
 })
 export class MessageDisplayComponent {

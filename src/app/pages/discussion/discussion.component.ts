@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DiscussionService } from '../../services/discussion.service';
 import { ErrorService } from '../../services/error.service';
@@ -21,6 +21,7 @@ import { ERROR_MESSAGES } from '../../core/constants';
         MessageDisplayComponent
     ],
     templateUrl: './discussion.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './discussion.component.css'
 })
 export class DiscussionComponent implements OnDestroy {

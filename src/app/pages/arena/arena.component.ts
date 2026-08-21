@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, HostListener, OnDestroy, AfterViewChecked } from '@angular/core';
+import { Component, ElementRef, ViewChild, HostListener, OnDestroy, AfterViewChecked, ChangeDetectionStrategy } from '@angular/core';
 import { ChatService } from '../../services/chat.service';
 import { Provider, SettingsService } from '../../services/settings.service';
 import { ErrorService } from '../../services/error.service';
@@ -15,6 +15,7 @@ import { FileAttachment } from '../../core/types';
     selector: 'app-arena',
     imports: [SharedModule],
     templateUrl: './arena.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './arena.component.css'
 })
 export class ArenaComponent implements OnDestroy, AfterViewChecked {

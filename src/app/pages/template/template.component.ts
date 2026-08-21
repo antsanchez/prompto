@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { HelpersService } from '../../services/helpers.service';
 import { TemplatesService } from '../../services/templates.service';
 import { ErrorService } from '../../services/error.service';
@@ -11,6 +11,7 @@ import { takeUntil } from 'rxjs/operators';
     selector: 'app-template',
     imports: [SharedModule],
     templateUrl: './template.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrls: ['./template.component.css'] // Note: Fixed 'styleUrl' to 'styleUrls' for array usage
 })
 export class TemplateComponent implements OnDestroy {

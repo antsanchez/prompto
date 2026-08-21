@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { SharedModule } from '../../shared/shared.module';
 import { Options, SettingsService, Provider } from '../../services/settings.service';
 
@@ -12,6 +12,7 @@ interface State {
     selector: 'app-settings',
     imports: [SharedModule],
     templateUrl: './settings.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './settings.component.css'
 })
 export class SettingsComponent implements OnInit {

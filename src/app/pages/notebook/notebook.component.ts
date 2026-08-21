@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, OnDestroy, AfterViewChecked } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnDestroy, AfterViewChecked, ChangeDetectionStrategy } from '@angular/core';
 import { LcService } from '../../services/lc.service';
 import { HelpersService } from '../../services/helpers.service';
 import { ErrorService } from '../../services/error.service';
@@ -12,6 +12,7 @@ import { FILE_LIMITS, ERROR_MESSAGES } from '../../core/constants';
     selector: 'app-notebook',
     imports: [SharedModule],
     templateUrl: './notebook.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrls: ['./notebook.component.css']
 })
 export class NotebookComponent implements OnDestroy, AfterViewChecked {

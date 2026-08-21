@@ -31,14 +31,25 @@
             "styles": [
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": [],
+            "externalDependencies": [
+              "node:fs",
+              "node:path"
+            ],
+            "allowedCommonJsDependencies": [
+              "p-queue",
+              "cohere-ai",
+              "bowser",
+              "base64-js",
+              "standardwebhooks"
+            ]
           },
           "configurations": {
             "production": {
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "1.5mb",
+                  "maximumWarning": "1.6mb",
                   "maximumError": "2mb"
                 },
                 {

@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 @Component({
     selector: 'app-not-connected',
     imports: [RouterLink],
     templateUrl: './not-connected.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './not-connected.component.css'
 })
 export class NotConnectedComponent {
