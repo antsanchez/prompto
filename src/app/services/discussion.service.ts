@@ -3,6 +3,7 @@ import { LcService } from './lc.service';
 import { PromptTemplate } from "@langchain/core/prompts";
 import { STORAGE_KEYS, DEFAULTS } from '../core/constants';
 import { StorageService } from './storage.service';
+import { extractChunkParts, isAbortError } from '../core/llm-content';
 
 type Agent = {
   name: string;
@@ -25,6 +26,7 @@ type Message = {
   agentIndex: number;
   agentName: string;
   date: Date;
+  thinking?: string;
 }
 
 function createEmptyDiscussion(): Discussion {
@@ -155,27 +157,41 @@ export class DiscussionService {
     const currentAgent = this.currentDiscussion.agents[this.currentDiscussion.currentAgentIndex];
     const prompt = this.createAgentPrompt(currentAgent);
     const chain = prompt.pipe(this.lc.llm);
-
-    let response = '';
-    const stream = await chain.stream({
-      context: this.currentDiscussion.context,
-      chat_history: this.prepareChatHistory()
-    });
-
-    for await (const chunk of stream) {
-      response += chunk?.content || '';
-    }
+    const chatHistory = this.prepareChatHistory();
+    const signal = this.lc.beginRun();
 
     const message: Message = {
-      text: response,
+      text: '',
       agentIndex: this.currentDiscussion.currentAgentIndex,
       agentName: currentAgent.name,
       date: new Date()
     };
-
-    // Add message to both the main discussion and the agent's history
     this.currentDiscussion.messages.push(message);
     currentAgent.messages.push(message);
+
+    try {
+      const stream = await chain.stream({
+        context: this.currentDiscussion.context,
+        chat_history: chatHistory
+      }, { signal });
+
+      for await (const chunk of stream) {
+        if (signal.aborted) {
+          break;
+        }
+        const parts = extractChunkParts(chunk);
+        message.text += parts.text;
+        if (parts.thinking) {
+          message.thinking = (message.thinking || '') + parts.thinking;
+        }
+      }
+    } catch (error) {
+      if (!isAbortError(error)) {
+        throw error;
+      }
+    } finally {
+      this.lc.endRun();
+    }
 
     // Move to next agent
     this.currentDiscussion.currentAgentIndex =
@@ -223,15 +239,27 @@ export class DiscussionService {
 
     const chain = prompt.pipe(this.lc.llm);
     const chatHistory = this.prepareChatHistory();
+    const signal = this.lc.beginRun();
 
     let summary = '';
-    const stream = await chain.stream({
-      context: this.currentDiscussion.context,
-      chat_history: chatHistory
-    });
+    try {
+      const stream = await chain.stream({
+        context: this.currentDiscussion.context,
+        chat_history: chatHistory
+      }, { signal });
 
-    for await (const chunk of stream) {
-      summary += chunk?.content || '';
+      for await (const chunk of stream) {
+        if (signal.aborted) {
+          break;
+        }
+        summary += extractChunkParts(chunk).text;
+      }
+    } catch (error) {
+      if (!isAbortError(error)) {
+        throw error;
+      }
+    } finally {
+      this.lc.endRun();
     }
 
     // Save the summary to the current discussion

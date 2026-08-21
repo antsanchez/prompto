@@ -10,6 +10,7 @@ import { ErrorComponent } from '../../components/error/error.component';
 import { MessageDisplayComponent } from '../../components/message-display/message-display.component';
 import { HelpersService } from '../../services/helpers.service';
 import { ERROR_MESSAGES } from '../../core/constants';
+import { isAbortError } from '../../core/llm-content';
 
 @Component({
     selector: 'app-discussion',
@@ -75,7 +76,12 @@ export class DiscussionComponent implements OnDestroy {
     this.isFormCollapsed = !this.isFormCollapsed;
   }
 
+  stop() {
+    this.discussionService.lc.abort();
+  }
+
   ngOnDestroy(): void {
+    this.discussionService.lc.abort();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -164,8 +170,10 @@ export class DiscussionComponent implements OnDestroy {
         this.discussionService.setConnected(true);
         await this.saveDiscussion(); // Automatically save
       } catch (error) {
-        this.handleError('Failed to start discussion:', error);
-        this.discussionService.setConnected(false);
+        if (!isAbortError(error)) {
+          this.handleError('Failed to start discussion:', error);
+          this.discussionService.setConnected(false);
+        }
       } finally {
         this.isLoading = false;
       }
@@ -182,8 +190,10 @@ export class DiscussionComponent implements OnDestroy {
       this.discussionService.setConnected(true);
       await this.saveDiscussion();
     } catch (error) {
-      this.handleError('Failed to continue discussion:', error);
-      this.discussionService.setConnected(false);
+      if (!isAbortError(error)) {
+        this.handleError('Failed to continue discussion:', error);
+        this.discussionService.setConnected(false);
+      }
     } finally {
       this.isLoading = false;
     }
@@ -197,8 +207,10 @@ export class DiscussionComponent implements OnDestroy {
       this.discussionService.setConnected(true);
       await this.saveDiscussion();
     } catch (error) {
-      this.handleError('Failed to summarize discussion:', error);
-      this.discussionService.setConnected(false);
+      if (!isAbortError(error)) {
+        this.handleError('Failed to summarize discussion:', error);
+        this.discussionService.setConnected(false);
+      }
     } finally {
       this.isLoading = false;
     }

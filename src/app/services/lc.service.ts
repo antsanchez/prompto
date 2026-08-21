@@ -6,6 +6,11 @@ import { Provider, SettingsService } from './settings.service';
 import { ERROR_MESSAGES } from '../core/constants';
 import { FileAttachment } from '../core/types';
 
+type MessageContentPart =
+  | { type: 'text'; text: string }
+  | { type: 'image'; mimeType: string; data: string }
+  | { type: 'file'; mimeType: string; data: string; metadata: { filename: string } };
+
 type LLMConstructor = new (...args: any[]) => Runnable;
 
 interface ProviderConfig {
@@ -58,11 +63,31 @@ const PROVIDER_REGISTRY: Record<Provider, ProviderConfig> = {
 export class LcService {
 
   private cache: Map<Provider, LLMConstructor> = new Map();
+  private abortController: AbortController | null = null;
 
   public llm: Runnable | null = null;
 
   constructor(public s: SettingsService) {
     this.s.setDefaultSettings();
+  }
+
+  beginRun(): AbortSignal {
+    this.abort();
+    this.abortController = new AbortController();
+    return this.abortController.signal;
+  }
+
+  abort(): void {
+    this.abortController?.abort();
+    this.abortController = null;
+  }
+
+  endRun(): void {
+    this.abortController = null;
+  }
+
+  isRunning(): boolean {
+    return this.abortController !== null;
   }
 
   async createLLM(provider: string, model: string = '') {
@@ -97,29 +122,29 @@ export class LcService {
   }
 
   // invoke sends a prompt to the chatbot and returns the response
-  invoke(prompt: string): Promise<string> {
+  invoke(prompt: string, signal?: AbortSignal): Promise<unknown> {
     if (!this.llm) {
       throw new Error('LLM not initialized');
     }
-    return this.llm.invoke(prompt);
+    return this.llm.invoke(prompt, signal ? { signal } : undefined);
   }
 
   // stream sends a prompt to the chatbot and returns a stream of responses
-  stream(prompt: string) {
+  stream(prompt: string, signal?: AbortSignal) {
     if (!this.llm) {
       throw new Error('LLM not initialized');
     }
-    return this.llm.stream(prompt);
+    return this.llm.stream(prompt, signal ? { signal } : undefined);
   }
 
   // streamWithTemplate sends a prompt to the chatbot with a template and returns a stream of responses
-  streamWithSystemPrompt(system: string, prompt: string) {
+  streamWithSystemPrompt(system: string, prompt: string, signal?: AbortSignal) {
     if (!this.llm) {
       throw new Error('LLM not initialized');
     }
     let tpl = PromptTemplate.fromTemplate(`System prompt: ${system}\n\n${prompt}\n\nResponse:`);
     let chain = tpl.pipe(this.llm);
-    return chain.stream({ system: system, prompt: prompt });
+    return chain.stream({ system: system, prompt: prompt }, signal ? { signal } : undefined);
   }
 
   // buildMessages converts our message format to LangChain message objects
@@ -145,18 +170,27 @@ export class LcService {
         continue;
       }
 
-      // Build multimodal content array
-      const content: any[] = [];
+      const content: MessageContentPart[] = [];
 
       if (msg.text) {
         content.push({ type: 'text', text: msg.text });
       }
 
       for (const att of msg.attachments) {
-        content.push({
-          type: 'image_url',
-          image_url: { url: `data:${att.mimeType};base64,${att.data}` }
-        });
+        if (att.type === 'image') {
+          content.push({
+            type: 'image',
+            mimeType: att.mimeType,
+            data: att.data
+          });
+        } else {
+          content.push({
+            type: 'file',
+            mimeType: att.mimeType,
+            data: att.data,
+            metadata: { filename: att.name }
+          });
+        }
       }
 
       langchainMessages.push(new HumanMessage({ content }));
@@ -168,12 +202,16 @@ export class LcService {
   // streamWithMessages streams a conversation with proper LangChain message objects
   streamWithMessages(
     messages: Array<{ role: 'human' | 'ai'; text: string; attachments?: FileAttachment[] }>,
-    systemPrompt?: string
+    systemPrompt?: string,
+    signal?: AbortSignal
   ) {
     if (!this.llm) {
       throw new Error('LLM not initialized');
     }
 
-    return this.llm.stream(this.buildMessages(messages, systemPrompt));
+    return this.llm.stream(
+      this.buildMessages(messages, systemPrompt),
+      signal ? { signal } : undefined
+    );
   }
 }

@@ -218,6 +218,12 @@
                 class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 focus:outline-hidden focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 disabled:opacity-50 transition-colors">
                 Summarize Discussion
               </button>
+              @if (isLoading) {
+                <button type="button" (click)="stop()"
+                  class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-500">
+                  Stop
+                </button>
+              }
             </div>
           </div>
           <h2 class="text-xl font-bold mb-4 dark:text-gray-100">Discussion:</h2>
@@ -227,7 +233,7 @@
                 class="p-4 border rounded-sm dark:border-gray-700 bg-white dark:bg-gray-800">
                 <div class="font-bold dark:text-gray-100">{{message.agentName}}</div>
                 <div class="dark:text-gray-300">
-                  <app-message-display [message]="message.text"></app-message-display>
+                  <app-message-display [message]="message.text" [thinking]="message.thinking || ''"></app-message-display>
                 </div>
                 <div class="text-sm text-gray-500 dark:text-gray-400">{{message.date | date:'medium'}}</div>
               </div>

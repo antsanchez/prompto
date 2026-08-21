@@ -3,6 +3,7 @@ import { LcService } from './lc.service';
 import { System } from './settings.service';
 import { STORAGE_KEYS } from '../core/constants';
 import { StorageService } from './storage.service';
+import { extractChunkParts, isAbortError } from '../core/llm-content';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +13,7 @@ export class TemplatesService {
   public system: string = '';
   public prompt: string = '';
   public output: string = '';
+  public thinking: string = '';
 
   constructor(
     public lc: LcService,
@@ -23,6 +25,7 @@ export class TemplatesService {
     this.system = '';
     this.prompt = '';
     this.output = '';
+    this.thinking = '';
 
     this.lc.s.loadTemplates();
     this.lc.s.loadSettings();
@@ -70,15 +73,31 @@ export class TemplatesService {
 
   async stream() {
     this.output = '';
-    let stream = await this.lc.streamWithSystemPrompt(this.system, this.prompt);
-    for await (let chunk of stream) {
-      this.output += chunk?.content;
+    this.thinking = '';
+    const signal = this.lc.beginRun();
+    try {
+      const stream = await this.lc.streamWithSystemPrompt(this.system, this.prompt, signal);
+      for await (const chunk of stream) {
+        if (signal.aborted) {
+          break;
+        }
+        const parts = extractChunkParts(chunk);
+        this.output += parts.text;
+        this.thinking += parts.thinking;
+      }
+    } catch (error) {
+      if (!isAbortError(error)) {
+        throw error;
+      }
+    } finally {
+      this.lc.endRun();
     }
   }
 
   loadTemplate(name: string) {
     this.prompt = '';
     this.output = '';
+    this.thinking = '';
     let template = this.lc.s.templates.find((template) => template.name === name);
     if (template) {
       this.lc.s.currentTemplateName = template.name;

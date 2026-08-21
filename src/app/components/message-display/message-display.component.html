@@ -1,4 +1,4 @@
-@if (message) {
+@if (message || thinking) {
   <div class="relative">
     <!-- Toolbar -->
     <div class="flex justify-end gap-1 mb-1">
@@ -42,6 +42,12 @@
         {{ copied ? 'Copied!' : 'Copy' }}
       </button>
     </div>
+    @if (thinking) {
+      <details class="thinking-block" [open]="!message">
+        <summary class="thinking-link text-sm">Thinking</summary>
+        <pre class="thinking-content text-sm whitespace-pre-wrap wrap-break-word">{{ thinking }}</pre>
+      </details>
+    }
     <!-- Formatted view -->
     @if (!showRaw) {
       <div [innerHTML]="helpers.presentMessage(message)"

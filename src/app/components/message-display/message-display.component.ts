@@ -10,6 +10,7 @@ import { HelpersService } from '../../services/helpers.service';
 })
 export class MessageDisplayComponent {
   @Input() message: string = '';
+  @Input() thinking: string = '';
   @Input() cssClass: string = '';
 
   showRaw: boolean = false;

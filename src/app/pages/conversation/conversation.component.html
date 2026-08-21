@@ -40,7 +40,7 @@
             </div>
           }
           <div class="mt-1 mb-1" [ngClass]="{'italic': msg.isUser}">
-            <app-message-display [message]="msg.text" [cssClass]="'dark:bg-gray-800'"></app-message-display>
+            <app-message-display [message]="msg.text" [thinking]="msg.thinking || ''" [cssClass]="'dark:bg-gray-800'"></app-message-display>
           </div>
         </div>
       </div>
@@ -158,27 +158,28 @@
             </button>
 
 
-            <button type="submit" (click)="chat()" [disabled]="!canSend()"
-              class="inline-flex items-center rounded-md bg-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-orange-500 focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 mr-2"
-              [ngClass]="{'opacity-50 cursor-not-allowed': !canSend()}">
-              Send
-              @if (!loading) {
+            @if (!loading) {
+              <button type="submit" (click)="chat()" [disabled]="!canSend()"
+                class="inline-flex items-center rounded-md bg-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-orange-500 focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 mr-2"
+                [ngClass]="{'opacity-50 cursor-not-allowed': !canSend()}">
+                Send
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                   stroke-width="1.5" stroke="currentColor" class="ml-2 w-5 h-5">
                   <path stroke-linecap="round" stroke-linejoin="round"
                     d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
                 </svg>
-              }
-              @if (loading) {
-                <svg class="animate-spin ml-2 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none"
-                  viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                  </path>
+              </button>
+            }
+            @if (loading) {
+              <button type="button" (click)="stop()"
+                class="inline-flex items-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 mr-2">
+                Stop
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                  stroke-width="1.5" stroke="currentColor" class="ml-2 w-5 h-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 7.5A2.25 2.25 0 0 1 7.5 5.25h9a2.25 2.25 0 0 1 2.25 2.25v9a2.25 2.25 0 0 1-2.25 2.25h-9a2.25 2.25 0 0 1-2.25-2.25v-9Z" />
                 </svg>
-              }
-            </button>
+              </button>
+            }
 
           </div>
         </div>
