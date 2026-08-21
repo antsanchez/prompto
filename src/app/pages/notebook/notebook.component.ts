@@ -7,6 +7,7 @@ import { SharedModule } from '../../shared/shared.module';
 import { Subject } from 'rxjs';
 import { FileAttachment } from '../../core/types';
 import { FILE_LIMITS, ERROR_MESSAGES } from '../../core/constants';
+import { extractChunkParts, isAbortError } from '../../core/llm-content';
 
 @Component({
     selector: 'app-notebook',
@@ -19,6 +20,7 @@ export class NotebookComponent implements OnDestroy, AfterViewChecked {
   public loading: boolean = false;
   public prompt: string = "";
   public output: string = "";
+  public thinking: string = "";
   public error: string = "";
 
   private destroy$ = new Subject<void>();
@@ -47,6 +49,7 @@ export class NotebookComponent implements OnDestroy, AfterViewChecked {
   }
 
   new() {
+    this.lc.abort();
     this.resetNotebook();
 
     try {
@@ -73,34 +76,48 @@ export class NotebookComponent implements OnDestroy, AfterViewChecked {
   private resetNotebook() {
     this.prompt = "";
     this.output = "";
+    this.thinking = "";
     this.error = "";
     this.loading = false;
     this.pendingAttachments = [];
   }
 
+  stop() {
+    this.lc.abort();
+  }
+
   async invoke() {
     this.loading = true;
     this.output = "";
+    this.thinking = "";
     this.shouldScroll = true;
+    const signal = this.lc.beginRun();
     try {
       const attachments = [...this.pendingAttachments];
       this.pendingAttachments = [];
 
-      // Use streamWithMessages for multimodal support
       const messages = [{
         role: 'human' as const,
         text: this.prompt,
         attachments: attachments.length > 0 ? attachments : undefined
       }];
 
-      const stream = await this.lc.streamWithMessages(messages);
-      for await (let chunk of stream) {
-        this.output += chunk?.content;
+      const stream = await this.lc.streamWithMessages(messages, undefined, signal);
+      for await (const chunk of stream) {
+        if (signal.aborted) {
+          break;
+        }
+        const parts = extractChunkParts(chunk);
+        this.output += parts.text;
+        this.thinking += parts.thinking;
       }
     } catch (error) {
-      this.handleError('Error invoking the model:', error);
-      this.lc.s.setConnected(false);
+      if (!isAbortError(error)) {
+        this.handleError('Error invoking the model:', error);
+        this.lc.s.setConnected(false);
+      }
     } finally {
+      this.lc.endRun();
       this.loading = false;
     }
   }
@@ -140,6 +157,7 @@ export class NotebookComponent implements OnDestroy, AfterViewChecked {
   }
 
   ngOnDestroy(): void {
+    this.lc.abort();
     this.destroy$.next();
     this.destroy$.complete();
   }

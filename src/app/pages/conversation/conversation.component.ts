@@ -9,6 +9,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { UI, FILE_LIMITS, ERROR_MESSAGES } from '../../core/constants';
 import { FileAttachment } from '../../core/types';
+import { isAbortError } from '../../core/llm-content';
 
 @Component({
     selector: 'app-conversation',
@@ -102,6 +103,10 @@ export class ConversationComponent implements OnDestroy, AfterViewChecked {
     }
   }
 
+  stop() {
+    this.chatService.stop();
+  }
+
   async chat() {
     this.loading = true;
     this.waiting = true;
@@ -114,6 +119,9 @@ export class ConversationComponent implements OnDestroy, AfterViewChecked {
       await this.chatService.chat(prompt, attachments.length > 0 ? attachments : undefined);
       this.chatService.setConnected(true);
     } catch (error) {
+      if (isAbortError(error)) {
+        return;
+      }
       this.handleError('Error chatting:', error);
       this.chatService.setConnected(false);
     } finally {
@@ -168,6 +176,7 @@ export class ConversationComponent implements OnDestroy, AfterViewChecked {
   }
 
   ngOnDestroy(): void {
+    this.chatService.stop();
     this.destroy$.next();
     this.destroy$.complete();
   }

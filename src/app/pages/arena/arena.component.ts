@@ -10,6 +10,7 @@ import { takeUntil } from 'rxjs/operators';
 import { HelpersService } from '../../services/helpers.service';
 import { UI, ERROR_MESSAGES, FILE_LIMITS } from '../../core/constants';
 import { FileAttachment } from '../../core/types';
+import { isAbortError } from '../../core/llm-content';
 
 @Component({
     selector: 'app-arena',
@@ -97,6 +98,10 @@ export class ArenaComponent implements OnDestroy, AfterViewChecked {
     });
   }
 
+  stop() {
+    this.cs.stop();
+  }
+
   async chatArena() {
     if (!this.cs.arenaStarted) {
       try {
@@ -121,6 +126,9 @@ export class ArenaComponent implements OnDestroy, AfterViewChecked {
     try {
       await this.cs.chatArena(prompt, attachments.length > 0 ? attachments : undefined);
     } catch (error) {
+      if (isAbortError(error)) {
+        return;
+      }
       this.error = ERROR_MESSAGES.ARENA_CHAT;
       console.error('Error chatting in arena:', error);
     } finally {
@@ -258,6 +266,7 @@ export class ArenaComponent implements OnDestroy, AfterViewChecked {
   }
 
   ngOnDestroy(): void {
+    this.cs.stop();
     this.destroy$.next();
     this.destroy$.complete();
   }

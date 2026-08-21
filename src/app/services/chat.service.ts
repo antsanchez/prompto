@@ -3,10 +3,11 @@ import { LcService } from './lc.service';
 import { PromptTemplate } from "@langchain/core/prompts";
 import { Runnable } from '@langchain/core/runnables';
 import { Subject } from 'rxjs';
-import { STORAGE_KEYS } from '../core/constants';
+import { DEFAULTS, STORAGE_KEYS } from '../core/constants';
 import { StorageService } from './storage.service';
 import { FileAttachment, Message } from '../core/types';
 import { FileService } from './file.service';
+import { extractChunkParts, isAbortError } from '../core/llm-content';
 
 type Arena = {
   name: string;
@@ -71,7 +72,12 @@ export class ChatService {
   }
 
 
+  stop() {
+    this.lc.abort();
+  }
+
   async newChat() {
+    this.lc.abort();
     this.history = createEmptyChat();
     this.lc.s.currentChatKey = "";
     this.lc.s.currentArenaKey = "";
@@ -121,6 +127,7 @@ export class ChatService {
   }
 
   newArena() {
+    this.lc.abort();
     this.arenaStarted = false;
     this.arena.p1 = createEmptyPlayer();
     this.arena.p2 = createEmptyPlayer();
@@ -154,7 +161,7 @@ export class ChatService {
 
     let chain = fullPrompt.pipe(llm);
 
-    return chain.invoke({ prompt: prompt });
+    return chain.invoke({ prompt: prompt }).then(answer => extractChunkParts(answer).text);
   }
 
   // createChatChain creates a chat chain based on the user prompt and the given LLM
@@ -191,44 +198,72 @@ export class ChatService {
       date: new Date()
     });
 
-    // If this is the first message, create a chat name
-    if (this.history.messages.length === 1 && this.lc.llm) {
-      let answer = await this.createChatName(prompt, this.lc.llm);
-      // Remove any content between <> brackets
-      this.history.name = answer?.content.replace(/<[^>]*>/g, "");
-    }
-
     if (!this.lc.llm) {
       throw new Error('LLM not initialized');
     }
 
-    // Use streamWithMessages for multimodal support
-    const langchainMessages = this.prepareMessages(this.history.messages, prompt, attachments);
-    let stream = await this.lc.streamWithMessages(
-      langchainMessages,
-      'You are a nice chatbot having a conversation with a human.'
-    );
-
-    // Add bot message to chat history
-    let messageNumber = this.history.messages.length;
-    let firstChunk = true;
-    for await (let chunk of stream) {
-      if (firstChunk) {
-        this.streamStarted.next();
-        firstChunk = false;
-      }
-      if (this.history.messages.length > messageNumber) {
-        this.history.messages[messageNumber].text += chunk?.content;
-      } else {
-        this.history.messages.push({
-          text: chunk?.content,
-          isUser: false,
-          date: new Date()
-        });
-      }
+    if (this.history.messages.length === 1) {
+      this.history.name = this.history.name || DEFAULTS.UNTITLED_CHAT;
+      this.saveChat();
+      void this.nameChat(prompt, this.lc.llm);
     }
 
-    this.saveChat();
+    const signal = this.lc.beginRun();
+    const langchainMessages = this.prepareMessages(this.history.messages, prompt, attachments);
+    const stream = await this.lc.streamWithMessages(
+      langchainMessages,
+      'You are a nice chatbot having a conversation with a human.',
+      signal
+    );
+
+    const botMessage: Message = {
+      text: '',
+      isUser: false,
+      date: new Date()
+    };
+    this.history.messages.push(botMessage);
+
+    try {
+      let firstChunk = true;
+      for await (const chunk of stream) {
+        if (signal.aborted) {
+          break;
+        }
+        if (firstChunk) {
+          this.streamStarted.next();
+          firstChunk = false;
+        }
+        const parts = extractChunkParts(chunk);
+        botMessage.text += parts.text;
+        if (parts.thinking) {
+          botMessage.thinking = (botMessage.thinking || '') + parts.thinking;
+        }
+      }
+    } catch (error) {
+      if (!isAbortError(error)) {
+        throw error;
+      }
+    } finally {
+      this.lc.endRun();
+      this.saveChat();
+    }
+  }
+
+  private async nameChat(prompt: string, llm: Runnable) {
+    try {
+      const name = (await this.createChatName(prompt, llm)).replace(/<[^>]*>/g, '').trim();
+      if (!name) {
+        return;
+      }
+      this.history.name = name;
+      const listed = this.lc.s.chats.find(chat => chat.key === this.lc.s.currentChatKey);
+      if (listed) {
+        listed.name = name;
+      }
+      this.saveChat();
+    } catch (error) {
+      console.error('Error creating chat name:', error);
+    }
   }
 
   // prepareMessages converts chat history to LangChain message format
@@ -288,44 +323,74 @@ export class ChatService {
       date: new Date()
     });
 
-    // If this is the first message, create a chat name
     if (this.arena.p1.messages.length === 1) {
+      this.arena.name = this.arena.name || DEFAULTS.UNTITLED_ARENA;
+      this.saveArena();
       const llmForName = this.arena.p1.llm || this.arena.p2.llm || this.lc.llm;
       if (llmForName) {
-        let answer = await this.createChatName(prompt, llmForName);
-        this.arena.name = answer?.content;
+        void this.nameArena(prompt, llmForName);
       }
     }
 
-    // Prepare messages for both players with multimodal support
     const messages1 = this.prepareMessages(this.arena.p1.messages, prompt, attachments);
     const messages2 = this.prepareMessages(this.arena.p2.messages, prompt, attachments);
-
     const systemPrompt = 'You are a nice chatbot having a conversation with a human.';
+    const signal = this.lc.beginRun();
 
-    // Stream responses from both LLMs in parallel
     const streamPlayer = async (player: Player, msgs: typeof messages1) => {
       const langchainMessages = this.lc.buildMessages(msgs, systemPrompt);
-      const messageNumber = player.messages.length;
-      const stream = await player.llm.stream(langchainMessages);
-      for await (const chunk of stream) {
-        if (player.messages.length > messageNumber) {
-          player.messages[messageNumber].text += chunk?.content;
-        } else {
-          player.messages.push({
-            text: chunk?.content,
-            isUser: false,
-            date: new Date()
-          });
+      const botMessage: Message = {
+        text: '',
+        isUser: false,
+        date: new Date()
+      };
+      player.messages.push(botMessage);
+
+      try {
+        const stream = await player.llm.stream(langchainMessages, { signal });
+        for await (const chunk of stream) {
+          if (signal.aborted) {
+            break;
+          }
+          const parts = extractChunkParts(chunk);
+          botMessage.text += parts.text;
+          if (parts.thinking) {
+            botMessage.thinking = (botMessage.thinking || '') + parts.thinking;
+          }
+        }
+      } catch (error) {
+        if (!isAbortError(error)) {
+          throw error;
         }
       }
     };
 
-    await Promise.all([
-      streamPlayer(this.arena.p1, messages1),
-      streamPlayer(this.arena.p2, messages2)
-    ]);
-    this.saveArena();
+    try {
+      await Promise.all([
+        streamPlayer(this.arena.p1, messages1),
+        streamPlayer(this.arena.p2, messages2)
+      ]);
+    } finally {
+      this.lc.endRun();
+      this.saveArena();
+    }
+  }
+
+  private async nameArena(prompt: string, llm: Runnable) {
+    try {
+      const name = (await this.createChatName(prompt, llm)).replace(/<[^>]*>/g, '').trim();
+      if (!name) {
+        return;
+      }
+      this.arena.name = name;
+      const listed = this.lc.s.arenas.find(arena => arena.key === this.lc.s.currentArenaKey);
+      if (listed) {
+        listed.name = name;
+      }
+      this.saveArena();
+    } catch (error) {
+      console.error('Error creating arena name:', error);
+    }
   }
 
 

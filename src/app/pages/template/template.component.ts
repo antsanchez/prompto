@@ -58,6 +58,10 @@ export class TemplateComponent implements OnDestroy {
   }
 
 
+  stop() {
+    this.templateService.lc.abort();
+  }
+
   async stream() {
     this.loading = true;
     try {
@@ -82,6 +86,7 @@ export class TemplateComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.templateService.lc.abort();
     this.destroy$.next();
     this.destroy$.complete();
   }

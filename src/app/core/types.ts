@@ -13,4 +13,5 @@ export interface Message {
   isUser: boolean;
   date: Date;
   attachments?: FileAttachment[];
+  thinking?: string;
 }
